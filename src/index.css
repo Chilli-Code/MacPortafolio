@@ -1,13 +1,47 @@
-@import url("https://fonts.googleapis.com/css2?family=Georama:ital,wght@0,100..900;1,100..900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap");
-
 @import "tailwindcss";
+
+/* Roboto Mono - Fuente variable (MEJOR OPCIÓN) */
+@font-face {
+  font-family: 'Roboto Mono';
+  src: url('/fonts/roboto-mono/RobotoMono-VariableFont_wght.ttf') format('truetype-variations');
+  font-weight: 100 700; /* Soporta todos los pesos del 100 al 700 */
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roboto Mono';
+  src: url('/fonts/roboto-mono/RobotoMono-Italic-VariableFont_wght.ttf') format('truetype-variations');
+  font-weight: 100 700;
+  font-style: italic;
+  font-display: swap;
+}
+/* Georama - Fuente variable (RECOMENDADO) */
+@font-face {
+  font-family: 'Georama';
+  src: url('/fonts/georama/Georama-VariableFont_wdth,wght.ttf') format('truetype-variations');
+  font-weight: 100 900;  /* Pesos del 100 al 900 */
+  font-stretch: 75% 125%; /* Anchos del 75% al 125% */
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Georama';
+  src: url('/fonts/georama/Georama-Italic-VariableFont_wdth,wght.ttf') format('truetype-variations');
+  font-weight: 100 900;
+  font-stretch: 75% 125%;
+  font-style: italic;
+  font-display: swap;
+}
+
 
 html,
 body {
   width: 100dvw;
   overflow: hidden;
   height: 100dvh;
-  background-image: url("/images/wallpaperLight.png");
+  background-image:var(--wallpaper-url) ;
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
@@ -79,7 +113,7 @@ body {
   }
 
   #dock {
-    @apply absolute bottom-5 left-1/2 -translate-x-1/2 z-50 select-none max-sm:hidden;
+    @apply absolute bottom-5 left-1/2 -translate-x-1/2 z-[9999] select-none max-sm:hidden;
 
     .dock-container {
       @apply bg-white/20 backdrop-blur-md justify-between rounded-2xl p-1.5 flex items-end gap-1.5;
@@ -363,7 +397,7 @@ body {
       @apply flex-1 p-8 bg-white max-w-2xl relative max-w-full w-full;
 
       li {
-        @apply absolute flex items-center flex-col gap-3;
+        @apply !static absolute flex items-center flex-col gap-3;
 
         img {
           @apply object-contain object-center size-16 relative group-hover:scale-105;
@@ -376,17 +410,30 @@ body {
     }
   }
 #finder.maximized,
+#resume.maximized,
 #settings.maximized,
 #safari.maximized,
 #contact.maximized,
 #terminal.maximized,
-#photos.maximized
- {
-  @apply fixed inset-0 w-screen h-screen left-0 !top-10 rounded-none;
+#photos.maximized,
+#imgfile.maximized,
+#txtfile.maximized,
+#chat.maximized,
+#profile.maximized,
+#game.maximized {
+  position: fixed !important;
+  inset: 0 !important;
+  top: 40px !important; /* ← 40px = top-10 en Tailwind (2.5rem) */
+  left: 0 !important;
+  width: 100vw !important;
+  height: calc(100vh - 40px) !important; /* ← Ajustar altura para compensar el top */
+  transform: none !important;
+  border-radius: 0 !important;
   z-index: 49;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  .ft{
-    margin-inline:calc(var(--spacing) * -4) !important;
+  
+  .ft {
+    margin-inline: calc(var(--spacing) * -4) !important;
   }
   .content{
     width: 100%;
@@ -403,6 +450,9 @@ body {
 
     h2 {
       @apply font-bold text-sm text-center w-full;
+    }
+    .bgText{
+      height: 100%;
     }
   }
 
@@ -444,32 +494,34 @@ body {
     }
   }
 
-  #profile{
-
-    @apply shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
+    #profile {
+  
+      @apply w-220 shadow-2xl drop-shadow-2xl h-200 rounded-xl overflow-hidden;
+  
       .sidebar {
-      @apply w-48 bg-gray-50 border-r border-gray-200 flex flex-col  p-5 space-y-3;
-        }
-
+        @apply w-48 bg-gray-50 border-r border-gray-200 flex flex-col p-5 space-y-3;
+      }
+  
       h3 {
-    margin-bottom: calc(var(--spacing) * 1);
-    font-size: var(--text-xs);
-    line-height: var(--tw-leading, var(--text-xs--line-height));
-    --tw-font-weight: var(--font-weight-medium);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-gray-400);
-}
-    .content {
-      @apply flex-1 p-8 bg-white max-w-2xl relative max-w-full w-full;
+        margin-bottom: calc(var(--spacing) * 1);
+        font-size: var(--text-xs);
+        line-height: var(--tw-leading, var(--text-xs--line-height));
+        --tw-font-weight: var(--font-weight-medium);
+        font-weight: var(--font-weight-medium);
+        color: var(--color-gray-400);
+      }
+  
+      .content {
+        @apply flex-1 p-8 bg-white max-w-2xl relative max-w-full w-full;
+      }
+  
+      .headerProf {
+        @apply w-full w-full rounded-none;
+      }
     }
-
-    .headerProf{
-      @apply w-full w-full rounded-none;
-    }
-  }
 
   #settings{
-        @apply  w-4xl absolute top-40 left-2/12 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
+        @apply  w-5xl h-200 absolute top-20 right-1/30 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
 
     .sidebar {
       @apply w-3/12 flex-none bg-gray-50 border-r border-gray-200 flex flex-col p-5;
@@ -481,6 +533,67 @@ body {
     line-height: var(--tw-leading, var(--text-sm--line-height));
     --tw-font-weight: var(--font-weight-bold);
     font-weight: var(--font-weight-bold);
+}
+  }
+
+
+    #chat{
+        @apply  w-4xl absolute top-20 right-1/30 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden h-120;
+
+    .sidebar {
+      @apply w-3/12 flex-none bg-gray-50 border-r border-gray-200 flex flex-col p-5;
+    }
+    h2 {
+    width: 100%;
+    text-align: center;
+    font-size: var(--text-sm);
+    line-height: var(--tw-leading, var(--text-sm--line-height));
+    --tw-font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-bold);
+}
+
+h3 {
+    margin-bottom: calc(var(--spacing) * 1);
+    font-size: var(--text-xs);
+    line-height: var(--tw-leading, var(--text-xs--line-height));
+    --tw-font-weight: var(--font-weight-medium);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-gray-400);
+}
+
+span{
+      margin-bottom: calc(var(--spacing) * 1);
+    font-size: var(--text-xs);
+    line-height: var(--tw-leading, var(--text-xs--line-height));
+    --tw-font-weight: var(--font-weight-medium);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-gray-400);
+}
+  }
+
+
+  #game{
+    @apply  w-4xl absolute top-20 right-1/30 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden h-120;
+
+    .sidebar {
+      @apply w-3/12 flex-none bg-gray-50 border-r border-gray-200 flex flex-col p-5;
+    }
+        h2 {
+    width: 100%;
+    text-align: center;
+    font-size: var(--text-sm);
+    line-height: var(--tw-leading, var(--text-sm--line-height));
+    --tw-font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-bold);
+}
+
+h3 {
+    margin-bottom: calc(var(--spacing) * 1);
+    font-size: var(--text-xs);
+    line-height: var(--tw-leading, var(--text-xs--line-height));
+    --tw-font-weight: var(--font-weight-medium);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-gray-400);
 }
   }
 }

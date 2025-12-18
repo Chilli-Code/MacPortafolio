@@ -1,6 +1,61 @@
-@import url("https://fonts.googleapis.com/css2?family=Georama:ital,wght@0,100..900;1,100..900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap");
 
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Para navegadores Webkit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.35);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: rgba(0, 0, 0, 0.5);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+/* Scrollbar horizontal */
+::-webkit-scrollbar-thumb:horizontal {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+/* Para modo oscuro */
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+.dark ::-webkit-scrollbar-thumb:active {
+  background: rgba(255, 255, 255, 0.4);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
 
 
 /* Light Mode por defecto */
@@ -8,9 +63,10 @@
   --bg-main: #ffffff;
   --bg-secondary: rgba(255, 255, 255, 0.5);
   --text-main: #000000;
-
+--wallpaper-url: url("/images/wallpapers/wallpaper.webp");
   --nav-bg: rgba(255, 255, 255, 0.5);
   --modal-bg: rgba(255, 255, 255, 0.5);
+  --box-finder: #fff;
 }
 
 /* Modo Oscuro */
@@ -25,6 +81,7 @@
 
   /* Blur */
   --blur-strong: blur(96px);
+  --box-finder: #1E1E1E;
 
 }
 
@@ -34,8 +91,10 @@
 
 .dark html,
 .dark body {
-  background-image: url("/images/wallpaper.png");
-  
+  background-image: var(--wallpaper-url);
+    background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
 
 }
 
@@ -59,6 +118,9 @@
 .dark .content p{
   color: #fff;
 }
+.boxbg .content li:hover p{
+  color: var(--color-blue-700);
+}
 
 
 
@@ -68,6 +130,12 @@
 }
 
 
+.boxbg{
+  background-color: var(--box-finder);
+}
+.dark .boxbg{
+  background-color: var(--box-finder);
+}
 
 .dark .sidebar .notActive{
   color: #fff;
@@ -225,7 +293,7 @@
 }
 
 .headerProf{
-  width: 78.9%;
+  width: 100%;
   border-radius: initial;
 }
 .dark .headerProf{
@@ -270,20 +338,6 @@
   z-index: 9998;
 }
 
-#finder.maximized,
-#settings.maximized,
-#safari.maximized {
-  position: fixed !important;
-  inset: 0 !important;
-  left: 0 !important;
-  /* top: 10px !important; */
-  width: 100vw !important;
-  height: 100vh !important;
-  transform: none !important; /* ← CLAVE: fuerza que no haya transform */
-  border-radius: 0 !important;
-  z-index: 49;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
 
 .resize-handle {
   pointer-events: auto !important;
@@ -291,6 +345,8 @@
 }
 
 /* Opcional: hacer los handles visibles en hover para debugging */
-.resize-handle:hover {
+/* .resize-handle:hover {
   background-color: rgba(59, 130, 246, 0.3);
-}
+} */
+
+

@@ -8,6 +8,9 @@ import Contact from "#windows/Contact.jsx";
 import Galery from "#windows/Galery.jsx";
 import Profile from "#windows/Profile.jsx";
 import Settings from "#windows/Settings.jsx";
+import Chat from "#windows/Chat.jsx";
+import Game from "#windows/Game.jsx";
+
 
 export { 
     Terminal,
@@ -20,4 +23,6 @@ export {
     Galery,
     Profile,
     Settings,
+    Chat,
+    Game,
 };

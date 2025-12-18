@@ -1,6 +1,5 @@
 
-
-const navLinks = [
+import { BellRing } from "lucide-react";const navLinks = [
   {
     id: 1,
     name: "Proyectos",
@@ -41,38 +40,38 @@ const dockApps = [
   {
     id: "finder",
     name: "Portfolio", // was "Finder"
-    icon: "finder.png",
+    icon: "finder.webp",
     canOpen: true,
   },
   {
     id: "safari",
     name: "Articles", // was "Safari"
-    icon: "safari.png",
+    icon: "safari.webp",
     canOpen: true,
   },
   {
     id: "photos",
     name: "Gallery", // was "Photos"
-    icon: "photos.png",
+    icon: "photos.webp",
     canOpen: true,
   },
   {
     id: "contact",
     name: "Contact", // or "Get in touch"
-    icon: "contact.png",
+    icon: "contact.webp",
     canOpen: true,
   },
   {
     id: "terminal",
     name: "Skills", // was "Terminal"
-    icon: "terminal.png",
+    icon: "terminal.webp",
     canOpen: true,
   },
   {
-    id: "trash",
-    name: "Archive", // was "Trash"
-    icon: "trash.png",
-    canOpen: false,
+    id: "game",
+    name: "game",
+    icon: "trash.webp",
+    canOpen: true,
   },
 ];
 
@@ -168,23 +167,28 @@ const profileLinks = [
   },
   {
     id: 2,
-    icon: "/icons/book.svg",
-    title: "Libros",
+    icon: "/icons/chart.svg",
+    title: "Estadísticas",
   },
   {
     id: 3,
-    icon: "/icons/box.svg",
-    title: "Random",
+    icon: "/icons/trophy.svg",
+    title: "Logros",
   },
   {
     id: 4,
-    icon: "/icons/book.svg",
-    title: "Futuros planes",
+    icon: "/icons/clock.svg",
+    title: "Actividad",
   },
   {
     id: 5,
-    icon: "/icons/file.svg",
-    title: "Drafts",
+    icon: "/icons/dollar.svg",
+    title: "Finanzas",
+  },
+    {
+    id: 6,
+    icon: "/icons/briefcase.svg",
+    title: "Proyectos",
   },
 ];
 
@@ -217,23 +221,37 @@ const photosLinks = [
   },
 ];
 
+// src/constants/index.js
+
 const settingsLinks = [
-    {
+  {
     id: 1,
-    icon: "/icons/gicon1.svg",
-    title: "General",
+    icon: "/icons/appearance.svg",
+    title: "appearance", // ⭐ Key de traducción
   },
   {
     id: 2,
-    icon: "/icons/gicon2.svg",
-    title: "Sistema",
+    icon: "/icons/notifications.svg",
+    title: "notifications_settings", // ⭐ Key de traducción
   },
   {
     id: 3,
-    icon: "/icons/file.svg",
-    title: "Avanzado",
+    icon: "/icons/permissions.svg",
+    title: "permissions", // ⭐ Key de traducción
   },
-]
+  {
+    id: 4,
+    icon: "/icons/language.svg",
+    title: "language", // ⭐ Key de traducción
+  },
+  {
+    id: 5,
+    icon: "/icons/advanced.svg",
+    title: "advanced", // ⭐ Key de traducción (nueva)
+  },
+];
+
+
 
 const gallery = [
   {
@@ -254,6 +272,36 @@ const gallery = [
   },
 ];
 
+const usersChat = [
+    {
+        id: 1,
+        name: "Juan Pérez",
+        avatar: "https://randomuser.me/api/portraits/men/1.jpg", // Foto de usuario
+        role: "Diseñador UI/UX", // Rol
+    },
+    {
+        id: 2,
+        name: "María González",
+        avatar: "https://randomuser.me/api/portraits/women/2.jpg",
+        role: "Backend",
+    },
+    {
+        id: 3,
+        name: "Carlos Martínez",
+        avatar: "https://randomuser.me/api/portraits/men/3.jpg",
+        role: "Frontend",
+    },
+    {
+        id: 4,
+        name: "Ana López",
+        avatar: "https://randomuser.me/api/portraits/women/4.jpg",
+        role: "Admin",
+    },
+    // Agregar más usuarios si es necesario
+];
+
+
+
 export {
   navLinks,
   navIcons,
@@ -265,6 +313,7 @@ export {
   settingsLinks,
   gallery,
   profileLinks,
+  usersChat,
 };
 
 const WORK_LOCATION = {
@@ -278,15 +327,15 @@ const WORK_LOCATION = {
     {
       id: 5,
       name: "Nike Ecommerce Website Application",
-      icon: "/images/folder.png",
+      icon: "/images/folder.webp",
       kind: "folder",
       position: "top-10 left-5", // icon position inside Finder
-      windowPosition: "top-[5vh] left-10", // optional: Finder window position
+      windowPosition: "top-[5vh] right-10", // optional: Finder window position
       children: [
         {
           id: 1,
           name: "Nike Project.txt",
-          icon: "/images/txt.png",
+          icon: "/images/txt.webp",
           kind: "file",
           fileType: "txt",
           position: "top-5 left-10",
@@ -300,7 +349,7 @@ const WORK_LOCATION = {
         {
           id: 2,
           name: "nike.com",
-          icon: "/images/safari.png",
+          icon: "/images/safari.webp",
           kind: "file",
           fileType: "url",
           href: "https://youtu.be/fZdTYswuZjU?si=Awjl-pIst9e09_UU",
@@ -309,7 +358,7 @@ const WORK_LOCATION = {
         {
           id: 4,
           name: "nike.png",
-          icon: "/images/image.png",
+          icon: "/images/image.webp",
           kind: "file",
           fileType: "img",
           position: "top-52 right-80",
@@ -318,7 +367,7 @@ const WORK_LOCATION = {
         {
           id: 5,
           name: "Design.fig",
-          icon: "/images/plain.png",
+          icon: "/images/plain.webp",
           kind: "file",
           fileType: "fig",
           href: "https://google.com",
@@ -331,15 +380,15 @@ const WORK_LOCATION = {
     {
       id: 6,
       name: "AI Resume Analyzer",
-      icon: "/images/folder.png",
+      icon: "/images/folder.webp",
       kind: "folder",
       position: "top-52 right-80",
-      windowPosition: "top-[20vh] left-7",
+      windowPosition: "top-[30vh] left-7",
       children: [
         {
           id: 1,
           name: "AI Resume Analyzer Project.txt",
-          icon: "/images/txt.png",
+          icon: "/images/txt.webp",
           kind: "file",
           fileType: "txt",
           position: "top-5 right-10",
@@ -353,7 +402,7 @@ const WORK_LOCATION = {
         {
           id: 2,
           name: "ai-resume-analyzer.com",
-          icon: "/images/safari.png",
+          icon: "/images/safari.webp",
           kind: "file",
           fileType: "url",
           href: "https://youtu.be/iYOz165wGkQ?si=R1hs8Legl200m0Cl",
@@ -362,7 +411,7 @@ const WORK_LOCATION = {
         {
           id: 4,
           name: "ai-resume-analyzer.png",
-          icon: "/images/image.png",
+          icon: "/images/image.webp",
           kind: "file",
           fileType: "img",
           position: "top-52 left-80",
@@ -371,7 +420,7 @@ const WORK_LOCATION = {
         {
           id: 5,
           name: "Design.fig",
-          icon: "/images/plain.png",
+          icon: "/images/plain.webp",
           kind: "file",
           fileType: "fig",
           href: "https://google.com",
@@ -384,15 +433,15 @@ const WORK_LOCATION = {
     {
       id: 7,
       name: "Food Delivery App",
-      icon: "/images/folder.png",
+      icon: "/images/folder.webp",
       kind: "folder",
       position: "top-10 left-80",
-      windowPosition: "top-[33vh] left-7",
+      windowPosition: "top-[33vh] right-7",
       children: [
         {
           id: 1,
           name: "Food Delivery App Project.txt",
-          icon: "/images/txt.png",
+          icon: "/images/txt.webp",
           kind: "file",
           fileType: "txt",
           position: "top-5 left-10",
@@ -406,7 +455,7 @@ const WORK_LOCATION = {
         {
           id: 2,
           name: "food-delivery-app.com",
-          icon: "/images/safari.png",
+          icon: "/images/safari.webp",
           kind: "file",
           fileType: "url",
           href: "https://youtu.be/LKrX390fJMw?si=cExkuVhf2DTV9G2-",
@@ -415,7 +464,7 @@ const WORK_LOCATION = {
         {
           id: 4,
           name: "food-delivery-app.png",
-          icon: "/images/image.png",
+          icon: "/images/image.webp",
           kind: "file",
           fileType: "img",
           position: "top-52 right-80",
@@ -424,7 +473,7 @@ const WORK_LOCATION = {
         {
           id: 5,
           name: "Design.fig",
-          icon: "/images/plain.png",
+          icon: "/images/plain.webp",
           kind: "file",
           fileType: "fig",
           href: "https://google.com",
@@ -448,7 +497,7 @@ const ABOUT_LOCATION = {
     {
       id: 1,
       name: "me.png",
-      icon: "/images/image.png",
+      icon: "/images/image.webp",
       kind: "file",
       fileType: "img",
       position: "top-10 left-5",
@@ -457,7 +506,7 @@ const ABOUT_LOCATION = {
     {
       id: 2,
       name: "casual-me.png",
-      icon: "/images/image.png",
+      icon: "/images/image.webp",
       kind: "file",
       fileType: "img",
       position: "top-28 right-72",
@@ -466,7 +515,7 @@ const ABOUT_LOCATION = {
     {
       id: 3,
       name: "conference-me.jpg",
-      icon: "/images/image.png",
+      icon: "/images/image.webp",
       kind: "file",
       fileType: "img",
       position: "top-52 left-80",
@@ -475,7 +524,7 @@ const ABOUT_LOCATION = {
     {
       id: 4,
       name: "about-me.txt",
-      icon: "/images/txt.png",
+      icon: "/images/txt.webp",
       kind: "file",
       fileType: "txt",
       position: "top-60 left-5",
@@ -501,7 +550,7 @@ const RESUME_LOCATION = {
     {
       id: 1,
       name: "Resume.pdf",
-      icon: "/images/pdf.png",
+      icon: "/images/pdf.webp",
       kind: "file",
       fileType: "pdf",
       // you can add `href` if you want to open a hosted resume
@@ -520,7 +569,7 @@ const TRASH_LOCATION = {
     {
       id: 1,
       name: "trash1.png",
-      icon: "/images/image.png",
+      icon: "/images/image.webp",
       kind: "file",
       fileType: "img",
       position: "top-10 left-10",
@@ -529,7 +578,7 @@ const TRASH_LOCATION = {
     {
       id: 2,
       name: "trash2.png",
-      icon: "/images/image.png",
+      icon: "/images/image.webp",
       kind: "file",
       fileType: "img",
       position: "top-40 left-80",
@@ -537,6 +586,37 @@ const TRASH_LOCATION = {
     },
   ],
 };
+
+// notifications data
+export const NOTIFICATIONS_SEED = [
+  {
+    app: "Mensajes",
+    icon: "💬",
+    title: "Nuevo mensaje",
+    message: "¿Cómo va tu proyecto?",
+    time: "Ahora",
+    color: "#34C759",
+  },
+  {
+    app: "Correo",
+    icon: "✉️",
+    title: "Nueva propuesta de trabajo",
+    message: "Tenemos una oportunidad interesante...",
+    time: "Ahora",
+    color: "#007AFF",
+  },
+  {
+    app: "GitHub",
+    icon: "🐙",
+    title: "Pull Request aprobado",
+    message: "Tu código ha sido revisado y aprobado",
+    time: "Ahora",
+    color: "#6B46C1",
+  },
+];
+
+
+
 
 export const locations = {
   work: WORK_LOCATION,
@@ -559,6 +639,15 @@ const WINDOW_CONFIG = {
   modalMode: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
   profile: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
   settings: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
+  chat: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
+  game: { 
+    isOpen: false, 
+    zIndex: 9999, // Z-index muy alto para estar sobre todo
+    data: null,
+    fullscreen: true // Marca especial para fullscreen
+  },
+  
+
 };
 
 export { INITIAL_Z_INDEX, WINDOW_CONFIG };

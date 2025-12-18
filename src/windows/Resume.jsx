@@ -31,7 +31,7 @@ const Resume = ({ isMaximized, setIsMaximized }) =>{
                 </a>
             </div>
 
-            <Document file="files/resume.pdf">
+            <Document file="files/resume.pdf" className="flex align-item-center justify-center">
                 <Page pageNumber={1} renderTextLayer renderAnnotationLayer />
             </Document>
 

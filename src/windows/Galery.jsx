@@ -32,6 +32,7 @@ const Galery = ({ isMaximized, setIsMaximized }) => {
                             )}
                     >
                         <img
+                            draggable={false}
                             src={item.icon}
                             className="w-4"
                             alt={item.title}
@@ -52,7 +53,6 @@ const Galery = ({ isMaximized, setIsMaximized }) => {
                 <div className="flex w-auto space-around">
                     <Mail className="icon" />
                     <Search className="icon" />
-
                 </div>
             </div>
 
@@ -60,7 +60,7 @@ const Galery = ({ isMaximized, setIsMaximized }) => {
                 <div className="sidebar sidebarGalery">
                     {renderList("Fotos", photosLinks)}
                 </div>
-                <div className="content grid grid-cols-2 gap-4 p-4">
+                <div className="content grid grid-cols-2 gap-4 p-4 w-full overflow-y-auto">
                     {gallery.map((photo) => (
                         <div
                             key={photo.id}
@@ -71,9 +71,10 @@ const Galery = ({ isMaximized, setIsMaximized }) => {
                             })}
                         >
                             <img
+                                draggable={false}
                                 src={photo.img}
                                 alt={`photo-${photo.id}`}
-                                className="w-full h-full object-cover"
+                                className="w-full h-60 object-cover"
                             />
                         </div>
                     ))}
@@ -84,7 +85,7 @@ const Galery = ({ isMaximized, setIsMaximized }) => {
         </>
     )
 
-}
+};
 
 const GaleryWindow = WindowWrapper(Galery, "photos");
 

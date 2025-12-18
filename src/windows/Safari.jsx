@@ -40,13 +40,13 @@ const Safari = ({isMaximized, setIsMaximized}) => {
                 </div>
             </div>
 
-            <div className="blog">
+            <div className="blog overflow-y-auto">
                 <h2>Mi blog de desarrollador</h2>
                 <h2 className="sapce-y-8">
                     {blogPosts.map(({id, image, title, date, link}) =>(
                         <div key={id} className="blog-post">
                             <div className="col-span-2">
-                                <img src={image} alt={title} />
+                                <img loading="lazy" draggable={false}src={image} alt={title} />
                             </div>
                             <div className="content">
                                 <p>{date}</p>

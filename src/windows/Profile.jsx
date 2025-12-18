@@ -1,96 +1,125 @@
 import { WindowControls } from "#components";
 import WindowWrapper from "#hoc/WindowWrapper";
-import useWindowStore from "#store/window";
-import { profileLinks, gallery } from "#constants";
-import clsx from "clsx";
+import { profileLinks } from "#constants";
 import { useState } from "react";
 import { Search } from "lucide-react";
+import { useAchievements } from '#hoc/useAchievements';
+// Importar componentes - CORREGIDO
+import ProfileSidebar from "#components/Profile/ProfileSidebar";
+import GeneralSection from "#components/Profile/section/GeneralSection";
+import StatisticsSection from "#components/Profile/section/StatisticsSection"; // CAMBIADO AQUÍ
+import AchievementsSection from "#components/Profile/section/AchievementsSection";
+import ActivitySection from "#components/Profile/section/ActivitySection";
+import FinancesSection from "#components/Profile/section/FinancesSection";
+import ProjectsSection from "#components/Profile/section/ProjectsSection";
 
+// Importar datos
+import { userStats, monthlyData, projectsByCategory } from "#components/Profile/utils/profileData";
 
 const Profile = ({ isMaximized, setIsMaximized }) => {
-    const { windows } = useWindowStore();
 
-    const { openWindow } = useWindowStore();
-    const [activeItem, setActiveItem] = useState(profileLinks[0]);
+// NOTIFACCIONES PRUEBAS
+    const { showLevelUp, showTaskComplete, showMilestone } = useAchievements();
 
-   const handleMaximize = () => {
-        setIsMaximized(!isMaximized);
-    };
-    const renderList = (name, items) => (
-        <div>
-            <h3 >{name}</h3>
+  const handleCompleteTask = (taskName) => {
+    // Tu lógica aquí...
+    
+    // Mostrar notificación
+    showTaskComplete(taskName, 50);
+  };
 
-            <ul>
-                {items.map((item) => (
-                    <li
-                        key={item.id}
-                        onClick={() => setActiveItem(item)}
-                        className={clsx(
-                            "flex ssf items-center gap-2 px-2 py-1 rounded cursor-pointer transition",
-                            item.id === activeItem.id
-                                ? "bg-blue-100 !text-blue-700" 
-                                : "hover:bg-[#dbeafe] hover:!text-blue-700" 
-                        )}
-                    >
-                        <img
-                            src={item.icon}
-                            className="w-4"
-                            alt={item.title}
-                        />
-                        <p className="text-sm font-medium truncate sss">
-                            {item.title}
-                        </p>
-                    </li>
-                ))}
-            </ul>
-        </div>
+  const handleLevelUp = (newLevel) => {
+    // Tu lógica aquí...
+    
+    // Mostrar notificación
+    showLevelUp(newLevel, 100);
+  };
+
+  const handleMilestone = () => {
+    showMilestone(
+      {
+        title: '50 Proyectos Completados',
+        description: '¡Has completado 50 proyectos exitosamente!',
+        xp: 500
+      },
+      {
+        current: 50,
+        total: 50
+      }
     );
-    return (
-        <>
-            <div id="window-header-mt" className="flex w-full justify-between items-center bg-gray-50 border-b border-gray-200 rounded-t-lg">
-                <div className="h-full w-48 px-6 ttt">
-                    <WindowControls target="profile" onMaximize={handleMaximize} />
-                </div>
-
-                <div id="window-header" className=" headerProf flex w-full justify-between border-r border-l border-gray-200 rounded-[inherit]">
-                    <div className="flex items-center gap-1 w-full justify-between">
-                        <div>
-                            <h2>Acerca de mí</h2>
-                        </div>
-                        <div>
-                            <Search className="icon" />
-                        </div>
-                    </div>
-                </div>
+  };
 
 
+
+
+  const [activeItem, setActiveItem] = useState(profileLinks[0]);
+
+  const handleMaximize = () => {
+    setIsMaximized(!isMaximized);
+  };
+
+  // Mapeo de secciones
+  const renderContent = () => {
+    const sections = {
+      1: <GeneralSection userStats={userStats} />,
+      2: <StatisticsSection userStats={userStats} monthlyData={monthlyData} projectsByCategory={projectsByCategory} />,
+      3: <AchievementsSection userStats={userStats} />,
+      4: <ActivitySection userStats={userStats} />,
+      5: <FinancesSection userStats={userStats} monthlyData={monthlyData} />,
+      6: <ProjectsSection userStats={userStats} projectsByCategory={projectsByCategory} />
+      
+    };
+
+    return sections[activeItem.id] || sections[1];
+  };
+
+  return (
+    <>
+      <div id="window-header-mt" className="flex w-full justify-between items-center bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 rounded-t-lg resize-handle">
+        <div className="h-full w-40 px-6">
+          <WindowControls target="profile" onMaximize={handleMaximize} />
+        </div>
+        <div className="flex-1 min-w-0 overflow-x-hidden">
+          <div id="window-header" className="flex w-full justify-between border-l border-gray-200 dark:border-gray-700 px-4 py-3">
+            <div className="flex items-center gap-1 w-full justify-between">
+              <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
+                {activeItem.title}
+              </h2>
             </div>
-            <div className="bg-white flex h-full">
-                <div className="sidebar">
-                    {renderList("Favoritos", profileLinks)}
-                </div>
-                <div className="content flex flex-col gap-4 p-4">
-                    <div className="p-5 space-y-5 bgProf">
-                        <img
-                            src="/images/jorge-2.jpg"
-                            alt="Jorge"
-                            className="w-30 rounded-md"
-                        />
-                        <div className="space-y-3 leading-relaxed text-base text-gray-800">
-                            <p>
-                                ¡Hola! Soy Jorge 👋, un desarrollador web al que le gusta crear sitios web elegantes e interactivos que realmente funcionan bien.,
-                                Me especializo en JavaScript, React y Next.js, y me encanta hacer que las cosas funcionen con fluidez, rapidez y un toque de encanto.,
-                                Me gusta mucho la interfaz de usuario limpia, la buena experiencia de usuario y escribir código que no requiera un equipo de búsqueda para depurarlo.,
-                                Fuera del trabajo de desarrollo, me encontrarás retocando diseños a las 2 de la madrugada, bebiendo café carísimo o comprando por impulso gadgets que me he convencido a mí mismo de que necesito 😅.,
+          </div>
+        </div>
+      </div>
+    <div>
+      {/* Botones de prueba */}
+    </div>
+      <div className="bg-white dark:bg-gray-900 flex h-full overflow-hidden">
+        {/* Sidebar */}
+        <ProfileSidebar
+          items={profileLinks}
+          activeItem={activeItem}
+          onItemClick={setActiveItem}
+        />
 
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </>
-    )
-}
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-4">
+      <button onClick={() => showLevelUp(9, 100)}>
+        Subir a Nivel 9
+      </button>
+      <button onClick={() => showTaskComplete('Diseño UI completado', 50)}>
+        Completar Tarea
+      </button>
+      <button onClick={handleMilestone}>
+        Mostrar Hito
+      </button>
+          <div className="max-w-full mx-5">
+            {renderContent()}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
 const ProfileWindow = WindowWrapper(Profile, "profile");
 
 export default ProfileWindow;
