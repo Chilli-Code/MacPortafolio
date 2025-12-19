@@ -18,14 +18,15 @@ const ImageWindowContent = ({ isMaximized, setIsMaximized }) => {
     return(
         <>
             <div id="window-header">
-                <WindowControls target="imgfile" onMaximize={handleMaximize} />
+                <WindowControls target="imgfile" onMaximize={handleMaximize}  />
                 <h2>{name}</h2>
             </div>
 
             <div className="p-5 bg-white bgImage">
                 {imageUrl ? (
                     <div className="w-full">
-                        <img 
+                        <img
+                        draggable={false}
                         src={imageUrl} 
                         alt={name} 
                         className="w-full h-auto max-h-[70vh] object-contain rounded"

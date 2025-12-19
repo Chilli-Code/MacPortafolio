@@ -2,13 +2,14 @@ import React, { useState, useRef, useEffect } from "react";
 import dayjs from "dayjs";
 import { navIcons, navLinks } from "#constants/index.js";
 import useWindowStore from "#store/window.js";
-import ModalDarkLigt from "./ModalDarkLigt.jsx";
+import NotificationCenter from "./NotificationCenter.jsx";
+import LogoutModal from "./LogoutModal.jsx";
 
-
-const Navbar = () => {
+const Navbar = ({ onLogout }) => {
     const { openWindow } = useWindowStore();
-
+    const [notifications, setNotifications] = useState([]);
     const [openMode, setOpenMode] = useState(false);
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
     const popRef = useRef();
 
     useEffect(() => {
@@ -22,9 +23,14 @@ const Navbar = () => {
     }, []);
 
     return (
-        <nav className="relative">  {/* solo agregamos relative */}
+        <nav className="relative"> 
             <div>
-                <img src="/images/logo.svg" alt="logo" />
+                <button className="cursor-pointer"
+                onClick={() => setShowLogoutModal(true)}
+                >
+                <img draggable={false} src="/images/logo.svg" alt="logo" />
+
+                </button>
                 <p className="font-bold">ChillyCode Portafolio</p>
 
                 <ul>
@@ -37,38 +43,56 @@ const Navbar = () => {
             </div>
 
             <div className="relative">
-<ul>
-    {navIcons.map(({ id, img }) => (
-        <li key={id}>
-            <img
-                src={img}
-                alt={`icon-${id}`}
-                className="icon-hover cursor-pointer"
-                onClick={() => {
-                    if (img === "/icons/mode.svg") {
-                        setOpenMode((prev) => !prev);
-                    }
+                <ul>
+                    {navIcons.map(({ id, img }) => (
+                        <li key={id}>
+                            <img
+                                draggable={false}
+                                src={img}
+                                alt={`icon-${id}`}
+                                className="icon-hover cursor-pointer"
+                                onClick={() => {
+                                    if (img === "/icons/mode.svg") {
+                                        setOpenMode((prev) => !prev);
+                                    }
 
-                    if (img === "/icons/user.svg") {
-                        openWindow("profile");  // ← AQUÍ ABRIMOS LA VENTANA DE PERFIL
-                    }
-                    if (img === "/icons/search.svg") {
-                        openWindow("settings");  // ← AQUÍ ABRIMOS LA VENTANA DE PERFIL
-                    }
-                }}
-            />
-        </li>
-    ))}
-</ul>
+                                    if (img === "/icons/user.svg") {
+                                        openWindow("profile");
+                                    }
+                                    if (img === "/icons/search.svg") {
+                                        openWindow("settings"); 
+                                    }
+                                    if (img === "/icons/wifi.svg") {
+                                        openWindow("chat");
+                                    }                                   
+                                }}
+                            />
+                                {img === "/icons/mode.svg" && notifications.length > 0 && (
+                                <span className="absolute bottom-2 left-28 bg-red-500 text-white text-xs font-bold px-1 py-0.5 rounded-full">
+                                    {notifications.length}
+                                </span>
+                            )}
+                        </li>
+                    ))}
+                </ul>
 
                 <time>{dayjs().format("ddd MMM D h:mm A")}</time>
 
-                {/* 📌 MINI MODAL (agregada sin mover nada más) */}
                 {openMode && (
-                    <ModalDarkLigt />
+                        <NotificationCenter
+                        notifications={notifications}
+                        setNotifications={setNotifications} 
+                    />
                 )}
             </div>
+            {showLogoutModal && (
+                <LogoutModal
+                    onClose={() => setShowLogoutModal(false)}
+                     onLogout={onLogout}
+                />
+            )}
         </nav>
+ 
     );
 };
 

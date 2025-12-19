@@ -3,7 +3,11 @@ import { WindowControls } from "#components";
 import useWindowStore from "#store/window.js";
 
 
-const Text = () => {
+const Text = ({ isMaximized, setIsMaximized }) => {
+
+    const handleMaximize = () => {
+    setIsMaximized(!isMaximized);
+  };
     const { windows } = useWindowStore();
 
     const data = windows?.txtfile?.data;
@@ -15,14 +19,15 @@ const Text = () => {
     return (
         <>
             <div id="window-header">
-                <WindowControls target="txtfile" />
+                <WindowControls target="txtfile" onMaximize={handleMaximize} />
                 <h2>{name}</h2>
             </div>
 
-            <div className="p-5 space-y-6 bg-white bgText">
+            <div className="p-5 space-y-6 bg-white bgText overflow-y-auto">
                 {image ? (
                     <div className="w-full">
                         <img
+                            draggable={false}
                             src={image}
                             alt={name}
                             className="w-full h-auto rounded"
