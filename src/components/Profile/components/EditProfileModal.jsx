@@ -1,7 +1,7 @@
 // /components/Profile/components/EditProfileModal.jsx
 
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Save, User, Mail, MapPin, Briefcase, Globe, MessageSquare } from 'lucide-react';
+import { X, Save, User, Mail, MapPin, Briefcase, Globe, MessageSquare } from '#assets/icons';
 import gsap from 'gsap';
 
 const EditProfileModal = ({ isOpen, onClose, userData, onSave }) => {

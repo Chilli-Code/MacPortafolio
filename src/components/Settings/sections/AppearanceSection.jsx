@@ -1,7 +1,7 @@
 // src/components/Settings/sections/AppearanceSection.jsx
 
 import { useState, useEffect } from 'react';
-import { Palette, Monitor, Moon, Sun, Check } from 'lucide-react';
+import { Palette, Monitor, Moon, Sun, Check } from '#assets/icons';
 import clsx from 'clsx';
 import gsap from 'gsap';
 

@@ -1,22 +1,24 @@
-import { Bell, X, ChevronRight } from "lucide-react";
+// src/components/NotificationCenter.jsx
+import { Bell, X, ChevronRight, RefreshCw } from "#assets/icons";
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import useWindowStore from "#store/window";
-import { NOTIFICATIONS_SEED } from "#constants/index.js";
+import { useTasksStore } from "#store/tasksStore";
+import { useNotificationSync } from "../hoc/useNotificationSync";
 
 const NotificationCenter = ({ notifications, setNotifications }) => {
-  
   const popRef = useRef();
-  const { closeWindow } = useWindowStore();
+  const { closeWindow, openWindow } = useWindowStore();
+  const { notifyNewTasks } = useTasksStore();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // 🔹 helpers compactos
   const notify = ({ app, title, message, icon }) => {
     speechSynthesis?.cancel();
     speechSynthesis?.speak(
       Object.assign(new SpeechSynthesisUtterance(`Notificación de ${app}. ${title}`), {
         lang: "es-ES",
         rate: 1.0,
-        pitch: 1.0, // Tono normal
+        pitch: 1.0,
         volume: 1.0,
       })
     );
@@ -31,23 +33,57 @@ const NotificationCenter = ({ notifications, setNotifications }) => {
     notify(notification);
   };
 
-  // 🔹 permisos + simulación
+  // ⭐ Hook de sincronización automática
+  useNotificationSync(addNotification, openWindow, closeWindow);
+
+  // Refresh manual
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    
+    try {
+      const response = await fetch('http://localhost:3001/tasks?status=available');
+      const tasks = await response.json();
+      
+      if (tasks.length > 0) {
+        addNotification({
+          app: "SISTEMA",
+          title: "Tareas actualizadas",
+          message: `Hay ${tasks.length} tarea(s) disponible(s)`,
+          icon: "📋",
+          color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          time: "Ahora",
+          action: () => {
+            closeWindow("modalMode");
+            openWindow("terminal");
+          }
+        });
+      } else {
+        addNotification({
+          app: "SISTEMA",
+          title: "Sistema actualizado",
+          message: "No hay nuevas tareas por el momento",
+          icon: "ℹ️",
+          color: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+          time: "Ahora"
+        });
+      }
+    } catch (error) {
+      console.error('Error refreshing:', error);
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500);
+    }
+  };
+
   useEffect(() => {
     Notification?.permission === "default" &&
       Notification.requestPermission();
 
-    const interval = setInterval(() => {
-      addNotification(
-        NOTIFICATIONS_SEED[
-        Math.floor(Math.random() * NOTIFICATIONS_SEED.length)
-        ]
-      );
-    }, 1000000);
-
-    return () => clearInterval(interval);
+    // Inicializar timestamp al montar
+    if (!localStorage.getItem('lastTaskCheck')) {
+      localStorage.setItem('lastTaskCheck', new Date().getTime().toString());
+    }
   }, []);
 
-  // 🔹 animación + click outside
   useEffect(() => {
     gsap.fromTo(popRef.current, { opacity: 0, x: 20 }, { opacity: 1, x: 0 });
 
@@ -65,11 +101,10 @@ const NotificationCenter = ({ notifications, setNotifications }) => {
   }, [closeWindow]);
 
   return (
-    <div ref={popRef} className="fixed right-5 top-12 w-96 max-h-[calc(100vh-120px)] gap-0 bg-white/85 dark:bg-gray-900/85 backdrop-blur-[40px] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+    <div ref={popRef} className="fixed right-5 top-12 w-96 max-h-[calc(100vh-120px)] gap-0 bg-white/85 dark:bg-gray-900/85 backdrop-blur-[40px] rounded-2xl shadow-2xl overflow-hidden flex flex-col z-[99999]">
       {/* HEADER */}
-      <div className="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between">
-        <div className="flex items-center justify-between">
-
+      <div className="p-5 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Bell className="w-5 h-5 text-blue-500" />
             <h2 className="text-lg font-semibold text-black dark:text-white">Notificaciones</h2>
@@ -79,18 +114,22 @@ const NotificationCenter = ({ notifications, setNotifications }) => {
               </span>
             )}
           </div>
+          
+          {/* Botón de refresh */}
           <button
-            onClick={() =>
-              addNotification(
-                NOTIFICATIONS_SEED[
-                Math.floor(Math.random() * NOTIFICATIONS_SEED.length)
-                ]
-              )
-            }
-            className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg transition-colors"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
+            title="Buscar nuevas tareas"
           >
-            Simular
+            <RefreshCw className={`w-4 h-4 text-gray-600 dark:text-gray-400 ${isRefreshing ? 'animate-spin' : ''}`} />
           </button>
+        </div>
+
+        {/* Indicador de sincronización */}
+        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span>Sincronizando automáticamente</span>
         </div>
       </div>
 
@@ -106,11 +145,16 @@ const NotificationCenter = ({ notifications, setNotifications }) => {
         ) : (
           <div className="flex flex-col gap-2">
             {notifications.map((n) => (
-              <div key={n.id} className="bg-white w-full dark:bg-gray-800 rounded-xl p-3.5 shadow-sm hover:shadow-md transition-all cursor-pointer hover:scale-[1.02] relative group">
+              <div 
+                key={n.id} 
+                className="bg-white dark:bg-gray-800 rounded-xl p-3.5 shadow-sm hover:shadow-md transition-all cursor-pointer hover:scale-[1.02] relative group"
+                onClick={n.action}
+              >
                 <button
-                  onClick={() =>
-                    setNotifications((prev) => prev.filter((x) => x.id !== n.id))
-                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setNotifications((prev) => prev.filter((x) => x.id !== n.id));
+                  }}
                   className="absolute top-2 right-2 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <X className="w-3 h-3 text-gray-600 dark:text-gray-300" />
@@ -124,7 +168,7 @@ const NotificationCenter = ({ notifications, setNotifications }) => {
                     {n.icon}
                   </div>
 
-                  <div className="flex-1 flex-col min-w-0 items-start gap-0">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">
                         {n.app}
@@ -141,34 +185,28 @@ const NotificationCenter = ({ notifications, setNotifications }) => {
                     </span>
                   </div>
 
-
-
                   <ChevronRight className="w-4 h-4 text-gray-400" />
                 </div>
               </div>
             ))}
           </div>
-
         )}
       </div>
 
       {/* FOOTER */}
       <div className="p-3 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-
         <button
           onClick={() => setNotifications([])}
           className="text-sm font-medium text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 px-2 py-1"
         >
           Borrar todas
         </button>
-        <button className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 px-2 py-1"
-        
+        <button 
+          className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 px-2 py-1"
         >
           Ajustes
         </button>
       </div>
-
-
     </div>
   );
 };

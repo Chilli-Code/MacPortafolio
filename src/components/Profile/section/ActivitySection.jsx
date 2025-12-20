@@ -1,5 +1,5 @@
 // components/Profile/sections/ActivitySection.jsx
-import { Calendar, Flame, Trophy, Activity } from "lucide-react";
+import { Calendar, Flame, Trophy, Activity } from "#assets/icons";
 import { userStats } from "../utils/profileData";
 import { generateActivityData, getActivityColor } from "../utils/profileHelpers";
 import clsx from "clsx";

@@ -1,5 +1,435 @@
 
-import { BellRing } from "lucide-react";const navLinks = [
+
+// src/constants/index.js
+export const USER_DATA = {
+  // Información Personal
+  profile: {
+    id: 'usr_001',
+    username: 'jorge_dev',
+    email: 'jorge@example.com',
+    password: 'hashed_password_here', // En producción esto NO va aquí
+    fullName: 'Jorge Martínez',
+    avatar: '/images/jorge-2.jpg',
+    role: 'fullstack', // frontend, backend, fullstack, designer, devops
+    bio: 'Desarrollador Full Stack especializado en React y Node.js. Apasionado por crear experiencias de usuario increíbles.',
+    location: 'Barranquilla, Colombia',
+    timezone: 'GMT-5',
+    phone: '+57 300 123 4567',
+    memberSince: '2024-01-15',
+    lastLogin: '2025-01-10T14:30:00',
+  },
+
+  // Redes Sociales
+  social: {
+    website: 'https://jorge.dev',
+    linkedin: 'jorge-dev',
+    github: 'jorge-dev',
+    twitter: '@jorge_dev',
+    portfolio: 'https://portfolio.jorge.dev',
+  },
+
+  // Configuración Profesional
+  professional: {
+    hourlyRate: 50, // USD
+    availability: 'available', // available, busy, unavailable
+    workHoursPerWeek: 40,
+    yearsOfExperience: 5,
+    languages: ['Español', 'English', 'Français'],
+  },
+
+  // Sistema de Nivel y Experiencia
+  progression: {
+    level: 15,
+    currentXP: 3450,
+    xpForNextLevel: 5000,
+    totalXP: 28450,
+    rank: 'Senior Developer',
+    rankIcon: '⭐',
+    
+    // ⭐ Función para calcular próximo nivel
+    calculateNextLevel: function() {
+      // Fórmula: XP necesario = nivel * 500
+      return this.level * 500;
+    },
+    
+    // ⭐ Función para agregar XP
+    addXP: function(amount) {
+      this.currentXP += amount;
+      this.totalXP += amount;
+      
+      // Subir de nivel si es necesario
+      while (this.currentXP >= this.xpForNextLevel) {
+        this.currentXP -= this.xpForNextLevel;
+        this.level++;
+        this.xpForNextLevel = this.calculateNextLevel();
+      }
+    }
+  },
+
+  // Estadísticas
+stats: {
+  tasksCompleted: 0,
+  tasksAccepted: 0, // ⭐ NUEVO
+  tasksInProgress: 0,
+  totalEarnings: 0,
+  hoursWorked: 0,
+  streak: 0,
+  longestStreak: 0,
+  projectsCompleted: 0,
+  averageRating: 0,
+  frontendTasksCompleted: 0, // ⭐ NUEVO
+  backendTasksCompleted: 0, // ⭐ NUEVO
+  fullstackTasksCompleted: 0, // ⭐ NUEVO
+},
+  // Habilidades (Skills)
+  skills: [
+    {
+      name: 'React',
+      level: 90,
+      icon: '⚛️',
+      category: 'frontend',
+      color: '#61DAFB',
+      yearsOfExperience: 4,
+    },
+    {
+      name: 'Node.js',
+      level: 85,
+      icon: '🟢',
+      category: 'backend',
+      color: '#68A063',
+      yearsOfExperience: 4,
+    },
+    {
+      name: 'TypeScript',
+      level: 88,
+      icon: '📘',
+      category: 'language',
+      color: '#3178C6',
+      yearsOfExperience: 3,
+    },
+    {
+      name: 'Python',
+      level: 75,
+      icon: '🐍',
+      category: 'language',
+      color: '#3776AB',
+      yearsOfExperience: 3,
+    },
+    {
+      name: 'PostgreSQL',
+      level: 80,
+      icon: '🐘',
+      category: 'database',
+      color: '#336791',
+      yearsOfExperience: 4,
+    },
+    {
+      name: 'Docker',
+      level: 70,
+      icon: '🐳',
+      category: 'devops',
+      color: '#2496ED',
+      yearsOfExperience: 2,
+    },
+    {
+      name: 'Git',
+      level: 92,
+      icon: '🔀',
+      category: 'tools',
+      color: '#F05032',
+      yearsOfExperience: 5,
+    },
+    {
+      name: 'UI/UX',
+      level: 78,
+      icon: '🎨',
+      category: 'design',
+      color: '#FF6B6B',
+      yearsOfExperience: 3,
+    },
+  ],
+
+  // Logros Desbloqueados
+  achievements: [
+    {
+      id: 'ach_001',
+      title: 'Primera Tarea',
+      description: 'Completa tu primera tarea',
+      icon: '🎯',
+      category: 'milestone',
+      unlockedAt: '2024-01-20',
+      rarity: 'common',
+      xpReward: 50,
+    },
+    {
+      id: 'ach_002',
+      title: 'Racha de Fuego',
+      description: '7 días consecutivos trabajando',
+      icon: '🔥',
+      category: 'streak',
+      unlockedAt: '2024-02-15',
+      rarity: 'rare',
+      xpReward: 200,
+    },
+    {
+      id: 'ach_003',
+      title: 'Nivel 10',
+      description: 'Alcanza el nivel 10',
+      icon: '⭐',
+      category: 'level',
+      unlockedAt: '2024-03-10',
+      rarity: 'epic',
+      xpReward: 500,
+    },
+    {
+      id: 'ach_004',
+      title: 'Maestro Frontend',
+      description: 'Completa 50 tareas de frontend',
+      icon: '⚛️',
+      category: 'skill',
+      unlockedAt: '2024-04-22',
+      rarity: 'legendary',
+      xpReward: 1000,
+    },
+    {
+      id: 'ach_005',
+      title: 'Millonario',
+      description: 'Gana $10,000 en total',
+      icon: '💰',
+      category: 'earning',
+      unlockedAt: '2024-05-30',
+      rarity: 'epic',
+      xpReward: 750,
+    },
+    {
+      id: 'ach_006',
+      title: 'Velocista',
+      description: 'Completa una tarea en menos de 2 horas',
+      icon: '⚡',
+      category: 'speed',
+      unlockedAt: '2024-06-08',
+      rarity: 'rare',
+      xpReward: 300,
+    },
+  ],
+
+  // Logros Bloqueados (para mostrar progreso)
+  lockedAchievements: [
+    {
+      id: 'ach_007',
+      title: 'Nivel 20',
+      description: 'Alcanza el nivel 20',
+      icon: '🌟',
+      category: 'level',
+      rarity: 'legendary',
+      xpReward: 2000,
+      progress: {
+        current: 15,
+        required: 20,
+      },
+    },
+    {
+      id: 'ach_008',
+      title: 'Racha Legendaria',
+      description: '30 días consecutivos',
+      icon: '💎',
+      category: 'streak',
+      rarity: 'legendary',
+      xpReward: 1500,
+      progress: {
+        current: 15,
+        required: 30,
+      },
+    },
+    {
+      id: 'ach_009',
+      title: 'Centurión',
+      description: 'Completa 100 tareas',
+      icon: '🏆',
+      category: 'milestone',
+      rarity: 'epic',
+      xpReward: 1000,
+      progress: {
+        current: 76,
+        required: 100,
+      },
+    },
+  ],
+
+  // Proyectos Completados
+  projects: [
+    {
+      id: 'proj_001',
+      name: 'E-commerce Dashboard',
+      description: 'Dashboard administrativo para tienda online',
+      category: 'fullstack',
+      technologies: ['React', 'Node.js', 'PostgreSQL', 'Tailwind'],
+      completedAt: '2024-06-15',
+      earnings: 1200,
+      rating: 5.0,
+      clientFeedback: 'Excelente trabajo, superó las expectativas',
+      duration: '3 semanas',
+      hoursWorked: 120,
+    },
+    {
+      id: 'proj_002',
+      name: 'Mobile App Landing Page',
+      description: 'Landing page responsive para aplicación móvil',
+      category: 'frontend',
+      technologies: ['React', 'GSAP', 'Tailwind'],
+      completedAt: '2024-07-22',
+      earnings: 800,
+      rating: 4.9,
+      clientFeedback: 'Muy profesional y rápido',
+      duration: '1 semana',
+      hoursWorked: 40,
+    },
+    {
+      id: 'proj_003',
+      name: 'API REST Microservices',
+      description: 'Arquitectura de microservicios con Node.js',
+      category: 'backend',
+      technologies: ['Node.js', 'Express', 'MongoDB', 'Docker'],
+      completedAt: '2024-08-10',
+      earnings: 2000,
+      rating: 5.0,
+      clientFeedback: 'Código limpio y bien documentado',
+      duration: '4 semanas',
+      hoursWorked: 160,
+    },
+  ],
+
+  // Finanzas
+  finances: {
+    totalEarnings: 12580,
+    currentBalance: 8450,
+    withdrawn: 4130,
+    pending: 320,
+    monthlyEarnings: [
+      { month: 'Enero', amount: 1200, hours: 96 },
+      { month: 'Febrero', amount: 1800, hours: 144 },
+      { month: 'Marzo', amount: 950, hours: 76 },
+      { month: 'Abril', amount: 2100, hours: 168 },
+      { month: 'Mayo', amount: 1650, hours: 132 },
+      { month: 'Junio', amount: 2200, hours: 176 },
+    ],
+    paymentMethods: [
+      { type: 'paypal', email: 'jorge@example.com', verified: true },
+      { type: 'bank', last4: '4532', verified: true },
+    ],
+  },
+
+  // Actividad Reciente (GitHub-style)
+  activity: {
+    contributions: generateActivityData(), // Función helper abajo
+    totalThisYear: 248,
+    currentStreak: 15,
+    longestStreak: 45,
+    activeMonths: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+  },
+
+  // Preferencias
+  preferences: {
+    language: 'es',
+    theme: 'dark',
+    notifications: {
+      email: true,
+      push: true,
+      taskUpdates: true,
+      achievementUnlocks: true,
+      weeklyReport: true,
+    },
+    privacy: {
+      showProfile: true,
+      showStats: true,
+      showActivity: true,
+    },
+  },
+
+  // Insignias (Badges)
+  badges: [
+    {
+      id: 'badge_001',
+      name: 'Early Adopter',
+      icon: '🚀',
+      color: 'from-blue-400 to-blue-600',
+      earnedAt: '2024-01-15',
+    },
+    {
+      id: 'badge_002',
+      name: 'Code Master',
+      icon: '👨‍💻',
+      color: 'from-purple-400 to-purple-600',
+      earnedAt: '2024-03-20',
+    },
+    {
+      id: 'badge_003',
+      name: 'Top Contributor',
+      icon: '⭐',
+      color: 'from-yellow-400 to-orange-600',
+      earnedAt: '2024-05-10',
+    },
+    {
+      id: 'badge_004',
+      name: 'Fast Learner',
+      icon: '⚡',
+      color: 'from-green-400 to-emerald-600',
+      earnedAt: '2024-06-15',
+    },
+  ],
+};
+// ==================== USUARIOS DEL SISTEMA ====================
+export const USERS = {
+  // Usuario normal
+  user: {
+    id: 'usr_001',
+    username: 'jorge_dev',
+    email: 'jorge@example.com',
+    password: '123456', // En producción esto estaría hasheado
+    role: 'user',
+    ...USER_DATA // Todos los datos del usuario
+  },
+  
+  // Usuario administrador
+  admin: {
+    id: 'adm_001',
+    username: 'admin',
+    email: 'admin@example.com',
+    password: 'admin123',
+    role: 'admin',
+    fullName: 'Administrador',
+    avatar: '/images/admin-avatar.jpg',
+  }
+};
+
+
+export const CURRENT_USER = USERS.user; // o USERS.admin
+
+
+
+// Helper function para generar datos de actividad
+function generateActivityData() {
+  const data = [];
+  const today = new Date();
+  
+  for (let i = 0; i < 365; i++) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    
+    // Generar actividad aleatoria
+    const intensity = Math.random() > 0.3 ? Math.floor(Math.random() * 5) : 0;
+    
+    data.push({
+      date: date.toISOString().split('T')[0],
+      count: intensity,
+      level: intensity,
+    });
+  }
+  
+  return data.reverse();
+}
+
+const navLinks = [
   {
     id: 1,
     name: "Proyectos",
@@ -24,7 +454,8 @@ const navIcons = [
   },
   {
     id: 2,
-    img: "/icons/search.svg",
+    // img: "/icons/search.svg",
+    img: "/icons/settings-mac.svg",
   },
   {
     id: 3,
@@ -588,32 +1019,7 @@ const TRASH_LOCATION = {
 };
 
 // notifications data
-export const NOTIFICATIONS_SEED = [
-  {
-    app: "Mensajes",
-    icon: "💬",
-    title: "Nuevo mensaje",
-    message: "¿Cómo va tu proyecto?",
-    time: "Ahora",
-    color: "#34C759",
-  },
-  {
-    app: "Correo",
-    icon: "✉️",
-    title: "Nueva propuesta de trabajo",
-    message: "Tenemos una oportunidad interesante...",
-    time: "Ahora",
-    color: "#007AFF",
-  },
-  {
-    app: "GitHub",
-    icon: "🐙",
-    title: "Pull Request aprobado",
-    message: "Tu código ha sido revisado y aprobado",
-    time: "Ahora",
-    color: "#6B46C1",
-  },
-];
+
 
 
 

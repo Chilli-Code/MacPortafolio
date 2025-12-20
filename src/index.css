@@ -1,40 +1,49 @@
 @import "tailwindcss";
 
-/* Roboto Mono - Fuente variable (MEJOR OPCIÓN) */
+
+/* Roboto Mono - Soporte múltiple */
 @font-face {
   font-family: 'Roboto Mono';
-  src: url('/fonts/roboto-mono/RobotoMono-VariableFont_wght.ttf') format('truetype-variations');
-  font-weight: 100 700; /* Soporta todos los pesos del 100 al 700 */
+  src: 
+    url('/fonts/roboto-mono/RobotoMono-VariableFont_wght.woff2') format('woff2-variations'),
+    url('/fonts/roboto-mono/RobotoMono-VariableFont_wght.ttf') format('truetype-variations');
+  font-weight: 100 700;
   font-style: normal;
-  font-display: swap;
+  font-display: optional;
 }
 
 @font-face {
   font-family: 'Roboto Mono';
-  src: url('/fonts/roboto-mono/RobotoMono-Italic-VariableFont_wght.ttf') format('truetype-variations');
+  src: 
+    url('/fonts/roboto-mono/RobotoMono-Italic-VariableFont_wght.woff2') format('woff2-variations'),
+    url('/fonts/roboto-mono/RobotoMono-Italic-VariableFont_wght.ttf') format('truetype-variations');
   font-weight: 100 700;
   font-style: italic;
-  font-display: swap;
+  font-display: optional;
 }
-/* Georama - Fuente variable (RECOMENDADO) */
+
+/* Georama - Soporte múltiple */
 @font-face {
   font-family: 'Georama';
-  src: url('/fonts/georama/Georama-VariableFont_wdth,wght.ttf') format('truetype-variations');
-  font-weight: 100 900;  /* Pesos del 100 al 900 */
-  font-stretch: 75% 125%; /* Anchos del 75% al 125% */
+  src: 
+    url('/fonts/georama/Georama-VariableFont_wdth,wght.woff2') format('woff2-variations'),
+    url('/fonts/georama/Georama-VariableFont_wdth,wght.ttf') format('truetype-variations');
+  font-weight: 100 900;
+  font-stretch: 75% 125%;
   font-style: normal;
-  font-display: swap;
+  font-display: optional;
 }
 
 @font-face {
   font-family: 'Georama';
-  src: url('/fonts/georama/Georama-Italic-VariableFont_wdth,wght.ttf') format('truetype-variations');
+  src: 
+    url('/fonts/georama/Georama-Italic-VariableFont_wdth,wght.woff2') format('woff2-variations'),
+    url('/fonts/georama/Georama-Italic-VariableFont_wdth,wght.ttf') format('truetype-variations');
   font-weight: 100 900;
   font-stretch: 75% 125%;
   font-style: italic;
-  font-display: swap;
+  font-display: optional;
 }
-
 
 html,
 body {
@@ -168,7 +177,7 @@ body {
   }
 
   #safari {
-    @apply w-4xl absolute top-40 left-2/12 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
+    @apply w-4xl h-8/12 absolute top-40 left-2/12 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
 
     .search {
       @apply flex items-center gap-3 w-2/3 bg-white border border-gray-300 rounded-lg px-3 py-2;
@@ -212,7 +221,7 @@ body {
   }
 
   #terminal {
-    @apply w-xl absolute top-32 left-1/12 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
+    @apply w-2xl h-1/2 absolute top-32 left-1/12 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
 
     h2 {
       @apply font-bold text-sm text-center w-full;

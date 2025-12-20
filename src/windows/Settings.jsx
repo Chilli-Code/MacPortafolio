@@ -27,7 +27,7 @@ const Settings = ({ isMaximized, setIsMaximized }) => {
             <ul className="space-y-1">
                 {items.map((item) => (
                     <li
-                        alt={item.title}
+                        title={t(item.title)}
                         key={item.id}
                         onClick={() => setActiveItem(item)}
                         className={clsx(

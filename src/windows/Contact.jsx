@@ -15,6 +15,7 @@ const Contact = ({ isMaximized, setIsMaximized }) =>{
 
             <div className="p-5 space-y-5 bgProf">
                 <img
+                loading="lazy"
                 draggable={false}
                 src="/images/Avatar.png" 
                 alt="Jorge"
@@ -36,6 +37,7 @@ const Contact = ({ isMaximized, setIsMaximized }) =>{
                             rel="noopener noreferrer"
                             >
                                 <img
+                                loading="lazy"
                                 draggable={false}
                                 src={icon}
                                 alt={text}

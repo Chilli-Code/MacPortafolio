@@ -1,5 +1,5 @@
 // components/Profile/sections/AchievementsSection.jsx
-import { Trophy } from "lucide-react";
+import { Trophy } from "#assets/icons";
 import { userStats } from "../utils/profileData";
 
 const AchievementsSection = () => {

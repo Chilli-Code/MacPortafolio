@@ -26,6 +26,7 @@ const ImageWindowContent = ({ isMaximized, setIsMaximized }) => {
                 {imageUrl ? (
                     <div className="w-full">
                         <img
+                        loading="lazy"
                         draggable={false}
                         src={imageUrl} 
                         alt={name} 

@@ -1,5 +1,5 @@
 // src/components/Settings/sections/NotificationsSection.jsx
-import { Bell, AlertCircle } from 'lucide-react';
+import { Bell, AlertCircle } from '#assets/icons';
 import { useAppSettingsStore } from '#store/notificationStore';
 import { useState } from 'react';
 

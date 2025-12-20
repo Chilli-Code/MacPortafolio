@@ -59,7 +59,7 @@ const Navbar = ({ onLogout }) => {
                                     if (img === "/icons/user.svg") {
                                         openWindow("profile");
                                     }
-                                    if (img === "/icons/search.svg") {
+                                    if (img === "/icons/settings-mac.svg") {
                                         openWindow("settings"); 
                                     }
                                     if (img === "/icons/wifi.svg") {

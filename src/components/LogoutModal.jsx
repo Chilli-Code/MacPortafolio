@@ -1,10 +1,12 @@
 import React, { useRef, useEffect } from "react";
-import { X, LogOut, Power, RotateCw, Moon } from "lucide-react";
+import { X, LogOut, Power, RotateCw, Moon } from "#assets/icons";
+import { useAuthStore } from "#store/authStore"; // ⭐ Importar el store
 import gsap from "gsap";
 
 const LogoutModal = ({ onClose, onLogout }) => {
   const modalRef = useRef();
   const overlayRef = useRef();
+  const { logout } = useAuthStore(); // ⭐ Obtener función de logout
 
   useEffect(() => {
     // Animación de entrada
@@ -36,15 +38,37 @@ const LogoutModal = ({ onClose, onLogout }) => {
   };
 
   const handleLogout = () => {
-    // Limpiar localStorage
-    localStorage.removeItem('userSession');
-    handleClose();
-    // Validar que onLogout sea una función antes de llamarla
-    setTimeout(() => {
-      if (typeof onLogout === 'function') {
-        onLogout();
+    console.log('🔒 Iniciando proceso de logout...');
+    
+    // 1. ⭐ Llamar al logout del store (limpia TODO el localStorage)
+    logout();
+    
+    // 2. Cerrar modal con animación
+    gsap.to(modalRef.current, {
+      opacity: 0,
+      scale: 0.9,
+      y: 20,
+      duration: 0.2,
+      ease: "power2.in",
+    });
+    
+    gsap.to(overlayRef.current, {
+      opacity: 0,
+      duration: 0.2,
+      onComplete: () => {
+        // 3. Cerrar el modal
+        if (typeof onClose === 'function') {
+          onClose();
+        }
+        
+        // 4. Ejecutar callback de logout (redirigir a LockScreen)
+        setTimeout(() => {
+          if (typeof onLogout === 'function') {
+            onLogout();
+          }
+        }, 100);
       }
-    }, 300);
+    });
   };
 
   return (
@@ -56,9 +80,8 @@ const LogoutModal = ({ onClose, onLogout }) => {
       <div
         ref={modalRef}
         onClick={(e) => e.stopPropagation()}
-        className="w-full h-full relative gap-1 flex flex-col  overflow-hidden"
+        className="w-full h-full relative gap-1 flex flex-col overflow-hidden"
       >
-
         {/* Content */}
         <div className="p-4">
           <div className="flex flex-col gap-2">
@@ -79,6 +102,9 @@ const LogoutModal = ({ onClose, onLogout }) => {
                 </p>
               </div>
             </button>
+
+
+
 
 
             {/* Reposo */}

@@ -2,7 +2,7 @@ import { WindowControls } from "#components";
 import WindowWrapper from "#hoc/WindowWrapper";
 import { profileLinks } from "#constants";
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search } from "#assets/icons";
 import { useAchievements } from '#hoc/useAchievements';
 // Importar componentes - CORREGIDO
 import ProfileSidebar from "#components/Profile/ProfileSidebar";
@@ -61,7 +61,7 @@ const Profile = ({ isMaximized, setIsMaximized }) => {
   // Mapeo de secciones
   const renderContent = () => {
     const sections = {
-      1: <GeneralSection userStats={userStats} />,
+      1: <GeneralSection />,
       2: <StatisticsSection userStats={userStats} monthlyData={monthlyData} projectsByCategory={projectsByCategory} />,
       3: <AchievementsSection userStats={userStats} />,
       4: <ActivitySection userStats={userStats} />,

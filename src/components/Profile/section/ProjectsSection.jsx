@@ -1,5 +1,5 @@
 // components/Profile/sections/ProjectsSection.jsx
-import { Briefcase } from "lucide-react";
+import { Briefcase } from "#assets/icons";
 import { userStats, projectsByCategory } from "../utils/profileData";
 
 const ProjectsSection = () => {

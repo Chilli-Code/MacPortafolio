@@ -1,5 +1,5 @@
 import { WindowControls } from "#components";
-import { ChevronLeft, ChevronRight, Search, Send, User, Paperclip, Smile } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, Send, User, Paperclip, Smile } from "#assets/icons";
 import WindowWrapper from "#hoc/WindowWrapper";
 import { useState } from "react";
 import { usersChat } from "#constants";

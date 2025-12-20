@@ -1,5 +1,5 @@
 // components/Profile/sections/FinancesSection.jsx
-import { DollarSign, TrendingUp } from "lucide-react";
+import { DollarSign, TrendingUp } from "#assets/icons";
 import { userStats, monthlyData } from "../utils/profileData";
 
 const FinancesSection = () => {

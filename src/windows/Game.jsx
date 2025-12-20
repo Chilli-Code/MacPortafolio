@@ -2,7 +2,7 @@
 
 import { WindowControls } from "#components";
 import GameWindowWrapper from "#hoc/GameWindowWrapper"; // NUEVO WRAPPER
-import { X } from "lucide-react";
+import { X } from "#assets/icons";
 import useWindowStore from "#store/window";
 
 const Game = () => {

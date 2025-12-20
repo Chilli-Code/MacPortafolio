@@ -1,11 +1,10 @@
-import { Search } from "lucide-react";
 import { WindowControls } from "#components";
 import { locations } from "#constants";
 import useLocationStore from "#store/location";
 import WindowWrapper from "#hoc/WindowWrapper";
 import clsx from "clsx";
 import useWindowStore from "#store/window";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search } from "#assets/icons";
 
 
 // Recibe isMaximized y setIsMaximized como props del WindowWrapper

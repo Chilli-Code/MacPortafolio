@@ -5,7 +5,7 @@ import {
   Twitter, Globe, MapPin, Briefcase, Calendar,
   Camera, Save, X, Edit, Shield, CreditCard,
   Bell, Eye, Trash2, LogOut
-} from 'lucide-react';
+} from '#assets/icons';
 import { useAppSettingsStore } from '#store/notificationStore';
 import { useState, useRef } from 'react';
 

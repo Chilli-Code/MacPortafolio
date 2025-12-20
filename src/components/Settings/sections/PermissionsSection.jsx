@@ -1,5 +1,5 @@
 // src/components/Settings/sections/PermissionsSection.jsx
-import { Shield, Bell, Mic, Camera, MapPin, Check, X, AlertCircle } from 'lucide-react';
+import { Shield, Bell, Mic, Camera, MapPin, Check, X, AlertCircle } from '#assets/icons';
 import { useAppSettingsStore } from '#store/notificationStore';
 import { useState } from 'react';
 

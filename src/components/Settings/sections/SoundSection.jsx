@@ -1,5 +1,5 @@
 // src/components/Settings/sections/SoundSection.jsx
-import { Volume2, VolumeX, AlertCircle } from 'lucide-react';
+import { Volume2, VolumeX, AlertCircle } from '#assets/icons';
 import { useAppSettingsStore } from '#store/notificationStore';
 import { useState } from 'react';
 import NotificationsSection from "#components/Settings/sections/NotificationsSection";

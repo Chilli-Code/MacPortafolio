@@ -1,5 +1,5 @@
 // components/Profile/ProfileHeader.jsx
-import { Search } from "lucide-react";
+import { Search } from "#assets/icons";
 import { WindowControls } from "#components";
 
 const ProfileHeader = ({ isMaximized, setIsMaximized }) => {

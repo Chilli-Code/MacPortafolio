@@ -1,6 +1,6 @@
 // /components/Profile/section/StatisticsSection.jsx
 
-import { BarChart3, Clock, Target, TrendingUp } from "lucide-react";
+import { BarChart3, Clock, Target, TrendingUp } from "#assets/icons";
 
 const StatisticsSection = ({ userStats, monthlyData, projectsByCategory }) => {
   const maxEarnings = Math.max(...monthlyData.map(d => d.earnings));

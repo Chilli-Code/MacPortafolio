@@ -1,6 +1,6 @@
 // src/components/Settings/sections/LanguageSection.jsx
 
-import { Check, Languages } from 'lucide-react';
+import { Check, Languages } from '#assets/icons';
 import { useAppSettingsStore } from '#store/notificationStore';
 import { useTranslate } from '#hoc/useTranslate';
 import clsx from 'clsx';
@@ -63,7 +63,7 @@ const LanguageSection = () => {
       </div>
 
       {/* Info adicional */}
-      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+      <div className="p-4 mb-20 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
         <p className="text-sm text-blue-800 dark:text-blue-200">
           💡 {t('language_info')}
         </p>

@@ -1,0 +1,24 @@
+// src/icons/index.js
+export { 
+  X, Calendar, DollarSign, Zap, Clock, Tag, User,
+  CheckCircle2, PlayCircle, XCircle, ChevronRight,
+  FileText, AlertCircle, RefreshCw, Bell, LogOut,
+  Shield, Users, Database, Settings, Activity,
+  ChevronLeft, PanelLeft, Search, ShieldHalf, Share, Plus, Copy,
+  ListTodo, Edit, Trash2, Eye, Send,
+  Download, BarChart3,
+ 
+  Palette, Monitor, Sun, Check,
+   Mic, Camera,Languages, CreditCard,Github,Linkedin,Lock, Phone,
+   Twitter,
+   Paperclip, Smile,
+CircleX,
+  // ⭐ Terminal - exportar con ambos nombres
+  Terminal,  // Para importar como `Terminal`
+  Terminal as TerminalIcon,  // Para importar como `TerminalIcon`
+  Clipboard,
+  AlarmClock,
+  Trophy, Star, Target, Award, TrendingUp, Power, RotateCw, Moon, ArrowRight,
+  Save, Mail, MapPin, Briefcase, Globe, MessageSquare,
+  CheckCircle, Code, Coffee, MessageCircle, Flame, Maximize2, Volume2, VolumeX,
+} from 'lucide-react';

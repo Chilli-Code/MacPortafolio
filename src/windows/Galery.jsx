@@ -3,7 +3,7 @@ import WindowWrapper from "#hoc/WindowWrapper";
 import useWindowStore from "#store/window";
 import { photosLinks, gallery } from "#constants";
 import clsx from "clsx";
-import { Mail, Search } from "lucide-react";
+import { Mail, Search } from "#assets/icons";
 import { useState } from "react";
 
 
