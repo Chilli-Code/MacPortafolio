@@ -506,6 +506,79 @@ const dockApps = [
   },
 ];
 
+const dockAppsMobile = [
+  {
+    id: "finder",
+    name: "Archivos", // was "Finder"
+    icon: "folder.webp",
+    canOpen: true,
+  },
+  {
+    id: "safari",
+    name: "Navegador", // was "Safari"
+    icon: "safari.webp",
+    canOpen: true,
+  },
+  {
+    id: "photos",
+    name: "Galeria", // was "Photos"
+    icon: "photos.webp",
+    canOpen: true,
+  },
+  {
+    id: "contact",
+    name: "Contacto", // or "Get in touch"
+    icon: "contact.webp",
+    canOpen: true,
+  },
+  {
+    id: "terminal",
+    name: "Terminal", // was "Terminal"
+    icon: "terminal.webp",
+    canOpen: true,
+  },
+  {
+    id: "game",
+    name: "Juego",
+    icon: "trash.webp",
+    canOpen: true,
+  },
+];
+
+const screenApps = [
+    {
+    id: "finder",
+    name: "Archivos", // was "Finder"
+    icon: "folder.webp",
+    canOpen: true,
+  },
+  {
+    id: "config",
+    name: "Configuracion", // was "Safari"
+    icon: "settingMobile.webp",
+    canOpen: true,
+  },
+  {
+    id: "mail",
+    name: "Correo", // was "Photos"
+    icon: "mail.webp",
+    canOpen: true,
+  },
+  {
+    id: "messages",
+    name: "Mensajes", // or "Get in touch"
+    icon: "messages.svg",
+    canOpen: true,
+  },
+  {
+    id: "terminal",
+    name: "Skills", // was "Terminal"
+    icon: "terminal.webp",
+    canOpen: true,
+  },
+
+];
+
 const blogPosts = [
   {
     id: 1,
@@ -745,6 +818,8 @@ export {
   gallery,
   profileLinks,
   usersChat,
+  dockAppsMobile,
+  screenApps,
 };
 
 const WORK_LOCATION = {
@@ -1031,29 +1106,30 @@ export const locations = {
   trash: TRASH_LOCATION,
 };
 
+// src/constants/index.js
+// src/constants/index.js
 const INITIAL_Z_INDEX = 1000;
 
 const WINDOW_CONFIG = {
-  finder: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
-  contact: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
-  resume: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
-  safari: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
-  photos: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
-  terminal: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
-  txtfile: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
-  imgfile: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
-  modalMode: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
-  profile: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
-  settings: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
-  chat: { isOpen: false, zIndex: INITIAL_Z_INDEX, data: null },
+  finder: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
+  contact: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
+  resume: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
+  safari: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
+  photos: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
+  terminal: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
+  txtfile: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
+  imgfile: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
+  modalMode: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
+  profile: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
+  settings: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
+  chat: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
   game: { 
     isOpen: false, 
-    zIndex: 9999, // Z-index muy alto para estar sobre todo
+    isMinimized: false,
+    zIndex: 9999,
     data: null,
-    fullscreen: true // Marca especial para fullscreen
+    fullscreen: true
   },
-  
-
 };
 
 export { INITIAL_Z_INDEX, WINDOW_CONFIG };

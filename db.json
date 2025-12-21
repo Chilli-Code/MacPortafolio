@@ -45,7 +45,9 @@
       "tags": [
         "React",
         "Forms",
-        "Validation"
+        "Validation",
+        "Vite",
+        "SocketIO"
       ],
       "images": [],
       "assignedTo": "usr_002",
@@ -67,21 +69,21 @@
       "xp": 400,
       "reward": 300,
       "deadline": "2025-01-20",
-      "status": "available",
+      "status": "in_progress",
       "tags": [
-        "Node.js",
+        "Nodejs",
         "JWT",
-        "Security"
+        "Python"
       ],
       "images": [],
-      "assignedTo": "usr_002",
+      "assignedTo": "usr_001",
       "submittedAt": null,
       "reviewedAt": null,
       "reviewedBy": null,
       "reviewNotes": null,
       "submissionNotes": null,
       "submissionFiles": [],
-      "acceptedAt": "2025-12-19T17:54:31.337Z"
+      "acceptedAt": "2025-12-21T03:45:34.144Z"
     },
     {
       "id": "3",
@@ -98,7 +100,7 @@
         "React",
         "Node.js",
         "PostgreSQL",
-        "Socket.io"
+        "SocketIO"
       ],
       "images": [],
       "assignedTo": "usr_002",
@@ -123,7 +125,8 @@
       "reward": 20,
       "deadline": "2025-12-20",
       "tags": [
-        "API"
+        "API",
+        "Figma"
       ],
       "status": "available",
       "images": [],
@@ -176,23 +179,23 @@
       "tags": [
         "React"
       ],
-      "status": "rejected",
+      "status": "in_progress",
       "createdAt": "2025-12-19T22:27:36.560Z",
       "assignedTo": "usr_001",
       "acceptedAt": "2025-12-19T22:34:04.218Z",
-      "submittedAt": "2025-12-20T07:54:38.591Z",
+      "submittedAt": null,
       "completedAt": null,
-      "reviewedAt": "2025-12-20T07:55:15.491Z",
-      "reviewedBy": "adm_001",
-      "reviewNotes": "Rechazado: dddasdasdas",
+      "reviewedAt": null,
+      "reviewedBy": null,
+      "reviewNotes": null,
       "submissionNotes": "Tarea completada desde Safari",
       "submissionFiles": [],
       "images": [],
-      "reviewStatus": "rejected",
+      "reviewStatus": null,
       "rejectionReasons": [
         "dddasdasdas"
       ],
-      "revisionCount": 1
+      "revisionCount": 2
     },
     {
       "id": "task_1766183565805_bp97cnfct",
@@ -231,7 +234,7 @@
       "reward": 148,
       "deadline": "2026-01-06",
       "tags": [
-        "Node js"
+        "Nodejs"
       ],
       "status": "pending_review",
       "createdAt": "2025-12-19T22:57:49.373Z",
@@ -310,7 +313,7 @@
       "reward": 86,
       "deadline": "2025-12-30",
       "tags": [
-        "Mongo DB"
+        "MongoDB"
       ],
       "status": "in_progress",
       "images": [],

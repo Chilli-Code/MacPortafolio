@@ -63,7 +63,8 @@
   --bg-main: #ffffff;
   --bg-secondary: rgba(255, 255, 255, 0.5);
   --text-main: #000000;
---wallpaper-url: url("/images/wallpapers/wallpaper.webp");
+  --wallpaper-url: url("/images/wallpapers/wallpaper.webp");
+  --mobileBg: url("/images/wallpapers/mobileBg.webp");
   --nav-bg: rgba(255, 255, 255, 0.5);
   --modal-bg: rgba(255, 255, 255, 0.5);
   --box-finder: #fff;
@@ -349,4 +350,12 @@
   background-color: rgba(59, 130, 246, 0.3);
 } */
 
-
+.mobileBg {
+  background-image: var(--mobileBg);
+  background-size: contain; /* Muestra toda la imagen sin recortar */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #000; /* Color de fondo para los espacios sobrantes */
+  min-height: 100dvh;
+  width: 100%;
+}

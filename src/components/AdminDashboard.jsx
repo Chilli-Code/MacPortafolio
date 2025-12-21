@@ -1,10 +1,12 @@
 // src/components/AdminDashboard.jsx
 import { useState } from 'react';
-import { Shield, Users, Database, Settings, Activity, Bell, LogOut } from '#assets/icons';
+import { Shield, Users, Database, Settings, Activity, Bell, LogOut, TrendingUp, AlertCircle, CheckCircle } from '#assets/icons';
 import AdminTasksSection from '#components/Admin/AdminTasksSection';
 import AdminTaskForm from '#components/Admin/AdminTaskForm'; // ⭐ AGREGAR ESTO
 import TaskDetailModal from '#components/TaskDetailModal';
 import { useAdminTasks } from '#hoc/useAdminTasks';
+import CardHome from '#components/Admin/CardHome';
+import TableUsers from '#components/Admin/TableUsers';
 
 const AdminDashboard = ({ onLogout, currentUser }) => {
   const [activeTab, setActiveTab] = useState('tasks');
@@ -117,20 +119,47 @@ const AdminDashboard = ({ onLogout, currentUser }) => {
         {/* Content */}
         <main className="flex-1 overflow-y-auto p-8">
           {activeTab === 'tasks' && (
-            <AdminTasksSection
-              allTasks={allTasks}
-              onSelectTask={setSelectedTask}
-              onNewTask={() => {
-                setEditingTask(null); // ⭐ CAMBIAR ESTO
-                setShowNewTaskModal(true);
-              }}
-              onRefresh={refreshTasks}
-              onEditTask={handleEditTask} // ⭐ CAMBIAR ESTO
-              onDeleteTask={deleteTask}
-              onApproveTask={(taskId) => approveTask(taskId, currentUser.id)}
-              onRejectTask={(taskId, reason) => rejectTask(taskId, currentUser.id, reason)}
-            />
+            <div>
+              <CardHome />
+                <AdminTasksSection
+                  allTasks={allTasks}
+                  onSelectTask={setSelectedTask}
+                  onNewTask={() => {
+                    setEditingTask(null); // ⭐ CAMBIAR ESTO
+                    setShowNewTaskModal(true);
+                  }}
+                  onRefresh={refreshTasks}
+                  onEditTask={handleEditTask} // ⭐ CAMBIAR ESTO
+                  onDeleteTask={deleteTask}
+                  onApproveTask={(taskId) => approveTask(taskId, currentUser.id)}
+                  onRejectTask={(taskId, reason) => rejectTask(taskId, currentUser.id, reason)}
+                />
+
+            </div>
           )}
+
+            {/* ⭐ AGREGAR ESTO */}
+  {activeTab === 'users' && (
+    <div className="space-y-6">
+      <div className=" rounded-xl  p-6">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-2xl font-bold mb-2">Gestión de Usuarios</h2>
+            <p className="text-gray-400">Administra los usuarios registrados en la plataforma</p>
+          </div>
+          <button className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:opacity-90 transition-opacity">
+            + Nuevo Usuario
+          </button>
+        </div>
+        
+        {/* Aquí va tu componente TableUsers */}
+        <TableUsers />
+        
+      </div>
+      
+
+    </div>
+  )}
         </main>
       </div>
 

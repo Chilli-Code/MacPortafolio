@@ -9,7 +9,7 @@
     url('/fonts/roboto-mono/RobotoMono-VariableFont_wght.ttf') format('truetype-variations');
   font-weight: 100 700;
   font-style: normal;
-  font-display: optional;
+  font-display: swap;
 }
 
 @font-face {
@@ -19,7 +19,7 @@
     url('/fonts/roboto-mono/RobotoMono-Italic-VariableFont_wght.ttf') format('truetype-variations');
   font-weight: 100 700;
   font-style: italic;
-  font-display: optional;
+  font-display: swap;
 }
 
 /* Georama - Soporte múltiple */
@@ -31,7 +31,7 @@
   font-weight: 100 900;
   font-stretch: 75% 125%;
   font-style: normal;
-  font-display: optional;
+  font-display: swap;
 }
 
 @font-face {
@@ -42,7 +42,7 @@
   font-weight: 100 900;
   font-stretch: 75% 125%;
   font-style: italic;
-  font-display: optional;
+  font-display: swap;
 }
 
 html,
@@ -418,6 +418,12 @@ body {
       }
     }
   }
+
+
+  .minimized {
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
 #finder.maximized,
 #resume.maximized,
 #settings.maximized,

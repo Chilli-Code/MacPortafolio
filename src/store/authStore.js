@@ -2,7 +2,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-const API_URL = 'http://localhost:3001';
+// ⭐ USAR /api EN LUGAR DE localhost:3001
+// Vite redirigirá automáticamente a json-server
+const API_BASE = '/api';
 
 export const useAuthStore = create(
   persist(
@@ -10,11 +12,26 @@ export const useAuthStore = create(
       currentUser: null,
       isAuthenticated: false,
 
-      // Login
       login: async (username, password) => {
         try {
-          const response = await fetch(`${API_URL}/users?username=${username}&password=${password}`);
+          console.log('🌐 Intentando login en:', `${API_BASE}/users`);
+          
+          const response = await fetch(
+            `${API_BASE}/users?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
+            {
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          
           const users = await response.json();
+          console.log('📦 Usuarios encontrados:', users.length);
 
           if (users.length > 0) {
             const user = users[0];
@@ -34,38 +51,32 @@ export const useAuthStore = create(
           return { success: false, error: 'Usuario o contraseña incorrectos' };
         } catch (error) {
           console.error('❌ Error en login:', error);
-          return { success: false, error: 'Error de conexión' };
+          
+          // Mensajes de error más específicos
+          let errorMessage = 'Error de autenticación';
+          if (error.message.includes('Failed to fetch')) {
+            errorMessage = 'No se puede conectar al servidor. Verifica que json-server esté corriendo.';
+          } else if (error.message.includes('NetworkError')) {
+            errorMessage = 'Error de red. Verifica tu conexión.';
+          }
+          
+          return { success: false, error: errorMessage };
         }
       },
 
-      // ⭐ Logout mejorado - Limpia TODO
       logout: () => {
         console.log('🔒 Cerrando sesión...');
-        
-        // 1. Limpiar estado de Zustand
         set({ currentUser: null, isAuthenticated: false });
         
-        // 2. Limpiar TODOS los stores de localStorage
-        const keysToRemove = [
-          'userSession',           // Sesión del usuario
-          'auth-storage',          // Store de autenticación
-          'tasks-storage',         // Store de tareas
-          'windows-storage',       // Store de ventanas
-        ];
-        
+        const keysToRemove = ['userSession', 'auth-storage'];
         keysToRemove.forEach(key => {
           localStorage.removeItem(key);
           console.log(`  ✓ Removido: ${key}`);
         });
         
-        // 3. Opción nuclear: Limpiar TODO el localStorage (descomentar si quieres)
-        // localStorage.clear();
-        // console.log('  💥 localStorage completamente limpio');
-        
         console.log('✅ Sesión cerrada completamente');
       },
 
-      // Restaurar sesión
       restoreSession: () => {
         const session = localStorage.getItem('userSession');
         if (session) {
@@ -83,7 +94,6 @@ export const useAuthStore = create(
         return null;
       },
 
-      // Obtener usuario actual
       getCurrentUser: () => get().currentUser
     }),
     {
@@ -91,18 +101,3 @@ export const useAuthStore = create(
     }
   )
 );
-
-// ⭐ Hook para usar en componentes
-export const useAuth = () => {
-  const { currentUser, isAuthenticated, login, logout, restoreSession } = useAuthStore();
-  
-  return {
-    currentUser,
-    isAuthenticated,
-    login,
-    logout,
-    restoreSession,
-    isAdmin: currentUser?.role === 'admin',
-    isUser: currentUser?.role === 'user'
-  };
-};

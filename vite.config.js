@@ -31,7 +31,7 @@ export default defineConfig({
       ),
       "#windows": resolve(
         dirname(fileURLToPath(import.meta.url)),
-        "src/windows"
+        "src/components/Desktop/windows"
       ),
       "#services": resolve(
         dirname(fileURLToPath(import.meta.url)),
@@ -45,24 +45,74 @@ export default defineConfig({
         dirname(fileURLToPath(import.meta.url)),
         "src/icons"
       ),
+       "#Desktop": resolve(
+        dirname(fileURLToPath(import.meta.url)), 
+        "src/components/Desktop"
+      ),
+"#Mobile": resolve(
+  dirname(fileURLToPath(import.meta.url)), 
+  "src/components/Mobile"
+),
+      "#windowsMobile": resolve(
+        dirname(fileURLToPath(import.meta.url)),
+        "src/components/Mobile"
+      ),
     },
+  },
+  
+  // ⭐ AGREGAR ESTA SECCIÓN SERVER COMPLETA
+  server: {
+    host: '0.0.0.0', // Permite conexiones desde la red local
+    port: 5173,
+    open: true,
+    
+    // ⭐ PROXY PARA JSON-SERVER (IMPORTANTE PARA MÓVIL)
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+        configure: (proxy, options) => {
+          // Logs para debug
+          proxy.on('error', (err, req, res) => {
+            console.log('[Proxy Error]', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            console.log('[Proxy Request]', req.method, req.url);
+          });
+        }
+      }
+    },
+    
+    // Headers CORS (opcional pero útil)
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization'
+    },
+    
+    // Pre-calentamiento de módulos comunes
+    warmup: {
+      clientFiles: [
+        './src/App.jsx',
+        './src/components/Navbar.jsx',
+        './src/components/Dock.jsx',
+        './src/windows/Terminal.jsx',
+        './src/windows/Safari.jsx',
+      ]
+    }
   },
   
   // ⭐ Optimizaciones de build
   build: {
-    // Aumentar el límite de advertencia de chunk
     chunkSizeWarningLimit: 1000,
-    
     rollupOptions: {
       output: {
-        // ⭐ Code splitting manual para mejor performance
         manualChunks: {
-          // Vendors grandes en chunks separados
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'gsap-vendor': ['gsap'],
           'store-vendor': ['zustand'],
-          
-          // Windows agrupadas
           'windows-core': [
             './src/windows/Terminal.jsx',
             './src/windows/Safari.jsx',
@@ -80,53 +130,27 @@ export default defineConfig({
             './src/windows/Chat.jsx',
             './src/windows/Contact.jsx',
           ],
-          
-          // Componentes admin
           'admin': [
             './src/components/AdminDashboard.jsx',
           ],
-          
-          // Profile & Settings
           'profile': [
             './src/windows/Profile.jsx',
             './src/windows/Settings.jsx',
           ],
         },
-        
-        // ⭐ Nombres de archivos más limpios
         chunkFileNames: 'js/[name]-[hash].js',
         entryFileNames: 'js/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     },
-    
-    // ⭐ Minificación
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true, // Eliminar console.logs en producción
+        drop_console: true,
         drop_debugger: true,
       }
     },
-    
-    // ⭐ Source maps solo en desarrollo
     sourcemap: false,
-  },
-  
-  // ⭐ Optimizaciones del servidor de desarrollo
-  server: {
-    port: 5173,
-    open: true,
-    // Pre-calentamiento de módulos comunes
-    warmup: {
-      clientFiles: [
-        './src/App.jsx',
-        './src/components/Navbar.jsx',
-        './src/components/Dock.jsx',
-        './src/windows/Terminal.jsx',
-        './src/windows/Safari.jsx',
-      ]
-    }
   },
   
   // ⭐ Optimizaciones de dependencias
@@ -137,6 +161,5 @@ export default defineConfig({
       'gsap',
       'zustand',
     ],
-
   },
 });

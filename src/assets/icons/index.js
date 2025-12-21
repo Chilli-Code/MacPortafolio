@@ -13,6 +13,9 @@ export {
    Twitter,
    Paperclip, Smile,
 CircleX,
+CircleArrowLeft,
+MousePointerClick,
+
   // ⭐ Terminal - exportar con ambos nombres
   Terminal,  // Para importar como `Terminal`
   Terminal as TerminalIcon,  // Para importar como `TerminalIcon`

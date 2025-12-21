@@ -1,3 +1,4 @@
+// src/hoc/WindowWrapper.jsx
 import useWindowStore from "#store/window.js";
 import { useGSAP } from "@gsap/react";
 import { useLayoutEffect, useRef, useState } from "react";
@@ -10,14 +11,46 @@ import { useWindowFocus } from "./useWindowFocus";
 const WindowWrapper = (Component, windowKey) => {
     const wrapped = (props) => {
         const { focusWindow, windows } = useWindowStore();
-        const { isOpen, zIndex } = windows[windowKey];
+        const { isOpen, isMinimized, zIndex } = windows[windowKey]; // ⭐ Agregar isMinimized
         const ref = useRef(null);
         const draggableInstance = useRef(null);
         const [isMaximized, setIsMaximized] = useState(false);
         const [isResizing, setIsResizing] = useState(false);
         const resizeData = useRef({});
 
-        // Animación de apertura
+        // ⭐ Animación de minimizar/restaurar
+        useGSAP(() => {
+            const el = ref.current;
+            if (!el || !isOpen) return;
+
+            if (isMinimized) {
+                // Animar hacia el dock
+                gsap.to(el, {
+                    scale: 0.2,
+                    opacity: 0,
+                    y: window.innerHeight - 100,
+                    duration: 0.3,
+                    ease: "power2.in",
+                    onComplete: () => {
+                        el.style.visibility = 'hidden';
+                        el.style.pointerEvents = 'none';
+                    }
+                });
+            } else {
+                // Restaurar
+                el.style.visibility = 'visible';
+                el.style.pointerEvents = 'auto';
+                gsap.to(el, {
+                    scale: 1,
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.3,
+                    ease: "back.out(1.7)"
+                });
+            }
+        }, [isMinimized]);
+
+        // Animación de apertura inicial
         useGSAP(() => {
             const el = ref.current;
             if (!el || !isOpen) return;
@@ -43,7 +76,7 @@ const WindowWrapper = (Component, windowKey) => {
         // Manejar maximizado/restaurar
         useLayoutEffect(() => {
             const el = ref.current;
-            if (!el || !draggableInstance.current) return;
+            if (!el || !draggableInstance.current || isMinimized) return;
 
             if (isMaximized) {
                 draggableInstance.current.disable();
@@ -70,7 +103,7 @@ const WindowWrapper = (Component, windowKey) => {
                     }
                 });
             }
-        }, [isMaximized]);
+        }, [isMaximized, isMinimized]);
 
         // Manejar apertura/cierre con animación
         useLayoutEffect(() => {
@@ -84,7 +117,11 @@ const WindowWrapper = (Component, windowKey) => {
                 id={windowKey}
                 ref={ref}
                 style={{ zIndex }}
-                className={clsx("absolute", isMaximized && "maximized")}
+                className={clsx(
+                    "absolute",
+                    isMaximized && "maximized",
+                    isMinimized && "minimized" // ⭐ Clase opcional
+                )}
             >
                 <Component
                     {...props}

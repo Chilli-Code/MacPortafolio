@@ -19,14 +19,15 @@ export const useTasksStore = create(
         const userType = get().userType;
 
         try {
-          const [available, inProgress, completed, rejected] = await Promise.all([
+          const [available, inProgress, completed, rejected, pending_review] = await Promise.all([
             api.getTasks(userType, 'available'),
             api.getTasks(userType, 'in_progress'),
             api.getTasks(userType, 'completed'),
-            api.getTasks(userType, 'rejected')
+            api.getTasks(userType, 'rejected'),
+            api.getTasks(userType, 'pending_review'),
           ]);
 
-          const allTasks = [...available, ...inProgress, ...completed, ...rejected];
+          const allTasks = [...available, ...inProgress, ...completed, ...rejected,...pending_review];
 
           set({
             tasks: allTasks,
