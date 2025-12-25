@@ -151,14 +151,15 @@ const Dock = () => {
                                 disabled={!canOpen}
                                 onClick={() => toggleApp({ id, canOpen })}
                             >
-                                <img
-                                    draggable={false}
-                                    src={`/images/${icon}`}
-                                    alt={name}
-                                    width={70}
-                                    height={70}
-                                    className={canOpen ? "" : "opacity-60"}
-                                />
+<img
+  draggable={false}
+  src={`/images/${icon}`}
+  alt={name}
+  width={70}
+  height={70}
+  className={canOpen ? "" : "opacity-60"}
+/>
+
                                 
                                 {/* ⭐ INDICADOR MEJORADO */}
                                 {id !== 'game' && isOpen && (

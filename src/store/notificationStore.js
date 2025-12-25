@@ -83,35 +83,70 @@ export const useAppSettingsStore = create(
       
       setShowOnLockScreen: (enabled) => set({ showOnLockScreen: enabled }),
       
-      setBrowserNotificationsEnabled: (enabled) => set({ browserNotificationsEnabled: enabled }),
+    setBrowserNotificationsEnabled: (enabled) => {
+  set({ browserNotificationsEnabled: enabled });
+  
+  // Guardar en localStorage
+  if (enabled) {
+    localStorage.setItem('notifications-permission-granted', 'true');
+  } else {
+    localStorage.removeItem('notifications-permission-granted');
+  }
+},
 
-      requestNotificationPermission: async () => {
-        if (!('Notification' in window)) {
-          alert('Este navegador no soporta notificaciones');
-          return false;
-        }
+// En appSettingsStore.js, modifica requestNotificationPermission:
+requestNotificationPermission: async () => {
+  // ⭐⭐ IMPORTANTE: Esta función debe ser llamada DESDE UN CLICK del usuario
+  if (!('Notification' in window)) {
+    console.warn('Este navegador no soporta notificaciones');
+    return false;
+  }
 
-        try {
-          const permission = await Notification.requestPermission();
-          const granted = permission === 'granted';
-          set({ 
-            browserNotificationsEnabled: granted,
-            notificationsEnabled: granted 
-          });
-          return granted;
-        } catch (error) {
-          console.error('Error requesting notification permission:', error);
-          set({ browserNotificationsEnabled: false });
-          return false;
-        }
-      },
+  try {
+    console.log('🔔 Solicitando permiso de notificaciones...');
+    
+    // Esta es la llamada que mostrará la ventana nativa del navegador
+    const permission = await Notification.requestPermission();
+    console.log('🔔 Resultado del permiso:', permission);
+    
+    const granted = permission === 'granted';
+    
+    // Guardar en localStorage para recordar la decisión
+    if (granted) {
+      localStorage.setItem('notifications-permission-granted', 'true');
+      localStorage.setItem('notifications-permission-timestamp', Date.now().toString());
+    }
+    
+    set({ 
+      browserNotificationsEnabled: granted,
+      notificationsEnabled: granted 
+    });
+    
+    return granted;
+  } catch (error) {
+    console.error('❌ Error al solicitar permiso:', error);
+    set({ browserNotificationsEnabled: false });
+    return false;
+  }
+},
 
-      checkNotificationPermission: () => {
-        if ('Notification' in window) {
-          const granted = Notification.permission === 'granted';
-          set({ browserNotificationsEnabled: granted });
-        }
-      },
+// Añade esta función para verificar automáticamente
+checkNotificationPermission: () => {
+  if ('Notification' in window) {
+    const permission = Notification.permission;
+    const granted = permission === 'granted';
+    
+    console.log('🔔 Verificando permiso:', permission);
+    
+    set({ 
+      browserNotificationsEnabled: granted,
+      notificationsEnabled: granted 
+    });
+    
+    return granted;
+  }
+  return false;
+},
 
       // ==================== ACTIONS - PERMISOS ====================
       setPermission: (permission, value) => set((state) => ({

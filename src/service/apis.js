@@ -1,7 +1,12 @@
 // src/services/api.js
-const API_URL = 'http://localhost:3001';
 
-// ============ FUNCIONES AUXILIARES (¡DEBEN ESTAR DEFINIDAS!) ============
+// ⭐ USAR VARIABLE DE ENTORNO CON FALLBACK
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+// ⭐ Log para debug
+console.log('🌐 API URL configurada:', API_URL);
+
+// ============ FUNCIONES AUXILIARES ============
 
 // ⭐ Helper function para normalizar IDs
 const normalizeIdForJsonServer = (id) => {
@@ -52,48 +57,109 @@ const findTaskById = async (id) => {
 
 export const api = {
   // ==================== USUARIOS ====================
+  
   async login(username, password) {
     try {
+      console.log('🔐 Attempting login to:', `${API_URL}/users`);
       const response = await fetch(`${API_URL}/users`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const users = await response.json();
+      console.log('👥 Users fetched:', users.length);
       
       const user = users.find(u => 
         (u.username === username || u.email === username) && u.password === password
       );
       
       if (user) {
+        console.log('✅ Login successful:', user.username);
         return { success: true, user };
       }
       
+      console.log('❌ Invalid credentials');
       return { success: false, error: 'Usuario o contraseña incorrectos' };
     } catch (error) {
-      console.error('Error en login:', error);
-      return { success: false, error: 'Error de conexión' };
+      console.error('❌ Login error:', error);
+      return { success: false, error: 'Error de conexión con el servidor' };
+    }
+  },
+
+  // ⭐ NUEVO: Obtener usuario por ID
+  async getUser(userId) {
+    try {
+      console.log('👤 Fetching user:', userId);
+      const response = await fetch(`${API_URL}/users/${normalizeIdForJsonServer(userId)}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const user = await response.json();
+      console.log('✅ User fetched:', user.username);
+      return user;
+    } catch (error) {
+      console.error('❌ Error fetching user:', error);
+      return null;
+    }
+  },
+
+  // ⭐ NUEVO: Actualizar usuario
+  async updateUser(userId, userData) {
+    try {
+      console.log('✏️ Updating user:', userId);
+      const response = await fetch(`${API_URL}/users/${normalizeIdForJsonServer(userId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const updatedUser = await response.json();
+      console.log('✅ User updated:', updatedUser.username);
+      return updatedUser;
+    } catch (error) {
+      console.error('❌ Error updating user:', error);
+      return null;
     }
   },
 
   // ==================== TAREAS ====================
+  
   async getTasks(userType = null, status = 'available') {
     try {
-      const currentUser = JSON.parse(localStorage.getItem('userSession') || '{}');
-      const response = await fetch(`${API_URL}/tasks?status=${status}`);
+      const url = `${API_URL}/tasks?status=${status}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const allTasks = await response.json();
+      const currentUser = JSON.parse(localStorage.getItem('userSession') || '{}');
       
-      if (!userType) return allTasks;
+      if (!userType) {
+        return allTasks;
+      }
       
-      // ⭐ Filtrar por tipo Y por usuario asignado
-      return allTasks.filter(t => {
-        // Si es available, solo mostrar por tipo
+      const filtered = allTasks.filter(t => {
         if (status === 'available') {
           return t.type === userType || t.type === 'fullstack';
         }
         
-        // Si es in_progress o completed, filtrar por usuario asignado
         return (t.type === userType || t.type === 'fullstack') && 
                (t.assignedTo === currentUser.id || !t.assignedTo);
       });
+      
+      return filtered;
+      
     } catch (error) {
-      console.error('Error obteniendo tareas:', error);
+      console.error('❌ Error obteniendo tareas:', error);
       return [];
     }
   },
@@ -101,6 +167,11 @@ export const api = {
   async getTask(id) {
     try {
       const response = await fetch(`${API_URL}/tasks/${id}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       return await response.json();
     } catch (error) {
       console.error('Error obteniendo tarea:', error);
@@ -108,27 +179,32 @@ export const api = {
     }
   },
 
-  // Crear nueva tarea
   createTask: async (taskData) => {
     try {
+      console.log('➕ Creating task:', taskData.title);
       const response = await fetch(`${API_URL}/tasks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(taskData)
       });
-      return await response.json();
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const created = await response.json();
+      console.log('✅ Task created:', created.id);
+      return created;
     } catch (error) {
-      console.error('Error creating task:', error);
+      console.error('❌ Error creating task:', error);
       return null;
     }
   },
 
-  // ⭐ ACTUALIZAR TAREA - Versión mejorada
   updateTask: async (taskId, taskData) => {
     try {
       console.log('🔄 API: Updating task', taskId, typeof taskId, taskData);
       
-      // Paso 1: Buscar la tarea para obtener su ID real
       const existingTask = await findTaskById(taskId);
       
       if (!existingTask) {
@@ -138,7 +214,6 @@ export const api = {
       
       console.log('🔄 API: Found task with real id:', existingTask.id, typeof existingTask.id);
       
-      // Paso 2: Usar el ID REAL de la tarea encontrada
       const realTaskId = normalizeIdForJsonServer(existingTask.id);
       
       const response = await fetch(`${API_URL}/tasks/${realTaskId}`, {
@@ -146,7 +221,6 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...taskData,
-          // Mantener el ID original
           id: existingTask.id
         })
       });
@@ -157,7 +231,6 @@ export const api = {
         const errorText = await response.text();
         console.error('🔄 API: Update failed:', response.status, errorText);
         
-        // Intentar como PUT si PATCH falla
         if (response.status === 404) {
           console.log('🔄 API: Trying PUT instead...');
           const putResponse = await fetch(`${API_URL}/tasks/${realTaskId}`, {
@@ -187,12 +260,10 @@ export const api = {
     }
   },
 
-  // ⭐ ELIMINAR TAREA - Versión mejorada
   deleteTask: async (taskId) => {
     try {
       console.log('🗑️ API: Deleting task', taskId, typeof taskId);
       
-      // Paso 1: Buscar la tarea
       const existingTask = await findTaskById(taskId);
       
       if (!existingTask) {
@@ -202,7 +273,6 @@ export const api = {
       
       console.log('🗑️ API: Found task with real id:', existingTask.id, typeof existingTask.id);
       
-      // Paso 2: Usar el ID REAL de la tarea encontrada
       const realTaskId = normalizeIdForJsonServer(existingTask.id);
       
       const response = await fetch(`${API_URL}/tasks/${realTaskId}`, {
@@ -225,20 +295,128 @@ export const api = {
       return false;
     }
   },
-  // Agregar al final del objeto api en api.js:
 
-// ⭐ OBTENER TODAS LAS TAREAS (SOLO ADMIN)
-getAllTasksAdmin: async () => {
-  try {
-    const response = await fetch(`${API_URL}/tasks`);
-    const allTasks = await response.json();
-    console.log('📋 Admin: Loaded all tasks:', allTasks.length);
-    return allTasks;
-  } catch (error) {
-    console.error('Error getting all tasks for admin:', error);
-    return [];
+  getAllTasksAdmin: async () => {
+    try {
+      console.log('📋 Admin: Fetching all tasks');
+      const response = await fetch(`${API_URL}/tasks`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const allTasks = await response.json();
+      console.log('📋 Admin: Loaded all tasks:', allTasks.length);
+      return allTasks;
+    } catch (error) {
+      console.error('❌ Error getting all tasks for admin:', error);
+      return [];
+    }
+  },
+
+  // ==================== GAMIFICACIÓN (NUEVAS FUNCIONES) ====================
+
+  // 🏆 Obtener logros
+  async getAchievements() {
+    try {
+      console.log('🏆 Fetching achievements');
+      const response = await fetch(`${API_URL}/achievements`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const achievements = await response.json();
+      console.log('✅ Achievements fetched:', achievements.length);
+      return achievements;
+    } catch (error) {
+      console.error('❌ Error fetching achievements:', error);
+      return [];
+    }
+  },
+
+  // 🎖️ Obtener badges
+  async getBadges() {
+    try {
+      console.log('🎖️ Fetching badges');
+      const response = await fetch(`${API_URL}/badges`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const badges = await response.json();
+      console.log('✅ Badges fetched:', badges.length);
+      return badges;
+    } catch (error) {
+      console.error('❌ Error fetching badges:', error);
+      return [];
+    }
+  },
+
+  // 📊 Obtener niveles
+  async getLevels() {
+    try {
+      console.log('📊 Fetching levels');
+      const response = await fetch(`${API_URL}/levels`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const levels = await response.json();
+      console.log('✅ Levels fetched:', levels.length);
+      return levels;
+    } catch (error) {
+      console.error('❌ Error fetching levels:', error);
+      return [];
+    }
+  },
+
+  // 📜 Crear log de actividad
+  async createActivityLog(logData) {
+    try {
+      console.log('📜 Creating activity log:', logData.type);
+      const response = await fetch(`${API_URL}/activityLog`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...logData,
+          timestamp: new Date().toISOString()
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const log = await response.json();
+      console.log('✅ Activity log created:', log.id);
+      return log;
+    } catch (error) {
+      console.error('❌ Error creating activity log:', error);
+      return null;
+    }
+  },
+
+  // 🏅 Obtener leaderboard
+  async getLeaderboard(type = 'xp', period = 'all_time') {
+    try {
+      console.log('🏅 Fetching leaderboard:', type, period);
+      const response = await fetch(`${API_URL}/leaderboards?type=${type}&period=${period}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const leaderboards = await response.json();
+      console.log('✅ Leaderboard fetched:', leaderboards.length);
+      return leaderboards[0] || null;
+    } catch (error) {
+      console.error('❌ Error fetching leaderboard:', error);
+      return null;
+    }
   }
-},
-
-  
 };
+
+export default api;

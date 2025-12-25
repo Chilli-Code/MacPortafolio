@@ -1,58 +1,67 @@
 import { MobileDock } from "#Mobile/MobileDock";
 import { useState } from "react";
-import { LogOut, ChevronLeft } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 
 // Importar screens
 import HomeScreen from "#Mobile/Screens/HomeScreen";
-import PortfolioScreen from "#Mobile/Screens/PortfolioScreen";
-import ArticlesScreen from "#Mobile/Screens/ArticlesScreen";
-import GalleryScreen from "#Mobile/Screens/GalleryScreen";
-import ContactScreen from "#Mobile/Screens/ContactScreen";
+import FinderScreen from "#Mobile/Screens/FinderScreen";
+import SafariScreen from "#Mobile/Screens/SafariScreen";
+import MessagesScreen from "#Mobile/Screens/MessagesScreen";
+import ProfileScreen from "#Mobile/Screens/ProfileScreen";
+import TerminalScreen from "#components/Mobile/Screens/TerminalScreen";
+import SettingsScreen from "#components/Mobile/Screens/SettingsScreen";
 
 const MobileLayout = ({ user, onLogout }) => {
   const [currentScreen, setCurrentScreen] = useState('home');
-  const [screenHistory, setScreenHistory] = useState(['home']);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  const navigateTo = (screen) => {
-    setCurrentScreen(screen);
-    setScreenHistory([...screenHistory, screen]);
+  const handleAppClick = (appId) => {
+    setCurrentScreen(appId);
   };
 
-  const goBack = () => {
-    if (screenHistory.length > 1) {
-      const newHistory = [...screenHistory];
-      newHistory.pop();
-      setCurrentScreen(newHistory[newHistory.length - 1]);
-      setScreenHistory(newHistory);
+  const goBackToHome = () => {
+    setCurrentScreen('home');
+  };
+
+  const renderScreen = () => {
+    switch (currentScreen) {
+      case 'finder':
+        return <FinderScreen onBack={goBackToHome} />;
+      case 'safari':
+        return <SafariScreen onBack={goBackToHome} />;
+      case 'terminal':
+      return <TerminalScreen onBack={goBackToHome} />;
+      case 'messages':
+      return <MessagesScreen onBack={goBackToHome} />;
+      case 'settings':
+        return <SettingsScreen onBack={goBackToHome} />;
+      case 'contact':
+        return <ProfileScreen onBack={goBackToHome} />;
+      default:
+        return null; // No renderizar nada aquí, el home está abajo
     }
   };
 
-  const handleAppClick = (appId) => {
-    navigateTo(appId);
-  };
-
-const renderScreen = () => {
-  switch (currentScreen) {
-    case 'finder':
-      return <PortfolioScreen onBack={() => setCurrentScreen('home')} />;
-    case 'safari':
-      return <ArticlesScreen />;
-    case 'photos':
-      return <GalleryScreen />;
-    case 'contact':
-      return <ContactScreen />;
-    default:
-      return <HomeScreen onAppClick={handleAppClick} />;
-  }
-};
   const confirmLogout = () => {
     setShowLogoutConfirm(false);
     onLogout();
   };
 
+  const isHome = currentScreen === 'home';
+
+  // Si NO es home, mostrar app fullscreen
+  if (!isHome) {
+    return (
+      <div className="h-screen w-full overflow-hidden">
+        {renderScreen()}
+      </div>
+    );
+  }
+
+  // Si es home, mostrar layout normal
   return (
     <div className="h-screen w-full mobileBg bg-gradient-to-br from-pink-200 via-purple-200 to-cyan-400 relative overflow-hidden">
+      
       {/* Background */}
       <div className="absolute inset-0">
         <div className="absolute bottom-0 left-0 right-0 h-2/3 bg-gradient-to-t from-cyan-600 to-transparent opacity-50 rounded-t-[100px]" />
@@ -61,19 +70,10 @@ const renderScreen = () => {
 
       {/* Header */}
       <div className="relative z-10 p-6 flex items-center justify-between">
-        {currentScreen !== 'home' ? (
-          <button
-            onClick={goBack}
-            className="bg-white/20 backdrop-blur-md text-white p-3 rounded-xl hover:bg-white/30 active:scale-95 transition-all duration-200 border border-white/30 shadow-lg"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-        ) : (
-          <div>
-            <h2 className="text-white text-2xl font-bold">Hola, {user?.username} 👋</h2>
-            <p className="text-white/80 mt-1 text-sm">Bienvenido a Mobile</p>
-          </div>
-        )}
+        <div>
+          <h2 className="text-white text-2xl font-bold">Hola, {user?.username} 👋</h2>
+          <p className="text-white/80 mt-1 text-sm">Bienvenido a Mobile</p>
+        </div>
         
         <button
           onClick={() => setShowLogoutConfirm(true)}
@@ -83,11 +83,9 @@ const renderScreen = () => {
         </button>
       </div>
 
-      {/* Content */}
+      {/* Content - HomeScreen */}
       <div className="relative z-10 h-[calc(100vh-180px)] overflow-y-auto">
-        <div className="animate-fade-in">
-          {renderScreen()}
-        </div>
+        <HomeScreen onAppClick={handleAppClick} />
       </div>
 
       {/* Dock */}
@@ -111,13 +109,13 @@ const renderScreen = () => {
             </div>
             
             <div className="border-t border-gray-200">
-              <button onClick={confirmLogout} className="w-full py-4 text-red-600 font-semibold">
+              <button onClick={confirmLogout} className="w-full py-4 text-red-600 font-semibold hover:bg-gray-50 active:bg-gray-100 transition-colors">
                 Cerrar sesión
               </button>
             </div>
             
             <div className="border-t border-gray-200">
-              <button onClick={() => setShowLogoutConfirm(false)} className="w-full py-4 text-blue-600 font-semibold">
+              <button onClick={() => setShowLogoutConfirm(false)} className="w-full py-4 text-blue-600 font-semibold hover:bg-gray-50 active:bg-gray-100 transition-colors">
                 Cancelar
               </button>
             </div>

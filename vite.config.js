@@ -26,7 +26,7 @@ export default defineConfig({
         "src/store"
       ),
       "#hoc": resolve(
-        dirname(fileURLToPath(import.meta.url)), 
+        dirname(fileURLToPath(import.meta.url)),
         "src/hoc"
       ),
       "#windows": resolve(
@@ -45,27 +45,31 @@ export default defineConfig({
         dirname(fileURLToPath(import.meta.url)),
         "src/icons"
       ),
-       "#Desktop": resolve(
-        dirname(fileURLToPath(import.meta.url)), 
+      "#Desktop": resolve(
+        dirname(fileURLToPath(import.meta.url)),
         "src/components/Desktop"
       ),
-"#Mobile": resolve(
-  dirname(fileURLToPath(import.meta.url)), 
-  "src/components/Mobile"
-),
+      "#Mobile": resolve(
+        dirname(fileURLToPath(import.meta.url)),
+        "src/components/Mobile"
+      ),
       "#windowsMobile": resolve(
         dirname(fileURLToPath(import.meta.url)),
         "src/components/Mobile"
       ),
+      "#hooks": resolve(
+        dirname(fileURLToPath(import.meta.url)),
+        "src/Hooks"
+      ),
     },
   },
-  
+
   // ⭐ AGREGAR ESTA SECCIÓN SERVER COMPLETA
   server: {
     host: '0.0.0.0', // Permite conexiones desde la red local
     port: 5173,
     open: true,
-    
+
     // ⭐ PROXY PARA JSON-SERVER (IMPORTANTE PARA MÓVIL)
     proxy: {
       '/api': {
@@ -84,14 +88,14 @@ export default defineConfig({
         }
       }
     },
-    
+
     // Headers CORS (opcional pero útil)
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
       'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization'
     },
-    
+
     // Pre-calentamiento de módulos comunes
     warmup: {
       clientFiles: [
@@ -103,7 +107,7 @@ export default defineConfig({
       ]
     }
   },
-  
+
   // ⭐ Optimizaciones de build
   build: {
     chunkSizeWarningLimit: 1000,
@@ -152,7 +156,7 @@ export default defineConfig({
     },
     sourcemap: false,
   },
-  
+
   // ⭐ Optimizaciones de dependencias
   optimizeDeps: {
     include: [

@@ -278,6 +278,21 @@ const Astro = (props) => (
   </svg>
 );
 
+const HTML5 = (props) => (
+  <svg {...props} viewBox="0 0 452 520">
+    <path fill="#e34f26" d="M41 460L0 0h451l-41 460-185 52" />
+    <path fill="#ef652a" d="M226 472l149-41 35-394H226" />
+    <path
+      fill="#ecedee"
+      d="M226 208h-75l-5-58h80V94H84l15 171h127zm0 147l-64-17-4-45h-56l7 89 117 32z"
+    />
+    <path
+      fill="#fff"
+      d="M226 265h69l-7 73-62 17v59l115-32 16-174H226zm0-171v56h136l5-56z"
+    />
+  </svg>
+);
+
 
 
 const Flutter = (props) => (
@@ -285,7 +300,7 @@ const Flutter = (props) => (
     <defs>
       <linearGradient x1="4%" y1="27%" x2="75.9%" y2="52.9%" id="flutter__a">
         <stop offset="0%" />
-        <stop stop-opacity="0" offset="100%" />
+        <stop stopOpacity="0" offset="100%" />
       </linearGradient>
     </defs>
     <path
@@ -294,7 +309,7 @@ const Flutter = (props) => (
     />
     <path fill="#00569E" d="m121 280 37 37h97l-85-86z" />
     <path fill="#00B5F8" d="m72 230 48-48 50 49-49 49z" />
-    <path fill-opacity=".8" fill="url(#flutter__a)" d="m121 280 41-14 4-31z" />
+    <path fillOpacity=".8" fill="url(#flutter__a)" d="m121 280 41-14 4-31z" />
   </svg>
 );
 
@@ -381,7 +396,7 @@ const Nextjs = (props) => (
         y2="160.5"
       >
         <stop stopColor="white" />
-        <stop offset="1" stopColor="white" stop-opacity="0" />
+        <stop offset="1" stopColor="white" stopOpacity="0" />
       </linearGradient>
       <linearGradient
         gradientUnits="userSpaceOnUse"
@@ -392,11 +407,32 @@ const Nextjs = (props) => (
         y2="106.875"
       >
         <stop stopColor="white" />
-        <stop offset="1" stopColor="white" stop-opacity="0" />
+        <stop offset="1" stopColor="white" stopOpacity="0" />
       </linearGradient>
     </defs>
   </svg>
 );
+
+
+const CSS = (props) => (
+  <svg {...props} viewBox="0 0 512 512">
+    <path
+      fill="#264de4"
+      d="M71.357 460.819 30.272 0h451.456l-41.129 460.746L255.724 512z"
+    />
+    <path fill="#2965f1" d="m405.388 431.408 35.148-393.73H256v435.146z" />
+    <path
+      fill="#ebebeb"
+      d="m124.46 208.59 5.065 56.517H256V208.59zm-5.041-57.875H256V94.197H114.281zM256 355.372l-.248.066-62.944-16.996-4.023-45.076h-56.736l7.919 88.741 115.772 32.14.26-.073z"
+    />
+    <path
+      fill="#fff"
+      d="M255.805 208.59v56.517H325.4l-6.56 73.299-63.035 17.013v58.8l115.864-32.112.85-9.549 13.28-148.792 1.38-15.176 10.203-114.393H255.805v56.518h79.639L330.3 208.59z"
+    />
+  </svg>
+);
+
+
 
 const TailwindCSS = (props) => (
   <svg {...props} fill="none" viewBox="0 0 54 33">
@@ -435,7 +471,7 @@ const Supabase = (props) => (
     <path
       d="M63.7076 110.284C60.8481 113.885 55.0502 111.912 54.9813 107.314L53.9738 40.0627L99.1935 40.0627C107.384 40.0627 111.952 49.5228 106.859 55.9374L63.7076 110.284Z"
       fill="url(#supabase__paint1_linear)"
-      fill-opacity="0.2"
+      fillOpacity="0.2"
     />
     <path
       d="M45.317 2.07103C48.1765 -1.53037 53.9745 0.442937 54.0434 5.041L54.4849 72.2922H9.83113C1.64038 72.2922 -2.92775 62.8321 2.1655 56.4175L45.317 2.07103Z"
@@ -462,7 +498,7 @@ const Supabase = (props) => (
         gradientUnits="userSpaceOnUse"
       >
         <stop />
-        <stop offset="1" stop-opacity="0" />
+        <stop offset="1" stopOpacity="0" />
       </linearGradient>
     </defs>
   </svg>
@@ -656,7 +692,7 @@ const Python = (props) => (
 
 
 
-export { Git, Nodejs, Django, Android, ReactIcon, JavaScript, Java, Figma, Astro, Flutter, Expo, JWT, ViteIcon, Nextjs, MongoDB, Supabase, Heroku, Firebase, TailwindCSS, PostgreSQL, SocketIO, SQLite, Docker};
+export { Git, Nodejs, Django, Android, ReactIcon, JavaScript, Java, Figma, Astro, Flutter, Expo, JWT, ViteIcon, Nextjs, MongoDB, Supabase, Heroku, Firebase, TailwindCSS, PostgreSQL, SocketIO, SQLite, Docker, HTML5, CSS};
 
 // Configuración
 export const techConfig = {
@@ -664,7 +700,7 @@ export const techConfig = {
     color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
     icon: <ReactIcon className="w-4 h-4"/>
   },
-  'JavaScript': {
+  'Javascript': {
     color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
     icon: <JavaScript className="w-4 h-4"/>
   },
@@ -760,6 +796,14 @@ export const techConfig = {
   color: 'bg-blue-500 text-white dark:bg-blue-600 dark:text-blue-100',
   icon: <TypeScript className="w-4 h-4"/>
 },
+'HTML5': {
+  color: 'bg-gradient-to-r from-orange-100 to-red-100 text-gray-800 dark:from-orange-900/20 dark:to-red-900/20 dark:text-gray-300',
+  icon: <HTML5 className="w-4 h-4"/>
+},
+  'CSS': {
+    color: 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
+    icon: <CSS className="w-4 h-4"/>
+  },
 };
   // ... más
 

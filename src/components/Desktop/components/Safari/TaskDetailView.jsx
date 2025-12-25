@@ -8,6 +8,11 @@ import { getTechConfig } from '#assets/techIcons/techConfig.jsx';
 
 const TaskDetailView = ({ task, onClose, onAccept, onComplete, onReopen }) => {
   const isRejected = task.status === 'rejected' || task.reviewStatus === 'rejected';
+  
+  // ⭐ SOPORTAR AMBAS ESTRUCTURAS (vieja y nueva)
+  const taskXP = task.rewards?.xp || task.xp || 0;
+  const taskReward = task.rewards?.totalReward || task.rewards?.baseReward || task.reward || 0;
+  
   const difficultyConfig = {
     easy: {
       color: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800',
@@ -54,8 +59,8 @@ const TaskDetailView = ({ task, onClose, onAccept, onComplete, onReopen }) => {
     }
   };
 
-  const difficulty = difficultyConfig[task.difficulty];
-  const status = statusConfig[task.status];
+  const difficulty = difficultyConfig[task.difficulty] || difficultyConfig.medium;
+  const status = statusConfig[task.status] || statusConfig.available;
 
   return (
     <div className="h-full bg-white dark:bg-gray-900 flex flex-col overflow-hidden">
@@ -82,7 +87,6 @@ const TaskDetailView = ({ task, onClose, onAccept, onComplete, onReopen }) => {
             </button>
           )}
 
-          {/* ⭐ MOSTRAR BOTÓN COMPLETAR SOLO SI NO ESTÁ RECHAZADA */}
           {task.status === 'in_progress' && !isRejected && (
             <button onClick={onComplete} className="cursor-pointer px-2 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5" />
@@ -90,7 +94,6 @@ const TaskDetailView = ({ task, onClose, onAccept, onComplete, onReopen }) => {
             </button>
           )}
 
-          {/* ⭐ MOSTRAR BOTÓN REABRIR SI ESTÁ RECHAZADA */}
           {isRejected && (
             <button
               onClick={onReopen}
@@ -180,7 +183,7 @@ const TaskDetailView = ({ task, onClose, onAccept, onComplete, onReopen }) => {
                 </div>
                 <div>
                   <p className="text-xs text-yellow-700 dark:text-yellow-500 font-medium">Experiencia</p>
-                  <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-300">{task.xp}</p>
+                  <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-300">{taskXP}</p>
                 </div>
               </div>
               <p className="text-xs text-yellow-600 dark:text-yellow-500">XP Points</p>
@@ -194,7 +197,7 @@ const TaskDetailView = ({ task, onClose, onAccept, onComplete, onReopen }) => {
                 </div>
                 <div>
                   <p className="text-xs text-green-700 dark:text-green-500 font-medium">Recompensa</p>
-                  <p className="text-2xl font-bold text-green-900 dark:text-green-300">${task.reward}</p>
+                  <p className="text-2xl font-bold text-green-900 dark:text-green-300">${taskReward}</p>
                 </div>
               </div>
               <p className="text-xs text-green-600 dark:text-green-500">USD</p>
@@ -207,7 +210,7 @@ const TaskDetailView = ({ task, onClose, onAccept, onComplete, onReopen }) => {
                   <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-purple-700 dark:text-purple-500 font-medium">Deadline</p>
+                  <p className="text-xs text-purple-700 dark:text-purple-500 font-medium">Fecha Limite</p>
                   <p className="text-lg font-bold text-purple-900 dark:text-purple-300">{task.deadline}</p>
                 </div>
               </div>
@@ -230,23 +233,25 @@ const TaskDetailView = ({ task, onClose, onAccept, onComplete, onReopen }) => {
           </div>
 
           {/* Tags */}
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-2 mb-4">
-              <Tag className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-              <h3 className="font-semibold text-gray-900 dark:text-white">Tecnologías</h3>
+          {task.tags && task.tags.length > 0 && (
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2 mb-4">
+                <Tag className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <h3 className="font-semibold text-gray-900 dark:text-white">Tecnologías</h3>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {task.tags.map((tag, i) => {
+                  const config = getTechConfig(tag);
+                  return (
+                    <span key={i} className={`px-3 py-1.5 text-xs font-medium rounded-full flex items-center gap-1.5 ${config?.color || 'bg-gray-100 text-gray-800'}`}>
+                      {config?.icon}
+                      {tag}
+                    </span>
+                  );
+                })}
+              </div>
             </div>
-<div className="flex flex-wrap gap-2">
-  {task.tags.map((tag, i) => {
-    const config = getTechConfig(tag);
-    return (
-      <span key={i} className={`px-3 py-1.5 text-xs font-medium rounded-full flex items-center gap-1.5 ${config.color}`}>
-        {config.icon}
-        {tag}
-      </span>
-    );
-  })}
-</div>
-          </div>
+          )}
 
           {/* Role & Category */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -312,8 +317,6 @@ const TaskDetailView = ({ task, onClose, onAccept, onComplete, onReopen }) => {
           </div>
         </div>
       </div>
-
-
     </div>
   );
 };

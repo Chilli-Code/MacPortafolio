@@ -352,10 +352,117 @@
 
 .mobileBg {
   background-image: var(--mobileBg);
-  background-size: contain; /* Muestra toda la imagen sin recortar */
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-color: #000; /* Color de fondo para los espacios sobrantes */
-  min-height: 100dvh;
+  background-color: #000;
+  min-height: 100svh; /* ⭐ Safari viewport height */
+  min-height: -webkit-fill-available; /* ⭐ iOS fix */
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* ⭐ Prevenir scroll en el contenedor principal */
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+}
+
+.no-download{
+    pointer-events: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+    -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* No seleccionable */
+}
+.android-marquee-fix {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  padding: 4px 0;
+}
+
+.android-marquee-fix:hover .react-fast-marquee {
+  animation-play-state: running;
+}
+
+/* Estilos para el botón de detalles */
+.btn-view-details {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.btn-view-details:hover::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
+}
+
+.btn-view-details:hover::after {
+  animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(20, 20);
+    opacity: 0;
+  }
+}
+
+/* Indicador de Marquee activo */
+.marquee-indicator {
+  transition: background-color 0.3s ease;
+}
+
+.marquee-indicator.active {
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+}
+
+.barraS::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+/* src/index.css */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }

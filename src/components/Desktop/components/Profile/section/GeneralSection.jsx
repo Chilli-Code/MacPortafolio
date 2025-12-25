@@ -1,38 +1,138 @@
 // /components/Profile/sections/GeneralSection.jsx
+import { useState, useEffect } from "react";
 
-import { 
-  CheckCircle, DollarSign, Clock, Briefcase, 
+import {
+  CheckCircle, DollarSign, Clock, Briefcase,
   Code, Zap, Award, MapPin, Globe,
   Coffee, Users, MessageCircle, Star, Settings
 } from '#assets/icons';
+import { useAuthStore } from '#store/authStore';
+import {
+  useGamificationStats,
+  useSkills,
+  useStreak
+} from '#hooks/useGamification';
+import { getTechConfig } from '#assets/techIcons/techConfig';
 import StatsCard from '../components/StatsCard';
 import EditProfileModal from '../components/EditProfileModal';
 import ProgressBar from '../components/ProgressBar';
-import { useState } from "react";
-import { USER_DATA } from '#constants'; // ⭐ Importar
+
+
+const MAC_COLORS = [
+  'bg-gradient-to-br from-blue-400 to-blue-600',
+  'bg-gradient-to-br from-purple-400 to-purple-600',
+  'bg-gradient-to-br from-pink-400 to-pink-600',
+  'bg-gradient-to-br from-indigo-400 to-indigo-600',
+  'bg-gradient-to-br from-emerald-400 to-emerald-600',
+  'bg-gradient-to-br from-cyan-400 to-cyan-600',
+  'bg-gradient-to-br from-orange-400 to-orange-600',
+];
+
+const getAvatarColor = (name = '') => {
+  if (!name) return MAC_COLORS[0];
+  const code = name.charCodeAt(0);
+  return MAC_COLORS[code % MAC_COLORS.length];
+};
+
+const Avatar = ({ name, src }) => {
+  const initial = name ? name.charAt(0).toUpperCase() : '?';
+  const bgColor = getAvatarColor(name);
+
+  if (src) {
+    return (
+      <img
+        draggable={false}
+        src={src}
+        alt={name}
+        className="w-25 h-25 rounded-2xl object-cover shadow-2xl ring-4 ring-white dark:ring-gray-700 transition-transform duration-300 hover:scale-105"
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`
+        w-28 h-28 rounded-full
+        ${bgColor}
+        flex items-center justify-center
+        shadow-2xl ring-4 ring-white dark:ring-gray-700
+        select-none
+      `}
+    >
+      <span className="text-5xl font-semibold text-white tracking-tight">
+        {initial}
+      </span>
+    </div>
+  );
+};
+
+
 
 const GeneralSection = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [profileData, setProfileData] = useState(USER_DATA.profile);
 
-  // ⭐ Extraer datos de USER_DATA
-  const { profile, stats, skills, progression, badges, professional } = USER_DATA;
+  // ⭐ DATOS REALES DEL USUARIO
+  const currentUser = useAuthStore(state => state.currentUser);
+  const updateUser = useAuthStore(state => state.updateUser);
 
-  const handleSaveProfile = (newData) => {
-    setProfileData(newData);
-    console.log('Datos guardados:', newData);
-  };
 
-  // Status combinado
-  const status = {
-    online: true,
-    activity: "Trabajando en proyecto Nike",
-    ...profileData
-  };
+
+  const stats = useGamificationStats();
+  const skills = useSkills();
+  const currentStreak = useStreak();
+  // ⭐ DEBUG: Ver qué datos tenemos
+  // Si no hay usuario, mostrar loading
+  if (!currentUser) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Cargando perfil...</p>
+        </div>
+      </div>
+    );
+  }
+
+const handleSaveProfile = async (newData) => {
+  await updateUser(currentUser.id, {
+    fullName: newData.fullName,
+    role: newData.role,
+
+    profile: {
+      ...currentUser.profile,
+      bio: newData.bio,
+      location: newData.location,
+    },
+
+    skills: newData.skills,
+  });
+};
+
+
+  const {
+    level = 1,
+    rank = 'Novato',
+    rankIcon = '🌱',
+    currentXP = 0,
+    xpToNextLevel = 1000,
+    tasksCompleted = 0,
+    totalEarnings = 0,
+    totalHoursWorked = 0,
+    projectsCompleted = 0,
+    averageRating = 0,
+    badges = []
+  } = stats || {};
+
+
+
+
+
+
 
   return (
     <div className="space-y-6">
       {/* Hero Section */}
+      <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 rounded-2xl p-6 shadow-lg border border-blue-100 dark:border-gray-700 relative">
         <button
           onClick={() => setIsEditModalOpen(true)}
           className="absolute top-2 right-4 p-1 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700 rounded-lg transition-all shadow-md group cursor-pointer"
@@ -40,54 +140,52 @@ const GeneralSection = () => {
         >
           <Settings className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:rotate-90 transition-transform duration-300" />
         </button>
-      <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 rounded-2xl p-6 shadow-lg border border-blue-100 dark:border-gray-700 relative">
 
         <div className="flex flex-wrap items-start gap-6">
           {/* Avatar */}
           <div className="relative flex-shrink-0 mx-auto lg:mx-0">
-            <img
-              draggable={false}
-              src={profile.avatar}
-              alt={profile.fullName}
-              className="w-32 h-32 rounded-2xl object-cover shadow-2xl ring-4 ring-white dark:ring-gray-700"
+            <Avatar
+              name={currentUser.fullName}
+              src={currentUser.avatar}
             />
-            {status.online && (
-              <div className="absolute -bottom-2 -right-2 flex items-center gap-1 bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                Online
-              </div>
-            )}
+            <div className="absolute -bottom-2 -right-2 flex items-center gap-1 bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+              Online
+            </div>
           </div>
 
           {/* Info */}
           <div className="flex-1 min-w-0 w-full">
             <div className="flex flex-wrap items-center gap-3 mb-3">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                {profile.fullName}
+                {currentUser.fullName}
               </h1>
               <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-semibold rounded-full whitespace-nowrap shadow-md">
-                {progression.rankIcon} Nivel {progression.level}
+                {rankIcon} Nivel {level}
               </span>
               <div className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded-full">
                 <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                 <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  {stats.averageRating}
+                  {stats.averageRating?.toFixed(1) || '0.0'}
                 </span>
               </div>
             </div>
 
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              💼 {profile.role.toUpperCase()} · {progression.rank}
+            <p className="flex gap-2 items-center justify-start text-sm text-gray-700 dark:text-gray-300 mb-2">
+              <Briefcase size={20} /> {(currentUser.type || currentUser.role).toUpperCase()} · {rank}
+            </p>
+            <p className="text-sm text-blue-500 dark:text-blue-600 mb-2">
+              @{currentUser.username}
             </p>
 
             <div className="flex flex-wrap gap-3 mb-4 text-xs">
               <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
                 <Coffee className="w-4 h-4" />
-                <span>{status.activity}</span>
+                <span>Trabajando en proyectos</span>
               </div>
               <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
                 <MapPin className="w-4 h-4" />
-                <span>{profile.location}</span>
+                <span>{currentUser.profile?.location || 'Ubicación no especificada'}</span>
               </div>
               <button type='button' className="flex cursor-pointer bg-green-200/30 p-2 rounded-xl items-center gap-1 text-green-600 dark:text-green-400 hover:bg-green-200/50 transition-colors">
                 <MessageCircle className="w-4 h-4" />
@@ -95,27 +193,32 @@ const GeneralSection = () => {
               </button>
             </div>
           </div>
+          {/* Bio */}
+          <div className='overflow-hidden w-full'>
+            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+              {currentUser.profile?.bio || 'Desarrollador apasionado por crear experiencias únicas'}
+            </p>
+          </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-4 mt-5">
-          <ProgressBar 
-            label={`${progression.currentXP.toLocaleString()} XP / ${progression.xpForNextLevel.toLocaleString()} XP para Nivel ${progression.level + 1}`}
-            current={progression.currentXP}
-            total={progression.xpForNextLevel}
-            color="purple"
+        {/* Progress Bar XP - ARREGLADO */}
+        <div className="mb-4 mt-5 ">
+          <ProgressBar
+            label={
+              <div className="flex items-center gap-2">
+                <span>{rankIcon}</span>
+                <span>Nivel {level} · {rank}</span>
+              </div>
+            }
+            current={currentXP}
+            total={xpToNextLevel}
+            isLevelBar
+            height="h-3"
+            animate
           />
         </div>
 
-        {/* Bio */}
-        <div className='overflow-hidden w-full'>
-          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-            {profile.bio}
-          </p>
-        </div>
       </div>
-
-      {/* Skills Section */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden overflow-x-scroll">
         <div className="flex items-center gap-2 mb-4 flex-wrap">
           <Code className="w-5 h-5 text-blue-500" />
@@ -123,52 +226,63 @@ const GeneralSection = () => {
             Habilidades Técnicas
           </h3>
         </div>
-        <div 
-          className="grid gap-4"
+        <div className="grid gap-4"
           style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}
         >
-          {skills.map((skill) => (
-            <ProgressBar
-              key={skill.name}
-              label={`${skill.icon} ${skill.name}`}
-              current={skill.level}
-              total={100}
-              color={skill.color.slice(1)}
-            />
+{skills?.map((skill) => {
+  const tech = getTechConfig(skill);
 
-          ))}
+  return (
+    <ProgressBar
+      key={skill}
+      label={
+        <div className="flex items-center gap-2">
+          {tech?.icon ?? <span>📚</span>}
+          <span>{skill}</span>
+        </div>
+      }
+      current={0}
+      total={100}
+      gradient={tech?.color}
+      animate
+    />
+  );
+})}
+
         </div>
       </div>
 
+
+
       {/* Stats Cards */}
-      <div 
+      <div
         className="grid gap-4"
         style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}
       >
         <StatsCard
           icon={CheckCircle}
-          value={stats.tasksCompleted}
+          value={stats.tasksCompleted || 0}
           label="Tareas Completadas"
           iconColor="text-green-600 dark:text-green-400"
           bgColor="bg-green-100 dark:bg-green-900/30"
         />
         <StatsCard
           icon={DollarSign}
-          value={`$${stats.totalEarnings.toLocaleString()}`}
+          value={`$${(stats.totalEarnings || 0).toLocaleString()}`}
           label="Ganancias Totales"
           iconColor="text-blue-600 dark:text-blue-400"
           bgColor="bg-blue-100 dark:bg-blue-900/30"
         />
         <StatsCard
           icon={Clock}
-          value={`${stats.hoursWorked}h`}
+          value={`${stats.totalHoursWorked || 0}h`}
           label="Horas Trabajadas"
           iconColor="text-orange-600 dark:text-orange-400"
           bgColor="bg-orange-100 dark:bg-orange-900/30"
         />
         <StatsCard
           icon={Briefcase}
-          value={stats.projectsCompleted}
+          value={stats.projectsCompleted || 0}
           label="Proyectos Finalizados"
           iconColor="text-purple-600 dark:text-purple-400"
           bgColor="bg-purple-100 dark:bg-purple-900/30"
@@ -176,8 +290,8 @@ const GeneralSection = () => {
       </div>
 
       {/* Additional Info */}
-      <div 
-        className="grid gap-4 mb-10"
+      <div
+        className="grid gap-4 mb-14"
         style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}
       >
         {/* Disponibilidad */}
@@ -189,13 +303,9 @@ const GeneralSection = () => {
             <div>
               <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Estado</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {professional.availability}
+                Disponible para proyectos
               </p>
             </div>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-            <Globe className="w-4 h-4" />
-            <span>{profile.timezone}</span>
           </div>
         </div>
 
@@ -237,24 +347,37 @@ const GeneralSection = () => {
               </p>
             </div>
           </div>
-          <div className="flex gap-1">
-            {badges.slice(0, 4).map((badge) => (
-              <div key={badge.id} className="text-2xl" title={badge.name}>
-                {badge.icon}
-              </div>
-            ))}
-          </div>
+          {badges.length > 0 ? (
+            <div className="flex gap-1">
+              {badges.slice(0, 4).map((badge, idx) => (
+                <div key={badge.id || idx} className="text-2xl" title={badge.name}>
+                  {badge.icon}
+                </div>
+              ))}
+              {badges.length > 4 && (
+                <div className="text-xs text-gray-600 dark:text-gray-400 self-center ml-1">
+                  +{badges.length - 4} más
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Completa tareas para desbloquear medallas
+            </p>
+          )}
         </div>
       </div>
 
       <EditProfileModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        userData={profileData}
+        userData={currentUser.profile || {}}
         onSave={handleSaveProfile}
       />
     </div>
   );
 };
+
+
 
 export default GeneralSection;

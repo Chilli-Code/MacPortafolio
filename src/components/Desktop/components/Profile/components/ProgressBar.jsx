@@ -1,51 +1,78 @@
-// /components/Profile/components/ProgressBar.jsx
+import { useState, useEffect } from 'react';
 
-const ProgressBar = ({ label, current, total, color = "blue", showPercentage = true }) => {
-  const percentage = (current / total) * 100;
-  
-  // Mapeo de colores a gradientes
-  const colorGradients = {
-    blue: 'from-blue-500 to-blue-400',
-    purple: 'from-blue-500 via-purple-500 to-pink-500',
-    green: 'from-green-500 to-green-400',
-    red: 'from-red-500 to-red-400',
-    yellow: 'from-yellow-500 to-yellow-400',
-    orange: 'from-orange-500 to-orange-400',
-    cyan: 'from-cyan-500 to-cyan-400',
-    pink: 'from-pink-500 to-pink-400',
-    gray: 'from-gray-500 to-gray-400',
-    // Colores hex personalizados
-    '61DAFB': 'from-blue-400 to-cyan-400', // React
-    '68A063': 'from-green-600 to-green-400', // Node
-    '3178C6': 'from-blue-600 to-blue-400', // TypeScript
-    '3776AB': 'from-blue-700 to-blue-500', // Python
-    '336791': 'from-blue-800 to-blue-600', // PostgreSQL
-    '2496ED': 'from-blue-500 to-blue-400', // Docker
-    'F05032': 'from-orange-600 to-red-500', // Git
-    'FF6B6B': 'from-red-400 to-pink-400', // UI/UX
+const ProgressBar = ({ 
+  label,
+  current,
+  total,
+  gradient,
+  isLevelBar = false,
+  showPercentage = true,
+  showValues = true,
+  height = 'h-2',
+  animate = true,
+  showLabel = true
+}) => {
+  const [percentage, setPercentage] = useState(0);
+
+  useEffect(() => {
+    const value = total > 0 ? (current / total) * 100 : 0;
+    const capped = Math.min(value, 100);
+
+    if (!animate) {
+      setPercentage(capped);
+      return;
+    }
+
+    const timer = setTimeout(() => setPercentage(capped), 100);
+    return () => clearTimeout(timer);
+  }, [current, total, animate]);
+
+  const gradientClass = gradient || 'from-blue-500 to-blue-400';
+
+  const formatValue = (value) =>
+    value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value.toLocaleString();
+
+  const getTextColor = () => {
+    if (percentage > 70) return 'text-green-600 dark:text-green-400';
+    if (percentage > 40) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
   };
 
-  const gradientClass = colorGradients[color] || `from-${color}-500 to-${color}-400`;
-  
   return (
-    <div>
-      <div className="flex justify-between text-sm mb-2">
-        <span className="font-medium text-gray-700 dark:text-gray-300">{label}</span>
-        {showPercentage && (
-          <span className="text-gray-500 dark:text-gray-400">
-            {current}/{total}
-          </span>
-        )}
-      </div>
-      <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-        <div
-          className={`h-full bg-gradient-to-r ${gradientClass} transition-all duration-500 rounded-full relative`}
-          style={{ width: `${percentage}%` }}
-        >
-          {/* Efecto de brillo animado */}
-          <div className="absolute inset-0 bg-white/20 animate-pulse" />
+    <div className="w-full">
+      {showLabel && (
+        <div className="flex justify-between items-center mb-2">
+          <div className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
+            {label}
+          </div>
+
+          {showPercentage && (
+            <div className="flex items-center gap-2">
+              {showValues && (
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {formatValue(current)}/{formatValue(total)}
+                </span>
+              )}
+              <span className={`text-xs font-semibold ${getTextColor()}`}>
+                {Math.round(percentage)}%
+              </span>
+            </div>
+          )}
         </div>
+      )}
+
+      <div className={`${height} bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden relative`}>
+        <div
+          className={`h-full bg-gradient-to-r ${gradientClass} transition-all duration-700 ease-out rounded-full`}
+          style={{ width: `${percentage}%` }}
+        />
       </div>
+
+      {isLevelBar && percentage >= 100 && (
+        <div className="mt-1 text-xs text-green-600 dark:text-green-400 font-semibold animate-pulse">
+          ¡Listo para subir de nivel! 🚀
+        </div>
+      )}
     </div>
   );
 };

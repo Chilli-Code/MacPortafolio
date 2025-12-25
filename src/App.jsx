@@ -12,6 +12,8 @@ import "./App.css";
 // Componentes críticos
 import { AchievementNotificationContainer } from "#components/AchievementNotification";
 import LockScreen from "#components/LockScreen";
+import { SystemNotificationContainer } from "#components/SystemNotification";
+import LoadingScreen from "#components/LoadingScreen";
 
 // Layouts lazy
 const DesktopLayout = lazy(() => import("./layouts/DesktopLayout"));
@@ -22,12 +24,7 @@ const DeviceBlocker = lazy(() => import("#components/DeviceBlocker"));
 gsap.registerPlugin(Draggable);
 
 const WindowLoader = () => (
-  <div className="fixed inset-0 flex items-center justify-center bg-gray-900">
-    <div className="flex flex-col items-center gap-4">
-      <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
-      <div className="text-white text-xl">Cargando sistema...</div>
-    </div>
-  </div>
+  <LoadingScreen variant="macos" message="Cargando sistema..." />
 );
 
 const AppContent = memo(({ device, isAuthenticated, currentUser, handleLock }) => {
@@ -90,6 +87,7 @@ const App = () => {
   if (!isAuthenticated) {
     return (
       <Suspense fallback={<WindowLoader />}>
+         <SystemNotificationContainer />
         <AchievementNotificationContainer />
         <LockScreen onUnlock={handleUnlock} />
       </Suspense>
@@ -99,6 +97,7 @@ const App = () => {
   if (currentUser?.role === 'admin') {
     return (
       <Suspense fallback={<WindowLoader />}>
+         <SystemNotificationContainer />
         <AchievementNotificationContainer />
         <AdminDashboard onLogout={handleLock} currentUser={currentUser} />
       </Suspense>
@@ -108,6 +107,7 @@ const App = () => {
   // ⭐ Renderizar layout según dispositivo
   return (
     <Suspense fallback={<WindowLoader />}>
+       <SystemNotificationContainer />
       <AchievementNotificationContainer />
       <AppContent 
         device={device}

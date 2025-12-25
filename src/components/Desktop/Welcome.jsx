@@ -1,6 +1,8 @@
 import { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import { useAuthStore } from '../../store/authStore';
+import DeviceBlocker from "#components/DeviceBlocker";
 
 const FONT_WEIGHT = {
     subtitle: { min: 100, max: 400, default: 100 },
@@ -65,6 +67,7 @@ const setupTextHover = (container, type) => {
 
 
 const Welcome = () => {
+    const currentUser = useAuthStore(state => state.currentUser);
     const titleRef = useRef(null);
     const subtitleRef = useRef(null);
 
@@ -84,21 +87,19 @@ const Welcome = () => {
         <section id="welcome">
             <p ref={subtitleRef}>
                 {renderText(
-                    "Hola, bienvenido a mi",
+                    "Hola, Bienvenido :)",
                     "text-3xl font-georama",
                     100,
                 )}
             </p>
             <h1 ref={titleRef} className="mt-7">
                 {renderText(
-                    "portafolio",
+                    `${currentUser.username}`,
                     "text-9xl italic font-georama"
                 )}
             </h1>
 
-            <div className="small-screen">
-                <p>This Portafolio is designed for desktop/tablet screens only.</p>
-            </div>
+
         </section>
     );
 }

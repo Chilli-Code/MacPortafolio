@@ -48,6 +48,10 @@ const TaskCard = ({ task, onClick }) => {
   const status = statusBadges[task.status];
   const shouldMarquee = task.tags && task.tags.length > 4;
   
+  // ⭐ SOPORTAR AMBAS ESTRUCTURAS (vieja y nueva)
+  const taskXP = task.rewards?.xp || task.xp || 0;
+  const taskReward = task.rewards?.totalReward || task.rewards?.baseReward || task.reward || 0;
+  
   return (
     <div
       onClick={onClick}
@@ -118,7 +122,7 @@ const TaskCard = ({ task, onClick }) => {
             </div>
             <div>
               <p className="text-xs text-gray-500">XP</p>
-              <p className="font-semibold text-gray-950 dark:text-white text-sm">{task.xp}</p>
+              <p className="font-semibold text-gray-950 dark:text-white text-sm">{taskXP}</p>
             </div>
           </div>
 
@@ -128,7 +132,7 @@ const TaskCard = ({ task, onClick }) => {
             </div>
             <div>
               <p className="text-xs text-gray-500">Pago</p>
-              <p className="text-gray-950 dark:text-white font-semibold text-sm">${task.reward}</p>
+              <p className="text-gray-950 dark:text-white font-semibold text-sm">${taskReward}</p>
             </div>
           </div>
 
@@ -137,12 +141,12 @@ const TaskCard = ({ task, onClick }) => {
               <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Deadline</p>
+              <p className="text-xs text-gray-500">Fecha Limite</p>
               <p className="text-gray-950 dark:text-white font-semibold text-xs">{task.deadline}</p>
             </div>
           </div>
 
-          <div className="flex items-cente">
+          <div className="flex items-center">
             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${difficultyColors[task.difficulty] || difficultyColors.medium}`}>
               {task.difficulty?.toUpperCase() || 'MEDIUM'}
             </span>

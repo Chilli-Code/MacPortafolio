@@ -470,38 +470,38 @@ const navIcons = [
 const dockApps = [
   {
     id: "finder",
-    name: "Portfolio", // was "Finder"
+    name: "Archivos", // was "Finder"
     icon: "finder.webp",
     canOpen: true,
   },
   {
     id: "safari",
-    name: "Articles", // was "Safari"
+    name: "Safari", // was "Safari"
     icon: "safari.webp",
     canOpen: true,
   },
   {
     id: "photos",
-    name: "Gallery", // was "Photos"
+    name: "Galeria", // was "Photos"
     icon: "photos.webp",
     canOpen: true,
   },
   {
     id: "contact",
-    name: "Contact", // or "Get in touch"
+    name: "Contacto", // or "Get in touch"
     icon: "contact.webp",
     canOpen: true,
   },
   {
     id: "terminal",
-    name: "Skills", // was "Terminal"
+    name: "Terminal", // was "Terminal"
     icon: "terminal.webp",
     canOpen: true,
   },
   {
     id: "game",
     name: "game",
-    icon: "trash.webp",
+    icon: "trash2.webp",
     canOpen: true,
   },
 ];
@@ -537,12 +537,6 @@ const dockAppsMobile = [
     icon: "terminal.webp",
     canOpen: true,
   },
-  {
-    id: "game",
-    name: "Juego",
-    icon: "trash.webp",
-    canOpen: true,
-  },
 ];
 
 const screenApps = [
@@ -553,7 +547,7 @@ const screenApps = [
     canOpen: true,
   },
   {
-    id: "config",
+    id: "settings",
     name: "Configuracion", // was "Safari"
     icon: "settingMobile.webp",
     canOpen: true,
@@ -725,7 +719,7 @@ const photosLinks = [
   },
 ];
 
-// src/constants/index.js
+
 
 const settingsLinks = [
   {

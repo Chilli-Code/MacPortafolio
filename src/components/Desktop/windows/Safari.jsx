@@ -8,11 +8,14 @@ import TaskTabs from "#Desktop/components/Safari/TaskTabs";
 import TaskCard from "#Desktop/components/Safari/TaskCard";
 import EmptyState from "#Desktop/components/Safari/EmptyState";
 import { useNotificationStore } from '#components/AchievementNotification';
+import { useSystemNotificationStore } from '#components/SystemNotification'; // ⭐ Sistema
+
 import { ChevronLeft, ChevronRight, PanelLeft, Search, ShieldHalf, Share, Plus, Copy } from "#assets/icons";
 
 const Safari = ({ isMaximized, setIsMaximized }) => {
   const { tasks, lastFetchedAt, userType, acceptTask, submitTask, fetchTasks, reopenTask } = useTasksStore();
   const { addNotification } = useNotificationStore();
+  const { addSystemNotification } = useSystemNotificationStore(); // ⭐ Para sistema
   const [selectedTask, setSelectedTask] = useState(null);
   const [activeTab, setActiveTab] = useState('available');
 
@@ -29,12 +32,14 @@ const Safari = ({ isMaximized, setIsMaximized }) => {
       const currentUser = JSON.parse(localStorage.getItem('userSession'));
       await acceptTask(selectedTask.id, currentUser.id);
       
-      addNotification({
+      // ⭐ Notificación del sistema (simple y discreta)
+      addSystemNotification({
         type: 'task',
-        category: 'Tarea Aceptada',
-        title: selectedTask.title,
-        description: `Recompensa: $${selectedTask.reward}`,
-        xp: 25
+        app: 'Safari',
+        title: 'Tarea aceptada',
+        message: `"${selectedTask.title}" ha sido agregada a tus tareas en progreso`,
+        showTime: true,
+        duration: 3000
       });
       
       await fetchTasks();
@@ -46,13 +51,22 @@ const Safari = ({ isMaximized, setIsMaximized }) => {
       await submitTask(selectedTask.id, {
         notes: 'Tarea completada desde Safari'
       });
+            // ⭐ Notificación del sistema
+      addSystemNotification({
+        type: 'success',
+        app: 'Safari',
+        title: 'Tarea enviada',
+        message: `"${selectedTask.title}" está en revisión`,
+        showTime: true
+      });
       
+      // ⭐ Logro por completar
       addNotification({
         type: 'task',
-        category: 'Tarea Enviada',
+        category: '✅ Tarea Completada',
         title: selectedTask.title,
-        description: 'Tu tarea ha sido enviada para revisión',
-        xp: 10
+        description: 'Tu trabajo ha sido enviado para revisión',
+        xp: selectedTask.xp
       });
       
       await fetchTasks();
@@ -61,29 +75,34 @@ const Safari = ({ isMaximized, setIsMaximized }) => {
 
     // ⭐ Manejar reabrir tarea rechazada
 // ⭐ Manejar reabrir tarea rechazada - ACTUALIZADA
-const handleReopen = async () => {
-  const success = await reopenTask(selectedTask.id);
-  
-  if (success) {
-    addNotification({
-      type: 'task',
-      category: 'Tarea Reabierta',
-      title: selectedTask.title,
-      description: 'La tarea ha sido movida a "En Progreso"',
-      xp: 0
-    });
-    
-    await fetchTasks();
-    setSelectedTask(null);
-    setActiveTab('in_progress'); // ⭐ Cambiar al tab de En Progreso
-  } else {
-    addNotification({
-      type: 'error',
-      title: 'Error',
-      description: 'No se pudo reabrir la tarea'
-    });
-  }
-};
+  const handleReopen = async () => {
+      const success = await reopenTask(selectedTask.id);
+      
+      if (success) {
+        // ⭐ Notificación del sistema
+        addSystemNotification({
+          type: 'info',
+          app: 'Safari',
+          title: 'Tarea reabierta',
+          message: `"${selectedTask.title}" ha sido movida a "En Progreso"`,
+          showTime: true
+        });
+        
+        await fetchTasks();
+        setSelectedTask(null);
+        setActiveTab('in_progress');
+      } else {
+        // ⭐ Error del sistema
+        addSystemNotification({
+          type: 'error',
+          app: 'Safari',
+          title: 'Error al reabrir',
+          message: 'No se pudo reabrir la tarea. Intenta de nuevo.',
+          duration: 4000
+        });
+      }
+    };
+
 
     return (
       <>
@@ -150,7 +169,7 @@ pending_review: tasks.filter(t => t.status === 'pending_review'),
 
       <div className="overflow-y-auto h-full bg-gray-50 dark:bg-gray-900">
         {/* Tabs */}
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 pt-4 overflow-x-auto">
+        <div className="bg-white barraS dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 pt-4 overflow-x-auto">
           <TaskTabs 
             activeTab={activeTab} 
             onTabChange={setActiveTab} 
