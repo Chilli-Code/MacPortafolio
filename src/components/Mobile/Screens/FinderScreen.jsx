@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronLeft, Search, Folder, FileText, Image, File, Globe, Figma } from 'lucide-react';
+import { ChevronLeft, Search, Folder, FileText, Image, File, Globe, Figma } from '#assets/icons';
 import { locations } from '#constants/index.js';
 
 const FinderScreen = ({ onBack }) => {

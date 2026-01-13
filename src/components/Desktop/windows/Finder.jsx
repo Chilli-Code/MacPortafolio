@@ -77,7 +77,7 @@ const Finder = ({ isMaximized, setIsMaximized }) => {
       </div>
 
       <div className="flex h-full bg-white overflow-hidden">
-        <div className="w-48 sidebar sidebarFolder flex-shrink-0 overflow-y-auto">
+        <div className="w-48 sidebar sidebarFolder flex-shrink-0 overflow-y-auto mb-10">
           {renderList('Favoritos', Object.values(locations))}
           {renderList('Mis proyectos', locations.work.children)}
         </div>
@@ -86,7 +86,7 @@ const Finder = ({ isMaximized, setIsMaximized }) => {
         <div className="flex-1 min-w-0 relative boxbg overflow-y-auto overflow-x-hidden">
 
           <ul
-            className="content grid gap-6 p-6"
+            className="content grid gap-6 p-6 mb-10"
             style={{
               gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))'
             }}

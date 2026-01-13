@@ -1,4 +1,4 @@
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft } from '#assets/icons';
 
 const MobileNav = ({ 
   title, 

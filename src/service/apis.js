@@ -416,6 +416,106 @@ export const api = {
       console.error('❌ Error fetching leaderboard:', error);
       return null;
     }
+  },
+
+  // ============ NOTIFICACIONES GLOBALES ============
+
+  // 📢 Crear notificación global (visible para todos los usuarios)
+  async createGlobalNotification(notificationData) {
+    try {
+      console.log('📢 Creating global notification:', notificationData.title);
+      const response = await fetch(`${API_URL}/globalNotifications`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: Date.now().toString(),
+          ...notificationData,
+          createdAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 horas
+          dismissedBy: []
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error creating global notification: ${response.status}`);
+      }
+
+      const notification = await response.json();
+      console.log('✅ Global notification created:', notification);
+      return notification;
+    } catch (error) {
+      console.error('❌ Error creating global notification:', error);
+      throw error;
+    }
+  },
+
+  // 📥 Obtener notificaciones globales activas
+  async getGlobalNotifications() {
+    try {
+      console.log('📥 Fetching global notifications');
+      const response = await fetch(`${API_URL}/globalNotifications`);
+      if (!response.ok) {
+        throw new Error(`Error fetching global notifications: ${response.status}`);
+      }
+      const notifications = await response.json();
+
+      // Filtrar notificaciones expiradas y no descartadas por el usuario actual
+      const currentUserId = localStorage.getItem('currentUserId') || 'anonymous';
+      const activeNotifications = notifications.filter(notification => {
+        const isExpired = new Date(notification.expiresAt) < new Date();
+        const isDismissed = notification.dismissedBy?.includes(currentUserId);
+        return !isExpired && !isDismissed;
+      });
+
+      console.log('✅ Active global notifications:', activeNotifications.length);
+      return activeNotifications;
+    } catch (error) {
+      console.error('❌ Error fetching global notifications:', error);
+      return [];
+    }
+  },
+
+  // 🚫 Marcar notificación global como descartada por el usuario actual
+  async dismissGlobalNotification(notificationId) {
+    try {
+      console.log('🚫 Dismissing global notification:', notificationId);
+
+      // Obtener la notificación actual
+      const notificationResponse = await fetch(`${API_URL}/globalNotifications/${notificationId}`);
+      if (!notificationResponse.ok) {
+        throw new Error(`Error fetching notification: ${notificationResponse.status}`);
+      }
+
+      const notification = await notificationResponse.json();
+      const currentUserId = localStorage.getItem('currentUserId') || 'anonymous';
+
+      // Agregar el usuario actual a dismissedBy
+      const updatedDismissedBy = [...(notification.dismissedBy || []), currentUserId];
+
+      // Actualizar la notificación
+      const updateResponse = await fetch(`${API_URL}/globalNotifications/${notificationId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          dismissedBy: updatedDismissedBy
+        }),
+      });
+
+      if (!updateResponse.ok) {
+        throw new Error(`Error updating notification: ${updateResponse.status}`);
+      }
+
+      const updated = await updateResponse.json();
+      console.log('✅ Global notification dismissed');
+      return updated;
+    } catch (error) {
+      console.error('❌ Error dismissing global notification:', error);
+      throw error;
+    }
   }
 };
 

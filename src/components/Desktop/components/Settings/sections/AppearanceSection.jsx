@@ -4,10 +4,17 @@ import { useState, useEffect } from 'react';
 import { Palette, Monitor, Moon, Sun, Check } from '#assets/icons';
 import clsx from 'clsx';
 import gsap from 'gsap';
+import { useAuthStore } from '#store/authStore';
+import FontSizeSection from '../FontSizeSection';
+
+
+import PerformanceMonitorToggle from '#components/Desktop/Components/Settings/PerformanceMonitorToggle';
+import PerformanceMonitor from '#components/Systemresourcessection';
 
 const AppearanceSection = () => {
   const [selectedWallpaper, setSelectedWallpaper] = useState("/images/wallpapers/wallpaper.webp");
   const [theme, setTheme] = useState("light");
+  const currentUser = useAuthStore(state => state.currentUser);
 
   // Cargar configuración desde localStorage
   useEffect(() => {
@@ -52,8 +59,37 @@ const AppearanceSection = () => {
   const handleThemeChange = (newTheme) => {
     const switchTheme = () => {
       setTheme(newTheme);
+      
+      // ⭐ GUARDAR EN localStorage PRIMERO
       localStorage.setItem("theme", newTheme);
+      
+      // ⭐ ACTUALIZAR userSession SI EXISTE
+      const savedUser = localStorage.getItem('userSession');
+      if (savedUser) {
+        try {
+          const userData = JSON.parse(savedUser);
+          userData.preferences = userData.preferences || {};
+          userData.preferences.theme = newTheme;
+          localStorage.setItem('userSession', JSON.stringify(userData));
+          
+          console.log('💾 Tema guardado en userSession:', newTheme);
+          
+          // ⭐ ACTUALIZAR EN EL BACKEND (opcional, sin bloquear)
+          if (userData.id) {
+            fetch(`/api/users/${userData.id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                preferences: userData.preferences
+              })
+            }).catch(err => console.error('Error actualizando tema en backend:', err));
+          }
+        } catch (error) {
+          console.error('Error actualizando userSession:', error);
+        }
+      }
 
+      // ⭐ APLICAR TEMA AL DOM
       if (newTheme === "dark") {
         document.documentElement.classList.add("dark");
         gsap.fromTo(
@@ -69,6 +105,8 @@ const AppearanceSection = () => {
           { opacity: 1, scale: 1, duration: 0.6, ease: "power2.out" }
         );
       }
+      
+      console.log('🎨 Tema cambiado a:', newTheme);
     };
 
     // View Transition API con logo de Apple
@@ -156,6 +194,14 @@ const AppearanceSection = () => {
     { id: 2, path: "/images/wallpapers/wallpaper2.webp", name: "Big Sur" },
     { id: 3, path: "/images/wallpapers/wallpaper3.webp", name: "Monterey" },
     { id: 4, path: "/images/wallpapers/wallpaper4.webp", name: "Ventura" },
+    { id: 5, path: "/images/wallpapers/wallpaper5.webp", name: "Ventura" },
+    { id: 6, path: "/images/wallpapers/wallpaper6.webp", name: "Ventura" },
+    { id: 7, path: "/images/wallpapers/wallpaper7.webp", name: "Ventura" },
+    { id: 8, path: "/images/wallpapers/wallpaper8.webp", name: "Ventura" },
+    { id: 9, path: "/images/wallpapers/wallpaper9.webp", name: "Ventura" },
+    { id: 10, path: "/images/wallpapers/wallpaper10.webp", name: "Ventura" },
+    { id: 11, path: "/images/wallpapers/wallpaper11.webp", name: "Ventura" },
+    // { id: 12, path: "/images/wallpapers/wallpaper12.webp", name: "Ventura" },
   ];
 
   return (
@@ -265,6 +311,11 @@ const AppearanceSection = () => {
           </div>
         </div>
       </div>
+              <div className="mt-6">
+         <PerformanceMonitorToggle />
+        </div>
+
+          <FontSizeSection />
 
       {/* Selector de Fondo de Pantalla */}
       <div>
@@ -289,6 +340,7 @@ const AppearanceSection = () => {
                   draggable={false}
                   src={wallpaper.path}
                   alt={wallpaper.name}
+                  loading='lazy'
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.target.src = `https://via.placeholder.com/400x225/3b82f6/ffffff?text=${wallpaper.name}`;

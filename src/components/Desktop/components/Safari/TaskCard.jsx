@@ -162,7 +162,8 @@ const TaskCard = ({ task, onClick }) => {
             </p>
           </div>
         )}
-
+        {/* Spacer - Para empujar el footer hacia abajo */}
+        <div className="flex-1"></div>
         {task.status === 'completed' && task.completedAt && (
           <div className="flex justify-center items-center gap-2 pt-2 mb-4 border-t border-gray-200 dark:border-gray-700">
             <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
@@ -172,8 +173,7 @@ const TaskCard = ({ task, onClick }) => {
           </div>
         )}
 
-        {/* Spacer - Para empujar el footer hacia abajo */}
-        <div className="flex-1"></div>
+
 
         {/* Footer - Siempre al fondo */}
         <div className="pt-3 border-t border-gray-200 dark:border-gray-700">

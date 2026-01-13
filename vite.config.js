@@ -100,10 +100,10 @@ export default defineConfig({
     warmup: {
       clientFiles: [
         './src/App.jsx',
-        './src/components/Navbar.jsx',
-        './src/components/Dock.jsx',
-        './src/windows/Terminal.jsx',
-        './src/windows/Safari.jsx',
+        './src/components/Desktop/Navbar.jsx',
+        './src/components/Desktop/Dock.jsx',
+        './src/components/Desktop/windows/Terminal.jsx',
+        './src/components/Desktop/windows/Safari.jsx',
       ]
     }
   },
@@ -118,28 +118,28 @@ export default defineConfig({
           'gsap-vendor': ['gsap'],
           'store-vendor': ['zustand'],
           'windows-core': [
-            './src/windows/Terminal.jsx',
-            './src/windows/Safari.jsx',
+            './src/components/Desktop/windows/Terminal.jsx',
+            './src/components/Desktop/windows/Safari.jsx',
           ],
           'windows-media': [
-            './src/windows/Galery.jsx',
-            './src/windows/Image.jsx',
+            './src/components/Desktop/windows/Galery.jsx',
+            './src/components/Desktop/windows/Image.jsx',
           ],
           'windows-docs': [
-            './src/windows/Text.jsx',
-            './src/windows/Resume.jsx',
-            './src/windows/Finder.jsx',
+            './src/components/Desktop/windows/Text.jsx',
+            './src/components/Desktop/windows/Resume.jsx',
+            './src/components/Desktop/windows/Finder.jsx',
           ],
           'windows-social': [
-            './src/windows/Chat.jsx',
-            './src/windows/Contact.jsx',
+            './src/components/Desktop/windows/Chat.jsx',
+            './src/components/Desktop/windows/Contact.jsx',
           ],
           'admin': [
             './src/components/AdminDashboard.jsx',
           ],
           'profile': [
-            './src/windows/Profile.jsx',
-            './src/windows/Settings.jsx',
+            './src/components/Desktop/windows/Profile.jsx',
+            './src/components/Desktop/windows/Settings.jsx',
           ],
         },
         chunkFileNames: 'js/[name]-[hash].js',

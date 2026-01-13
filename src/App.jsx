@@ -1,25 +1,21 @@
-// src/App.jsx
-
-
-import { useState, useEffect, lazy, Suspense, memo } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useSafeDevice } from "./hooks/useSafeDevice";
-import { useAppSettingsStore } from "#store/notificationStore";
+import { useAppSettingsStore } from "#store/appSettingsStore";
 import { useAuthStore } from "#store/authStore";
 import { gsap } from "gsap";
 import { Draggable } from "gsap/Draggable";
 import "./App.css";
 
-// Componentes críticos
 import { AchievementNotificationContainer } from "#components/AchievementNotification";
 import LockScreen from "#components/LockScreen";
 import { SystemNotificationContainer } from "#components/SystemNotification";
 import LoadingScreen from "#components/LoadingScreen";
+import BootScreen from "#components/BootScreen";
+import LoginBootSequence from "#components/LoginBootSequence";
 
-// Layouts lazy
 const DesktopLayout = lazy(() => import("./layouts/DesktopLayout"));
 const MobileLayout = lazy(() => import("./layouts/MobileLayout"));
 const AdminDashboard = lazy(() => import("#components/AdminDashboard"));
-const DeviceBlocker = lazy(() => import("#components/DeviceBlocker"));
 
 gsap.registerPlugin(Draggable);
 
@@ -27,94 +23,123 @@ const WindowLoader = () => (
   <LoadingScreen variant="macos" message="Cargando sistema..." />
 );
 
-const AppContent = memo(({ device, isAuthenticated, currentUser, handleLock }) => {
-  const { type, isDesktopResized, isReady } = device;
-  
-  if (!isReady) return <WindowLoader />;
-  
-  // Bloquear desktop redimensionado
-  if (isDesktopResized) {
-    return <DeviceBlocker />;
-  }
-  
-  // Lógica normal de tu app
-  if (!isAuthenticated) {
-    return <LockScreen onUnlock={() => {}} />;
-  }
-  
-  if (currentUser?.role === 'admin') {
-    return <AdminDashboard onLogout={handleLock} currentUser={currentUser} />;
-  }
-  
-  return type === 'mobile' ? 
-    <MobileLayout user={currentUser} onLogout={handleLock} /> : 
-    <DesktopLayout user={currentUser} onLogout={handleLock} />;
-});
-
-AppContent.displayName = 'AppContent';
-
-
+/**
+ * FASES DE LA APP:
+ * boot           -> BootScreen
+ * login          -> LockScreen
+ * loginSequence  -> LoginBootSequence (solo después de login)
+ * loading        -> LoadingScreen (refresh con sesión)
+ * app            -> App normal
+ */
 const App = () => {
   const device = useSafeDevice();
-  const [isLoading, setIsLoading] = useState(true);
   const initialize = useAppSettingsStore(state => state.initialize);
   const { currentUser, isAuthenticated, restoreSession, logout } = useAuthStore();
-  
-  // ⭐ Detectar mobile
 
+  const [appPhase, setAppPhase] = useState("boot");
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  // Decidir fase inicial
   useEffect(() => {
+    const hasSession = localStorage.getItem("userSession");
+    if (hasSession) {
+      setAppPhase("loading"); // recarga con sesión
+    } else {
+      setAppPhase("boot"); // primera vez
+    }
+  }, []);
+
+  // Inicializar stores y restaurar sesión
+  useEffect(() => {
+    if (appPhase === "boot") return;
+
     const init = async () => {
       await initialize();
       await restoreSession();
-      setTimeout(() => setIsLoading(false), 100);
+      setIsInitializing(false);
+
+      const justLoggedIn = sessionStorage.getItem("justLoggedIn");
+      if (justLoggedIn === "true") {
+        setAppPhase("loginSequence");
+      } else if (isAuthenticated) {
+        setAppPhase("app");
+      } else {
+        setAppPhase("login");
+      }
     };
+
     init();
-  }, [initialize, restoreSession]);
+  }, [appPhase, initialize, restoreSession, isAuthenticated]);
 
-  const handleUnlock = (userData) => {
-    console.log('✅ Usuario autenticado:', userData);
+  // Manejo de logout seguro
+  const handleLogout = () => {
+    logout();                  // Borra currentUser
+    setAppPhase("boot");        // Volver a BootScreen
+    setIsInitializing(true);    // Bloquear app mientras inicia
   };
 
-  const handleLock = () => {
-    logout();
-    console.log('🔒 Sesión cerrada');
-  };
+  // ========================
+  // RENDER POR FASE
+  // ========================
+  if (device.type === "desktop" && appPhase === "boot") {
+    return <BootScreen onBootComplete={() => setAppPhase("login")} />;
+  }
 
-  if (isLoading) {
+  if (appPhase === "loginSequence") {
+    return (
+      <LoginBootSequence
+        username={currentUser?.username || "Usuario"} // ⚡ Protegido con default
+        onComplete={() => {
+          sessionStorage.removeItem("justLoggedIn");
+          setIsInitializing(false);
+          setAppPhase("app");
+        }}
+      />
+    );
+  }
+
+  if (appPhase === "loading" || isInitializing) {
     return <WindowLoader />;
   }
 
-  if (!isAuthenticated) {
+  if (appPhase === "login") {
     return (
       <Suspense fallback={<WindowLoader />}>
-         <SystemNotificationContainer />
+        <SystemNotificationContainer />
         <AchievementNotificationContainer />
-        <LockScreen onUnlock={handleUnlock} />
+        <LockScreen onLoginSuccess={() => setAppPhase("loginSequence")} />
       </Suspense>
     );
   }
 
-  if (currentUser?.role === 'admin') {
+  // ========================
+  // APP NORMAL
+  // ========================
+
+  // ⚠️ Evitamos renderizar layouts sin currentUser
+  if (!currentUser) {
+    return <WindowLoader />;
+  }
+
+  if (currentUser.role === "admin") {
     return (
       <Suspense fallback={<WindowLoader />}>
-         <SystemNotificationContainer />
+        <SystemNotificationContainer />
         <AchievementNotificationContainer />
-        <AdminDashboard onLogout={handleLock} currentUser={currentUser} />
+        <AdminDashboard currentUser={currentUser} onLogout={handleLogout} />
       </Suspense>
     );
   }
 
-  // ⭐ Renderizar layout según dispositivo
   return (
     <Suspense fallback={<WindowLoader />}>
-       <SystemNotificationContainer />
+      <SystemNotificationContainer />
       <AchievementNotificationContainer />
-      <AppContent 
-        device={device}
-        isAuthenticated={isAuthenticated}
-        currentUser={currentUser}
-        handleLock={handleLock}
-      />
+      {device.type === "mobile" ? (
+        <MobileLayout user={currentUser} onLogout={handleLogout} />
+      ) : (
+        <DesktopLayout user={currentUser} onLogout={handleLogout} />
+      )}
     </Suspense>
   );
 };

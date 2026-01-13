@@ -5,12 +5,15 @@ import { gsap } from "gsap";
 import useWindowStore from "#store/window";
 import { useTasksStore } from "#store/tasksStore";
 import { useNotificationSync } from "../hoc/useNotificationSync";
-
+import api from "../service/apis";
 const NotificationCenter = ({ notifications, setNotifications }) => {
   const popRef = useRef();
   const { closeWindow, openWindow } = useWindowStore();
   const { notifyNewTasks } = useTasksStore();
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Importar API para manejar notificaciones globales
+
 
   const notify = ({ app, title, message, icon }) => {
     speechSynthesis?.cancel();
@@ -145,14 +148,26 @@ const NotificationCenter = ({ notifications, setNotifications }) => {
         ) : (
           <div className="flex flex-col gap-2">
             {notifications.map((n) => (
-              <div 
-                key={n.id} 
+              <div
+                key={n.id}
                 className="bg-white dark:bg-gray-800 rounded-xl p-3.5 shadow-sm hover:shadow-md transition-all cursor-pointer hover:scale-[1.02] relative group"
                 onClick={n.action}
               >
                 <button
-                  onClick={(e) => {
+                  onClick={async (e) => {
                     e.stopPropagation();
+
+                    // Si es una notificación global, marcar como descartada en la API
+                    if (n.globalId) {
+                      try {
+                        await api.dismissGlobalNotification(n.globalId);
+                        console.log('✅ Notificación global descartada:', n.globalId);
+                      } catch (error) {
+                        console.error('❌ Error descartando notificación global:', error);
+                      }
+                    }
+
+                    // Remover de la lista local
                     setNotifications((prev) => prev.filter((x) => x.id !== n.id));
                   }}
                   className="absolute top-2 right-2 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"

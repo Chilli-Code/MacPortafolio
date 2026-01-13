@@ -1,7 +1,11 @@
+// src/hooks/useWindowResize.js
 import { useEffect } from "react";
 import gsap from "gsap";
+import useWindowStore from "#store/window.js";
 
-export const useWindowResize = (ref, isMaximized, isResizing, setIsResizing, resizeData) => {
+export const useWindowResize = (ref, isMaximized, isResizing, setIsResizing, resizeData, windowKey) => {
+    const { saveWindowSize } = useWindowStore();
+
     useEffect(() => {
         const el = ref.current;
         if (!el || isMaximized) return;
@@ -13,15 +17,13 @@ export const useWindowResize = (ref, isMaximized, isResizing, setIsResizing, res
             e.stopPropagation();
             setIsResizing(true);
 
-            // ← NUEVO: Obtener posición REAL sin transforms
             const computedStyle = window.getComputedStyle(el);
             const matrix = new DOMMatrix(computedStyle.transform);
-            const currentX = matrix.m41; // translateX
-            const currentY = matrix.m42; // translateY
+            const currentX = matrix.m41;
+            const currentY = matrix.m42;
             
             const rect = el.getBoundingClientRect();
             
-            // Calcular posición real restando los transforms
             const realLeft = parseFloat(computedStyle.left) || 0;
             const realTop = parseFloat(computedStyle.top) || 0;
 
@@ -33,8 +35,8 @@ export const useWindowResize = (ref, isMaximized, isResizing, setIsResizing, res
                 startHeight: rect.height,
                 startLeft: rect.left,
                 startTop: rect.top,
-                realLeft: realLeft + currentX, // ← Posición real
-                realTop: realTop + currentY,   // ← Posición real
+                realLeft: realLeft + currentX,
+                realTop: realTop + currentY,
                 transformX: currentX,
                 transformY: currentY,
             };
@@ -60,8 +62,8 @@ export const useWindowResize = (ref, isMaximized, isResizing, setIsResizing, res
 
             let newWidth = startWidth;
             let newHeight = startHeight;
-            let newLeft = realLeft;  // ← Usar posición real
-            let newTop = realTop;    // ← Usar posición real
+            let newLeft = realLeft;
+            let newTop = realTop;
 
             const minWidth = 400;
             const minHeight = 300;
@@ -91,7 +93,7 @@ export const useWindowResize = (ref, isMaximized, isResizing, setIsResizing, res
             // Redimensionar verticalmente (arriba)
             if (direction.includes('n')) {
                 const proposedHeight = startHeight - deltaY;
-                const proposedTop = realTop + deltaY; // ← Usar posición real
+                const proposedTop = realTop + deltaY;
                 
                 if (proposedTop >= minTopLimit && proposedHeight >= minHeight) {
                     newHeight = proposedHeight;
@@ -107,7 +109,7 @@ export const useWindowResize = (ref, isMaximized, isResizing, setIsResizing, res
             // Asegurar límites
             newTop = Math.max(minTopLimit, newTop);
 
-            // ← IMPORTANTE: Limpiar transforms antes de aplicar nuevos valores
+            // Limpiar transforms antes de aplicar nuevos valores
             gsap.set(el, {
                 x: 0,
                 y: 0,
@@ -116,12 +118,34 @@ export const useWindowResize = (ref, isMaximized, isResizing, setIsResizing, res
                 left: newLeft,
                 top: newTop,
             });
+
+            // 🆕 Guardar en resizeData solo el tamaño final
+            resizeData.current.finalWidth = newWidth;
+            resizeData.current.finalHeight = newHeight;
         };
 
         const handleMouseUp = () => {
             if (isResizing) {
                 setIsResizing(false);
                 document.body.style.cursor = '';
+
+                // 🆕 GUARDAR SOLO TAMAÑO AL SOLTAR (NO POSICIÓN)
+                const { finalWidth, finalHeight } = resizeData.current;
+                
+                if (finalWidth && finalHeight) {
+                    saveWindowSize(windowKey, {
+                        width: finalWidth,
+                        height: finalHeight
+                    });
+                    
+                    console.log(`💾 Tamaño guardado para ${windowKey}:`, { 
+                        width: finalWidth, 
+                        height: finalHeight
+                    });
+                }
+                
+                // ⚠️ NO guardar posición aquí porque interfiere con Draggable
+                // La posición se guarda solo en onDragEnd del useWindowDrag
             }
         };
 
@@ -153,5 +177,5 @@ export const useWindowResize = (ref, isMaximized, isResizing, setIsResizing, res
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
         };
-    }, [isResizing, isMaximized]);
+    }, [isResizing, isMaximized, windowKey, saveWindowSize]);
 };

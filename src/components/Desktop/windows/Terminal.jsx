@@ -26,6 +26,19 @@ const Terminal = ({ isMaximized, setIsMaximized }) => {
   const executeCommand = async (cmd) => {
     const trimmedCmd = cmd.trim().toLowerCase();
     
+    // Si es clear, ejecutarlo directamente antes de agregar al historial
+    if (trimmedCmd === 'clear') {
+      setCommandHistory([
+        { type: 'system', text: 'Terminal de Tareas v1.0.0' },
+        { type: 'system', text: 'Escribe "help" para ver comandos' }
+      ]);
+      return;
+    }
+
+    if (trimmedCmd === '') {
+      return;
+    }
+
     addToHistory(`$ ${cmd}`, 'command');
 
     const commands = createCommands(store, addToHistory, addNotification);
@@ -39,19 +52,14 @@ const Terminal = ({ isMaximized, setIsMaximized }) => {
       await commands[fullCmd](args.slice(1));
     } else if (commands[mainCmd]) {
       await commands[mainCmd](args);
-    } else if (trimmedCmd === '') {
-      return;
-    } else if (trimmedCmd === 'clear') {
-      commands.clear(setCommandHistory);
     } else {
       addToHistory(`Comando no reconocido: ${trimmedCmd}`, 'error');
       addToHistory('Escribe "help" para ver comandos', 'info');
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (currentCommand.trim()) {
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && currentCommand.trim()) {
       executeCommand(currentCommand);
       setCurrentCommand('');
     }
@@ -86,42 +94,45 @@ const Terminal = ({ isMaximized, setIsMaximized }) => {
       </div>
 
       <div className="flex-1 bg-gray-900 flex flex-col font-mono text-sm overflow-hidden">
-        <div className="flex-1 p-4 space-y-1 overflow-y-auto" onClick={() => inputRef.current?.focus()}>
-          {commandHistory.map((line, i) => (
-            <div key={i} className={`${lineColors[line.type] || 'text-gray-300'} leading-relaxed`}>
-              {line.text}
-            </div>
-          ))}
+        <div className="flex-1 p-4 overflow-y-auto" onClick={() => inputRef.current?.focus()}>
+          <div className="space-y-1">
+            {commandHistory.map((line, i) => (
+              <div key={i} className={`${lineColors[line.type] || 'text-gray-300'} leading-relaxed`}>
+                {line.text}
+              </div>
+            ))}
+          </div>
+          
+          {/* Prompt integrado en el área del terminal */}
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-cyan-400 flex items-center gap-1">
+              <ChevronRight className="w-4 h-4" />
+            </span>
+            <span className="text-green-400 font-bold">user@tasks</span>
+            <span className="text-gray-500">:</span>
+            <span className="text-blue-400">~</span>
+            <span className="text-green-400">$</span>
+            <input
+              ref={inputRef}
+              type="text"
+              value={currentCommand}
+              onChange={(e) => setCurrentCommand(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="flex-1 bg-transparent text-gray-300 outline-none caret-green-400"
+              placeholder="Escribe un comando..."
+              autoFocus
+            />
+          </div>
           <div ref={terminalEndRef} />
         </div>
 
-        <div className="flex-shrink-0">
-          <form onSubmit={handleSubmit} className="border-t border-gray-700 p-4">
-            <div className="flex items-center gap-2">
-              <span className="text-green-400 flex items-center gap-1">
-                <span className="font-bold">user@tasks</span>
-                <ChevronRight className="w-4 h-4" />
-              </span>
-              <input
-                ref={inputRef}
-                type="text"
-                value={currentCommand}
-                onChange={(e) => setCurrentCommand(e.target.value)}
-                className="flex-1 bg-transparent text-gray-300 outline-none"
-                placeholder="Escribe un comando..."
-                autoFocus
-              />
-            </div>
-          </form>
-
-          <div className="bg-gray-800 px-4 py-2 text-xs text-gray-400 flex items-center justify-between border-t border-gray-700">
-            <div className="flex items-center gap-4">
-              <span>Tipo: <span className="text-blue-400 font-semibold">{store.userType}</span></span>
-              <span>Tareas: <span className="text-green-400">{store.tasks.length}</span></span>
-              {store.hasNewTasks && <span className="text-yellow-400 animate-pulse">● Nuevas tareas</span>}
-            </div>
-            <span>Escribe "help"</span>
+        <div className="flex-shrink-0 bg-gray-800 px-4 py-2 text-xs text-gray-400 flex items-center justify-between border-t border-gray-700">
+          <div className="flex items-center gap-4">
+            <span>Tipo: <span className="text-blue-400 font-semibold">{store.userType}</span></span>
+            <span>Tareas: <span className="text-green-400">{store.tasks.length}</span></span>
+            {store.hasNewTasks && <span className="text-yellow-400 animate-pulse">● Nuevas tareas</span>}
           </div>
+          <span>Escribe "help"</span>
         </div>
       </div>
     </div>

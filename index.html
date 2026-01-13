@@ -9,14 +9,22 @@
     <link rel="preload" href="/fonts/roboto-mono/RobotoMono-VariableFont_wght.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/fonts/georama/Georama-VariableFont_wdth,wght.woff2" as="font" type="font/woff2" crossorigin>
 
-
-
     <script>
       (function() {
+        // ⭐ APLICAR TEMA
         const theme = localStorage.getItem('theme') || 'light';
         if (theme === 'dark') {
           document.documentElement.classList.add('dark');
         }
+        // ⭐ APLICAR WALLPAPER
+        const defaultWallpaper = '/images/wallpapers/wallpaper.webp';
+        const wallpaper = localStorage.getItem('wallpaper') || defaultWallpaper;
+        // Guardar wallpaper por defecto si no existe
+        if (!localStorage.getItem('wallpaper')) {
+          localStorage.setItem('wallpaper', defaultWallpaper);
+        }
+        // Aplicar wallpaper inmediatamente
+        document.documentElement.style.setProperty('--wallpaper-url', `url(${wallpaper})`);
       })();
     </script>
   </head>

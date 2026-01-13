@@ -1,8 +1,10 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useAuthStore } from '../../store/authStore';
 import DeviceBlocker from "#components/DeviceBlocker";
+import { usePerformanceMonitor } from '#hooks/usePerformanceMonitor'; // ✅ Importa del hook
+import SystemResourcesSection from "#components/Systemresourcessection"; // ✅ Este es el componente visual
 
 const FONT_WEIGHT = {
     subtitle: { min: 100, max: 400, default: 100 },
@@ -23,7 +25,7 @@ const renderText = (text, className, baseWeight = 400) => {
 
 
 const setupTextHover = (container, type) => {
-    if (!container) return () =>{};
+    if (!container) return () => { };
 
     const letters = container.querySelectorAll("span");
     const { min, max, default: base } = FONT_WEIGHT[type];
@@ -53,7 +55,7 @@ const setupTextHover = (container, type) => {
     };
 
     const handlemouseLeave = () =>
-        letters.forEach((letter) => { animateLetter(letter, base, 0.3)});
+        letters.forEach((letter) => { animateLetter(letter, base, 0.3) });
 
     container.addEventListener("mousemove", handleMouseMove);
     container.addEventListener("mouseleave", handlemouseLeave);
@@ -70,6 +72,7 @@ const Welcome = () => {
     const currentUser = useAuthStore(state => state.currentUser);
     const titleRef = useRef(null);
     const subtitleRef = useRef(null);
+    const { showMonitor } = usePerformanceMonitor();
 
     useGSAP(() => {
         const titleCleanup = setupTextHover(titleRef.current, "title");
@@ -92,6 +95,8 @@ const Welcome = () => {
                     100,
                 )}
             </p>
+
+
             <h1 ref={titleRef} className="mt-7">
                 {renderText(
                     `${currentUser.username}`,

@@ -2,9 +2,16 @@
 import React, { useState, useEffect } from "react";
 import { User, ArrowRight } from "#assets/icons";
 import { useAuthStore } from "#store/authStore";
+import useSounds from "#hooks/useSounds";
 
-const LockScreen = () => {
+const LockScreen = ({ onLoginSuccess }) => {
   const login = useAuthStore(state => state.login);
+  const { initSounds, playHover } = useSounds();
+
+  // Inicializar sonidos
+  useEffect(() => {
+    initSounds();
+  }, [initSounds]);
 
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -22,40 +29,40 @@ const LockScreen = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(false);
-    setErrorMessage("");
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
+  setError(false);
+  setErrorMessage("");
 
-    if (!username.trim() || !password.trim()) {
-      setError(true);
-      setErrorMessage("Por favor completa todos los campos");
-      setIsShaking(true);
-      setIsLoading(false);
-      setTimeout(() => setIsShaking(false), 500);
-      return;
-    }
+  if (!username.trim() || !password.trim()) {
+    setError(true);
+    setErrorMessage("Por favor completa todos los campos");
+    setIsShaking(true);
+    setIsLoading(false);
+    setTimeout(() => setIsShaking(false), 500);
+    return;
+  }
 
-    // ⭐ Llamar al login del store
-    const result = await login(username, password);
+  const result = await login(username, password);
 
-    if (result.success) {
-      console.log('✅ Login exitoso:', result.user.username);
-      // ⭐ No necesitas onUnlock - el store actualiza automáticamente
-      // ⭐ App.jsx detectará el cambio y renderizará el contenido correcto
-    } else {
-      setError(true);
-      setErrorMessage(result.error || "Usuario o contraseña incorrectos");
-      setIsShaking(true);
-      setIsLoading(false);
+  if (result.success) {
+    console.log('✅ Login exitoso:', result.user.username);
+    // 👇 AGREGAR ESTA LÍNEA
+    sessionStorage.setItem('justLoggedIn', 'true');
+    onLoginSuccess();
+  } else {
+    setError(true);
+    setErrorMessage(result.error || "Usuario o contraseña incorrectos");
+    setIsShaking(true);
+    setIsLoading(false);
 
-      setTimeout(() => {
-        setIsShaking(false);
-        setError(false);
-      }, 2000);
-    }
-  };
+    setTimeout(() => {
+      setIsShaking(false);
+      setError(false);
+    }, 2000);
+  }
+};
 
   // ⭐ Quick login para desarrollo
   const quickLogin = (type) => {
@@ -135,6 +142,7 @@ const LockScreen = () => {
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Usuario o Email"
                 disabled={isLoading}
+                onMouseEnter={() => playHover()}
                 className={`w-full px-6 py-4 rounded-full bg-white/10 backdrop-blur-xl border-2 ${
                   error
                     ? "border-red-500"
@@ -151,6 +159,7 @@ const LockScreen = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Contraseña"
                 disabled={isLoading}
+                onMouseEnter={() => playHover()}
                 className={`w-full px-6 py-4 rounded-full bg-white/10 backdrop-blur-xl border-2 ${
                   error
                     ? "border-red-500"
@@ -162,6 +171,7 @@ const LockScreen = () => {
             <button
               type="submit"
               disabled={isLoading}
+              onMouseEnter={() => playHover()}
               className="relative w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-xl flex items-center justify-center transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed group"
             >
               {isLoading ? (
@@ -180,12 +190,14 @@ const LockScreen = () => {
           <div className="flex gap-3 mt-2">
             <button
               onClick={() => quickLogin('user')}
+              onMouseEnter={() => playHover()}
               className="px-4 py-2 rounded-full bg-blue-500/20 hover:bg-blue-500/30 backdrop-blur-xl text-white/80 hover:text-white text-xs transition-all shadow-lg border border-white/20"
             >
               Demo Usuario
             </button>
             <button
               onClick={() => quickLogin('admin')}
+              onMouseEnter={() => playHover()}
               className="px-4 py-2 rounded-full bg-purple-500/20 hover:bg-purple-500/30 backdrop-blur-xl text-white/80 hover:text-white text-xs transition-all shadow-lg border border-white/20"
             >
               Demo Admin

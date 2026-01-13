@@ -1,6 +1,6 @@
 // src/components/Settings/sections/PermissionsSection.jsx
 import { Shield, Bell, Mic, Camera, MapPin, Check, X, AlertCircle } from '#assets/icons';
-import { useAppSettingsStore } from '#store/notificationStore';
+import { useAppSettingsStore } from '#store/appSettingsStore';
 import { useState } from 'react';
 
 const PermissionsSection = () => {

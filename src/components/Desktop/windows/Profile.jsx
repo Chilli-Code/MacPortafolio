@@ -111,7 +111,7 @@ const Profile = ({ isMaximized, setIsMaximized }) => {
       <button onClick={handleMilestone}>
         Mostrar Hito
       </button>
-          <div className="max-w-full mx-5">
+          <div className="max-w-full mx-2">
             {renderContent()}
           </div>
         </div>

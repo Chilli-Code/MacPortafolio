@@ -1,7 +1,7 @@
 // src/components/Settings/sections/LanguageSection.jsx
 
 import { Check, Languages } from '#assets/icons';
-import { useAppSettingsStore } from '#store/notificationStore';
+import { useAppSettingsStore } from '#store/appSettingsStore';
 import { useTranslate } from '#hoc/useTranslate';
 import clsx from 'clsx';
 

@@ -68,6 +68,17 @@
   --nav-bg: rgba(255, 255, 255, 0.5);
   --modal-bg: rgba(255, 255, 255, 0.5);
   --box-finder: #fff;
+    --font-scale: 1.0;
+  
+  /* Tamaños base de fuente usando la escala */
+  --text-xs: calc(0.75rem * var(--font-scale));
+  --text-sm: calc(0.875rem * var(--font-scale));
+  --text-base: calc(1rem * var(--font-scale));
+  --text-lg: calc(1.125rem * var(--font-scale));
+  --text-xl: calc(1.25rem * var(--font-scale));
+  --text-2xl: calc(1.5rem * var(--font-scale));
+  --text-3xl: calc(1.875rem * var(--font-scale));
+  --text-4xl: calc(2.25rem * var(--font-scale));
 }
 
 /* Modo Oscuro */
@@ -96,6 +107,7 @@
     background-size: cover;
   background-position: center;
   background-attachment: fixed;
+  font-size: calc(1rem * var(--font-scale));
 
 }
 
@@ -465,4 +477,72 @@
 
 .animate-scale-in {
   animation: scale-in 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================= */
+/* UI RANGE - SLIDER REUTILIZABLE */
+/* ============================= */
+
+.ui-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+}
+
+/* TRACK */
+.ui-range::-webkit-slider-runnable-track {
+  height: 4px;
+  background: var(--range-track, #e5e7eb);
+  border-radius: 999px;
+}
+
+.ui-range::-moz-range-track {
+  height: 4px;
+  background: var(--range-track, #e5e7eb);
+  border-radius: 999px;
+}
+
+/* THUMB */
+.ui-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -15px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--range-thumb, #ffffff);
+  border: 1.5px solid var(--range-accent, #3b82f6);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  transition: all 0.15s ease;
+}
+
+.ui-range::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.15);
+  transform: scale(1.1);
+}
+
+.ui-range::-webkit-slider-thumb:active {
+  box-shadow: 0 0 0 12px rgba(59, 130, 246, 0.2);
+}
+
+/* Firefox */
+.ui-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--range-thumb, #ffffff);
+  border: 1.5px solid var(--range-accent, #3b82f6);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  transition: all 0.15s ease;
+}
+
+/* DARK MODE */
+.dark .ui-range {
+  --range-track: rgba(255,255,255,0.25);
+  --range-thumb: #f3f4f6;
+  --range-accent: #60a5fa;
 }

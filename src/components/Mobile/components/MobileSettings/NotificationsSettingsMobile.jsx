@@ -1,7 +1,7 @@
 // src/components/Mobile/components/MobileSettings/NotificationsSettingsMobile.jsx
 import { useState, useEffect } from 'react';
 import MobileNav from '#Mobile/MobileNav';
-import { useAppSettingsStore } from '#store/notificationStore';
+import { useAppSettingsStore } from '#store/appSettingsStore';
 
 // ⭐ Importar todos los componentes
 import {

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { X, CheckCircle, AlertCircle, Info, Clock } from '#assets/icons';
 import { create } from 'zustand';
-import { useAppSettingsStore } from '#store/notificationStore';
+import { useAppSettingsStore } from '#store/appSettingsStore';
 
 // Store para notificaciones del sistema
 export const useSystemNotificationStore = create((set) => ({

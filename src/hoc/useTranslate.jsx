@@ -1,6 +1,6 @@
 // src/hooks/useTranslate.js
 
-import { useAppSettingsStore } from '#store/notificationStore';
+import { useAppSettingsStore } from '#store/appSettingsStore';
 import { translations } from '#constants/translations';
 
 export const useTranslate = () => {

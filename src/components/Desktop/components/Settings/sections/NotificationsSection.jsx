@@ -1,6 +1,6 @@
 // src/components/Settings/sections/NotificationsSection.jsx
 import { Bell, AlertCircle } from '#assets/icons';
-import { useAppSettingsStore } from '#store/notificationStore';
+import { useAppSettingsStore } from '#store/appSettingsStore';
 import { useState } from 'react';
 
 const NotificationsSection = () => {

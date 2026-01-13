@@ -1,7 +1,7 @@
 // src/hoc/WindowWrapper.jsx
 import useWindowStore from "#store/window.js";
 import { useGSAP } from "@gsap/react";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState, useEffect } from "react";
 import gsap from "gsap";
 import clsx from "clsx";
 import { useWindowDrag } from "./useWindowDrag";
@@ -10,21 +10,54 @@ import { useWindowFocus } from "./useWindowFocus";
 
 const WindowWrapper = (Component, windowKey) => {
     const wrapped = (props) => {
-        const { focusWindow, windows } = useWindowStore();
-        const { isOpen, isMinimized, zIndex } = windows[windowKey]; // ⭐ Agregar isMinimized
+        const { focusWindow, windows, saveMaximizedState } = useWindowStore();
+        const { isOpen, isMinimized, zIndex, position, size, isMaximized: savedMaximized } = windows[windowKey];
         const ref = useRef(null);
         const draggableInstance = useRef(null);
-        const [isMaximized, setIsMaximized] = useState(false);
+        const [isMaximized, setIsMaximized] = useState(savedMaximized || false);
         const [isResizing, setIsResizing] = useState(false);
         const resizeData = useRef({});
+        const hasRestoredPosition = useRef(false);
 
-        // ⭐ Animación de minimizar/restaurar
+        // 🆕 Restaurar posición guardada al montar
+        useLayoutEffect(() => {
+            const el = ref.current;
+            if (!el || !isOpen || hasRestoredPosition.current) return;
+
+            // Si hay posición guardada, aplicarla
+            if (position) {
+                gsap.set(el, {
+                    x: position.x,
+                    y: position.y
+                });
+                console.log(`📍 Posición restaurada para ${windowKey}:`, position);
+            }
+
+            // Si hay tamaño guardado, aplicarlo
+            if (size) {
+                gsap.set(el, {
+                    width: size.width,
+                    height: size.height
+                });
+                console.log(`📏 Tamaño restaurado para ${windowKey}:`, size);
+            }
+
+            hasRestoredPosition.current = true;
+        }, [isOpen, position, size, windowKey]);
+
+        // 🆕 Guardar estado de maximizado cuando cambia
+        useEffect(() => {
+            if (isOpen) {
+                saveMaximizedState(windowKey, isMaximized);
+            }
+        }, [isMaximized, isOpen, windowKey, saveMaximizedState]);
+
+        // Animación de minimizar/restaurar
         useGSAP(() => {
             const el = ref.current;
             if (!el || !isOpen) return;
 
             if (isMinimized) {
-                // Animar hacia el dock
                 gsap.to(el, {
                     scale: 0.2,
                     opacity: 0,
@@ -37,18 +70,17 @@ const WindowWrapper = (Component, windowKey) => {
                     }
                 });
             } else {
-                // Restaurar
                 el.style.visibility = 'visible';
                 el.style.pointerEvents = 'auto';
                 gsap.to(el, {
                     scale: 1,
                     opacity: 1,
-                    y: 0,
+                    y: position?.y || 0, // 🆕 Restaurar posición Y guardada
                     duration: 0.3,
                     ease: "back.out(1.7)"
                 });
             }
-        }, [isMinimized]);
+        }, [isMinimized, position]);
 
         // Animación de apertura inicial
         useGSAP(() => {
@@ -60,9 +92,15 @@ const WindowWrapper = (Component, windowKey) => {
             gsap.fromTo(
                 el,
                 { scale: 0.8, opacity: 0, y: 40 },
-                { scale: 1, opacity: 1, y: 0, duration: 0.2, ease: "power3.out" }
+                { 
+                    scale: 1, 
+                    opacity: 1, 
+                    y: position?.y || 0, // 🆕 Usar posición guardada
+                    duration: 0.2, 
+                    ease: "power3.out" 
+                }
             );
-        }, [isOpen]);
+        }, [isOpen, position]);
 
         // Hooks personalizados
         const dragInstance = useWindowDrag(ref, windowKey, focusWindow);
@@ -70,7 +108,7 @@ const WindowWrapper = (Component, windowKey) => {
             draggableInstance.current = dragInstance.instance;
         }
 
-        useWindowResize(ref, isMaximized, isResizing, setIsResizing, resizeData);
+        useWindowResize(ref, isMaximized, isResizing, setIsResizing, resizeData, windowKey);
         useWindowFocus(ref, windowKey, focusWindow);
 
         // Manejar maximizado/restaurar
@@ -89,8 +127,8 @@ const WindowWrapper = (Component, windowKey) => {
                 });
             } else {
                 const instance = draggableInstance.current;
-                const savedX = instance.x || 0;
-                const savedY = instance.y || 0;
+                const savedX = position?.x || instance.x || 0;
+                const savedY = position?.y || instance.y || 0;
 
                 gsap.to(el, {
                     x: savedX,
@@ -103,7 +141,7 @@ const WindowWrapper = (Component, windowKey) => {
                     }
                 });
             }
-        }, [isMaximized, isMinimized]);
+        }, [isMaximized, isMinimized, position]);
 
         // Manejar apertura/cierre con animación
         useLayoutEffect(() => {
@@ -120,7 +158,7 @@ const WindowWrapper = (Component, windowKey) => {
                 className={clsx(
                     "absolute",
                     isMaximized && "maximized",
-                    isMinimized && "minimized" // ⭐ Clase opcional
+                    isMinimized && "minimized"
                 )}
             >
                 <Component

@@ -10,7 +10,7 @@ import EmptyState from "#Desktop/components/Safari/EmptyState";
 import { useNotificationStore } from '#components/AchievementNotification';
 import { useSystemNotificationStore } from '#components/SystemNotification'; // ⭐ Sistema
 
-import { ChevronLeft, ChevronRight, PanelLeft, Search, ShieldHalf, Share, Plus, Copy } from "#assets/icons";
+import { ChevronLeft, ChevronRight, PanelLeft, Search, ShieldHalf, Share, Plus, Copy, Globe } from "#assets/icons";
 
 const Safari = ({ isMaximized, setIsMaximized }) => {
   const { tasks, lastFetchedAt, userType, acceptTask, submitTask, fetchTasks, reopenTask } = useTasksStore();
@@ -18,6 +18,20 @@ const Safari = ({ isMaximized, setIsMaximized }) => {
   const { addSystemNotification } = useSystemNotificationStore(); // ⭐ Para sistema
   const [selectedTask, setSelectedTask] = useState(null);
   const [activeTab, setActiveTab] = useState('available');
+
+  // ✅ Inicialización de pestañas visibles y marcadores
+  const defaultTabs = [
+    { id: 'available', label: 'Tareas Disponibles' } // Solo esta aparece abierta
+  ];
+
+  const markerTabs = [
+    { id: 'in_progress', label: 'Tareas En Progreso' },
+    { id: 'pending_review', label: 'Tareas Pendientes' },
+    { id: 'completed', label: 'Tareas Finalizadas' },
+    { id: 'rejected', label: 'Tareas Rechazadas' }
+  ];
+
+  const [tabs, setTabs] = useState(defaultTabs);  // pestañas visibles
 
   // ⭐ Refrescar tareas cuando cambia el tab
   useEffect(() => {
@@ -32,7 +46,6 @@ const Safari = ({ isMaximized, setIsMaximized }) => {
       const currentUser = JSON.parse(localStorage.getItem('userSession'));
       await acceptTask(selectedTask.id, currentUser.id);
       
-      // ⭐ Notificación del sistema (simple y discreta)
       addSystemNotification({
         type: 'task',
         app: 'Safari',
@@ -51,7 +64,7 @@ const Safari = ({ isMaximized, setIsMaximized }) => {
       await submitTask(selectedTask.id, {
         notes: 'Tarea completada desde Safari'
       });
-            // ⭐ Notificación del sistema
+
       addSystemNotification({
         type: 'success',
         app: 'Safari',
@@ -60,7 +73,6 @@ const Safari = ({ isMaximized, setIsMaximized }) => {
         showTime: true
       });
       
-      // ⭐ Logro por completar
       addNotification({
         type: 'task',
         category: '✅ Tarea Completada',
@@ -73,13 +85,10 @@ const Safari = ({ isMaximized, setIsMaximized }) => {
       setSelectedTask(null);
     };
 
-    // ⭐ Manejar reabrir tarea rechazada
-// ⭐ Manejar reabrir tarea rechazada - ACTUALIZADA
-  const handleReopen = async () => {
+    const handleReopen = async () => {
       const success = await reopenTask(selectedTask.id);
       
       if (success) {
-        // ⭐ Notificación del sistema
         addSystemNotification({
           type: 'info',
           app: 'Safari',
@@ -92,7 +101,6 @@ const Safari = ({ isMaximized, setIsMaximized }) => {
         setSelectedTask(null);
         setActiveTab('in_progress');
       } else {
-        // ⭐ Error del sistema
         addSystemNotification({
           type: 'error',
           app: 'Safari',
@@ -102,8 +110,7 @@ const Safari = ({ isMaximized, setIsMaximized }) => {
         });
       }
     };
-
-
+    
     return (
       <>
         <div id="window-header" className="bgt">
@@ -114,25 +121,24 @@ const Safari = ({ isMaximized, setIsMaximized }) => {
           onClose={() => setSelectedTask(null)}
           onAccept={handleAccept}
           onComplete={handleComplete}
-          onReopen={handleReopen} // ⭐ Nuevo prop
+          onReopen={handleReopen}
         />
       </>
     );
   }
 
-  // ⭐ Filtrar tareas por status (INCLUIR RECHAZADAS)
-const tasksByStatus = {
-  available: tasks.filter(t => t.status === 'available'),
-  in_progress: tasks.filter(t => 
-    t.status === 'in_progress' && t.reviewStatus !== 'rejected' && t.status !== 'pending_review'// ⭐ EXCLUIR RECHAZADAS
-  ),
-  completed: tasks.filter(t => t.status === 'completed'),
-  rejected: tasks.filter(t => 
-    t.status === 'rejected' || t.reviewStatus === 'rejected' // ⭐ INCLUIR AMBOS CASOS
-  ),
-pending_review: tasks.filter(t => t.status === 'pending_review'),
-};
-
+  // ⭐ Filtrar tareas por status
+  const tasksByStatus = {
+    available: tasks.filter(t => t.status === 'available'),
+    in_progress: tasks.filter(t => 
+      t.status === 'in_progress' && t.reviewStatus !== 'rejected' && t.status !== 'pending_review'
+    ),
+    completed: tasks.filter(t => t.status === 'completed'),
+    rejected: tasks.filter(t => 
+      t.status === 'rejected' || t.reviewStatus === 'rejected'
+    ),
+    pending_review: tasks.filter(t => t.status === 'pending_review'),
+  };
 
   const counts = {
     available: tasksByStatus.available.length,
@@ -144,42 +150,94 @@ pending_review: tasks.filter(t => t.status === 'pending_review'),
 
   const currentTasks = tasksByStatus[activeTab] || [];
 
+  // ⭐ Abrir marcador como pestaña dinámica
+  const openMarkerTab = (marker) => {
+    const exists = tabs.find(t => t.id === marker.id);
+    if (exists) {
+      setActiveTab(marker.id);
+    } else {
+      setTabs(prev => [...prev, marker]);
+      setActiveTab(marker.id);
+    }
+  };
+
+  // ⭐ Agregar pestañas de comunidad
+  const handleAddCommunityTab = (label = 'Proyectos Comunidad') => {
+    const newTabId = `community-${Date.now()}`;
+    const newTab = { id: newTabId, label };
+    setTabs(prev => [...prev, newTab]);
+    setActiveTab(newTabId);
+  };
+
+  // ⭐ Cerrar pestaña
+  const handleCloseTab = (tabId) => {
+    setTabs(prev => prev.filter(t => t.id !== tabId));
+    if (activeTab === tabId) setActiveTab(tabs[0]?.id || 'available');
+  };
+
   return (
     <>
-      <div id="window-header" className="bgt">
+      {/* Header */}
+      <div id="window-header" className="flex-shrink-0">
         <WindowControls target="safari" onMaximize={() => setIsMaximized(!isMaximized)} />
-        <PanelLeft className="ml-10 icon" />
-        <div className="flex items-center gap-1 ml-5">
-          <ChevronLeft className="icon" />
-          <ChevronRight className="icon" />
+        <h2 className="flex items-center gap-2 justify-center w-full">
+          <PanelLeft className="ml-10 icon" />
+          Navegador
+        </h2>
+      </div>
+
+      {/* Barra de navegación con búsqueda */}
+      <div className="w-full flex flex-1 px-4 py-2 pb-0 bg-gray-50 dark:bg-gray-800">
+        <div className="flex items-center gap-1 mr-5">
+          <ChevronLeft className="icon text-gray-700 dark:text-white" />
+          <ChevronRight className="icon text-gray-700 dark:text-white" />
         </div>
-        <div className="flex-1 flex-center gap-3">
-          <ShieldHalf className="icon" />
-          <div className="search">
-            <Search className="w-5 h-5 text-gray-600" />
-            <input type="text" placeholder="Buscar tareas..." className="flex-1" />
+        <div className="flex-1 flex-center gap-3 w-full ">
+          <div className="search bg-gray-50 dark:bg-black/40 w-full rounded-full px-4 py-1.5 border-white/5 group-focus-within:border-blue-500/50 group-focus-within:ring-2 group-focus-within:ring-blue-500/20 transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-lock w-3.5 h-3.5 text-green-600" aria-hidden="true">
+              <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <input 
+              type="text" 
+              placeholder="Buscar tareas o proyectos terminados.." 
+              className="flex-1 bg-transparent text-gray-600 dark:text-white text-sm focus:outline-none placeholder-gray-400 dark:placeholder-white/30" 
+            />
           </div>
-        </div>
-        <div className="flex items-center gap-5">
-          <Share className="icon" />
-          <Plus className="icon" />
-          <Copy className="icon" />
         </div>
       </div>
 
-      <div className="overflow-y-auto h-full bg-gray-50 dark:bg-gray-900">
-        {/* Tabs */}
-        <div className="bg-white barraS dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 pt-4 overflow-x-auto">
-          <TaskTabs 
-            activeTab={activeTab} 
-            onTabChange={setActiveTab} 
-            counts={counts} 
-          />
-        </div>
+{/* Marcadores */}
+<div className="flex items-center gap-2 px-6 py-2  border-b bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 overflow-x-auto">
+  {markerTabs.map(marker => (
+    <button
+      key={marker.id}
+      onClick={() => openMarkerTab(marker)}
+      className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-blue-50 dark:hover:bg-white/10  text-xs text-white/80 transition-colors whitespace-nowrap max-w-[150px]"
+    >
+  <Globe className="text-blue-400" size={15} />
 
-        <div className="p-6">
-          {/* Header */}
-          <div className="mb-6">
+      <span className="dark:text-gray-50 text-gray-900 font-semibold">{marker.label}</span>
+    </button>
+  ))}
+</div>
+
+      {/* Tabs */}
+      <div className="bg-white barraS dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 pt-4 overflow-x-auto">
+        <TaskTabs 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab} 
+          tabs={tabs} 
+          onAddTab={() => handleAddCommunityTab()} 
+          onCloseTab={handleCloseTab} 
+          counts={counts}
+        />
+      </div>
+<div className="overflow-y-auto h-full bg-gray-50 dark:bg-gray-900">
+
+      {/* Contenido */}
+      <div className="p-6 mb-44">
+                  <div className="mb-6">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
               {activeTab === 'available' && 'Tareas Disponibles'}
               {activeTab === 'in_progress' && 'Tareas En Progreso'}
@@ -198,29 +256,29 @@ pending_review: tasks.filter(t => t.status === 'pending_review'),
               </p>
             )}
           </div>
-
-          {/* Content */}
-          {!lastFetchedAt ? (
-            <EmptyState type="no-fetch" />
-          ) : currentTasks.length === 0 ? (
-            <EmptyState type={activeTab} />
-          ) : (
-            <div className="grid grid-cols-1 gap-4 mb-20" 
-              style={{
-                gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))'
-              }}
-            >
-              {currentTasks.map((task) => (
-                <TaskCard 
-                  key={task.id}
-                  task={task}
-                  onClick={() => setSelectedTask(task)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        {activeTab.startsWith('community') ? (
+          <div className="p-6 rounded-lg bg-white/5 dark:bg-gray-800 text-white">
+            <h2 className="text-xl font-semibold mb-2">
+              Aquí encontrarás proyectos terminados de la comunidad
+            </h2>
+            <p className="text-gray-300 text-sm">
+              Explora proyectos finalizados por otros usuarios.
+            </p>
+          </div>
+        ) : !lastFetchedAt ? (
+          <EmptyState type="no-fetch" />
+        ) : currentTasks.length === 0 ? (
+          <EmptyState type={activeTab} />
+        ) : (
+          <div className="grid grid-cols-1 gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))' }}>
+            {currentTasks.map((task) => (
+              <TaskCard key={task.id} task={task} onClick={() => setSelectedTask(task)} />
+            ))}
+          </div>
+        )}
       </div>
+</div>
+
     </>
   );
 };

@@ -74,7 +74,7 @@ const Dock = () => {
         ].join(',');
 
         const baseUrl = window.location.origin;
-        
+
         gameWindowRef.current = window.open(
             `${baseUrl}/game`,
             'DevWorldGame',
@@ -118,7 +118,7 @@ const Dock = () => {
             // ⭐ Si está abierta y visible, minimizarla (opcional: o cerrarla)
             // Opción 1: Minimizar
             // minimizeWindow(app.id);
-            
+
             // Opción 2: Cerrar (comportamiento clásico macOS)
             closeWindow(app.id);
         } else {
@@ -143,30 +143,30 @@ const Dock = () => {
                                 aria-label={name}
                                 data-tooltip-id="dock-tooltip"
                                 data-tooltip-content={
-                                    isMinimized 
-                                        ? `${name} (minimizada)` 
+                                    isMinimized
+                                        ? `${name} (minimizada)`
                                         : name
                                 }
                                 data-tooltip-delay-show={150}
                                 disabled={!canOpen}
                                 onClick={() => toggleApp({ id, canOpen })}
                             >
-<img
-  draggable={false}
-  src={`/images/${icon}`}
-  alt={name}
-  width={70}
-  height={70}
-  className={canOpen ? "" : "opacity-60"}
-/>
+                                <img
+                                    draggable={false}
+                                    src={`/images/${icon}`}
+                                    alt={name}
+                                    width={60}
+                                    height={60}
+                                    className={canOpen ? "" : "opacity-60"}
+                                />
 
-                                
+
                                 {/* ⭐ INDICADOR MEJORADO */}
                                 {id !== 'game' && isOpen && (
-                                    <span 
+                                    <span
                                         className={`
                                             mt-1 w-2 h-2 absolute left-1/2 -translate-x-1/2 -bottom-1 rounded-full 
-                                            ${isMinimized 
+                                            ${isMinimized
                                                 ? 'bg-yellow-500 animate-pulse' // ⭐ Amarillo si minimizada
                                                 : 'bg-white' // Blanco si visible
                                             }

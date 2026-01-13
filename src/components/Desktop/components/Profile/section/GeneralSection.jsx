@@ -132,7 +132,7 @@ const handleSaveProfile = async (newData) => {
   return (
     <div className="space-y-6">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 rounded-2xl p-6 shadow-lg border border-blue-100 dark:border-gray-700 relative">
+      <div className="bg-gradient-to-br overflow-hidden from-blue-50 via-purple-50 to-pink-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 rounded-2xl p-6 shadow-lg border border-blue-100 dark:border-gray-700 relative">
         <button
           onClick={() => setIsEditModalOpen(true)}
           className="absolute top-2 right-4 p-1 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700 rounded-lg transition-all shadow-md group cursor-pointer"
@@ -219,14 +219,14 @@ const handleSaveProfile = async (newData) => {
         </div>
 
       </div>
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden overflow-x-scroll">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="flex items-center gap-2 mb-4 flex-wrap">
           <Code className="w-5 h-5 text-blue-500" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             Habilidades Técnicas
           </h3>
         </div>
-        <div className="grid gap-4"
+        <div className="grid gap-4 overflow-x-scroll"
           style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}
         >
 {skills?.map((skill) => {

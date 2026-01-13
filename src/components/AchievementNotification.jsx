@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { Trophy, Star, Zap, Target, Award, TrendingUp } from '#assets/icons';
 import { create } from 'zustand';
-import { useAppSettingsStore } from '#store/notificationStore';
+import { useAppSettingsStore } from '#store/appSettingsStore';
 
 // Store LOCAL para manejar solo las notificaciones (no el sonido)
 export const useNotificationStore = create((set) => ({

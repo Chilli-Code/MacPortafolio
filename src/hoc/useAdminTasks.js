@@ -38,10 +38,11 @@ export const useAdminTasks = () => {
         submissionNotes: null,
         submissionFiles: []
       });
-      
+
       if (newTask) {
         await loadTasks(); // Recargar todas las tareas
-        
+
+        // Notificación local para el admin
         addNotification({
           app: "SISTEMA",
           title: "✅ Tarea publicada",
@@ -50,7 +51,26 @@ export const useAdminTasks = () => {
           color: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
           time: "Ahora"
         });
-        
+
+        // 📢 Crear notificación global para todos los usuarios conectados
+        try {
+          await api.createGlobalNotification({
+            type: "new_task",
+            title: "🚀 Nueva tarea disponible",
+            message: `Se ha publicado: "${newTask.title}" - ${newTask.reward} XP`,
+            icon: "📋",
+            color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            action: {
+              type: "open_terminal",
+              data: null
+            },
+            priority: "normal"
+          });
+          console.log('📢 Notificación global enviada para nueva tarea');
+        } catch (error) {
+          console.error('❌ Error creando notificación global:', error);
+        }
+
         return newTask;
       }
     } catch (error) {

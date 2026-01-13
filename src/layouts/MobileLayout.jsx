@@ -1,6 +1,6 @@
 import { MobileDock } from "#Mobile/MobileDock";
 import { useState } from "react";
-import { LogOut } from 'lucide-react';
+import { LogOut } from '#assets/icons';
 
 // Importar screens
 import HomeScreen from "#Mobile/Screens/HomeScreen";

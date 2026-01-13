@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Terminal as TerminalIcon, Send } from 'lucide-react';
+import { Terminal as TerminalIcon, Send } from '#assets/icons';
 import MobileNav from '#Mobile/MobileNav';
 import {useTasksStore} from '#store/tasksStore'; // Asegúrate de tener este store
 import { useNotificationStore } from '#components/AchievementNotification';

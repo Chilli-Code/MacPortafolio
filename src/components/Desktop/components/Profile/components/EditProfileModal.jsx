@@ -122,7 +122,7 @@ const EditProfileModal = ({ isOpen, onClose, userData, onSave }) => {
               Skills
             </label>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 h-40 overflow-hidden overflow-y-auto">
               {Object.keys(techConfig).map((tech) => {
                 const { color, icon } = getTechConfig(tech);
                 const active = formData.skills.includes(tech);

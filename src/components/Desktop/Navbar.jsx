@@ -31,7 +31,7 @@ const Navbar = ({ onLogout }) => {
                 <img draggable={false} src="/images/logo.svg" alt="logo" />
 
                 </button>
-                <p className="font-bold">ChillyCode Portafolio</p>
+                <p className="font-bold">Keku Enterprise</p>
 
                 <ul>
                     {navLinks.map(({ id, name, type }) => (
@@ -63,7 +63,7 @@ const Navbar = ({ onLogout }) => {
                                         openWindow("settings"); 
                                     }
                                     if (img === "/icons/wifi.svg") {
-                                        openWindow("chat");
+                                        openWindow("gmail");
                                     }                                   
                                 }}
                             />

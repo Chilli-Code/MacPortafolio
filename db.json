@@ -11,7 +11,7 @@
       "avatar": null,
       "createdAt": "2024-01-15T10:00:00.000Z",
       "profile": {
-        "bio": "Me gusta programar app atractivas para los clientes",
+        "bio": "",
         "location": "",
         "website": "https://jorge.dev",
         "timezone": "America/Bogota",
@@ -36,9 +36,10 @@
       },
       "skills": [
         "React",
+        "Tailwind",
         "Astro",
         "Vite",
-        "Tailwind"
+        "Flutter"
       ],
       "gamification": {
         "level": 2,
@@ -118,7 +119,7 @@
         ]
       },
       "preferences": {
-        "theme": "dark",
+        "theme": "light",
         "language": "es",
         "notifications": {
           "email": true,
@@ -404,6 +405,108 @@
       "acceptedAt": "2025-12-25T19:06:14.015Z",
       "reviewStatus": "approved",
       "completedAt": "2025-12-25T19:13:58.236Z"
+    },
+    {
+      "id": "4697",
+      "title": "sadas",
+      "description": "dasdasdas",
+      "detailedDescription": "adada\n1\n12\n23\n21\n3213",
+      "type": "frontend",
+      "difficulty": "medium",
+      "xp": 250,
+      "reward": 150,
+      "deadline": "2026-01-14",
+      "tags": [
+        "React",
+        "Tailwind",
+        "MongoDB"
+      ],
+      "status": "pending_review",
+      "images": [],
+      "assignedTo": "usr_001",
+      "submittedAt": "2026-01-05T19:21:59.227Z",
+      "reviewedAt": null,
+      "reviewedBy": null,
+      "reviewNotes": null,
+      "submissionNotes": "Tarea completada desde Safari",
+      "submissionFiles": [],
+      "acceptedAt": "2026-01-05T19:20:07.183Z",
+      "reviewStatus": null,
+      "rejectionReasons": [
+        "sate falto"
+      ],
+      "revisionCount": 2,
+      "completedAt": null
+    },
+    {
+      "id": "c623",
+      "title": "tarea de react",
+      "description": "fffff",
+      "detailedDescription": "asdasdsadasdsa",
+      "type": "frontend",
+      "difficulty": "medium",
+      "xp": 250,
+      "reward": 150,
+      "deadline": "2026-01-28",
+      "tags": [
+        "MongoDB"
+      ],
+      "status": "available",
+      "images": [],
+      "assignedTo": null,
+      "submittedAt": null,
+      "reviewedAt": null,
+      "reviewedBy": null,
+      "reviewNotes": null,
+      "submissionNotes": null,
+      "submissionFiles": []
+    },
+    {
+      "id": "523f",
+      "title": "tarea login canchas",
+      "description": "ffffff",
+      "detailedDescription": "sadsadsadsadas",
+      "type": "frontend",
+      "difficulty": "medium",
+      "xp": 250,
+      "reward": 150,
+      "deadline": "2026-01-21",
+      "tags": [
+        "React"
+      ],
+      "status": "in_progress",
+      "images": [],
+      "assignedTo": "usr_001",
+      "submittedAt": null,
+      "reviewedAt": null,
+      "reviewedBy": null,
+      "reviewNotes": null,
+      "submissionNotes": null,
+      "submissionFiles": [],
+      "acceptedAt": "2026-01-12T03:36:56.136Z"
+    },
+    {
+      "id": "3cd5",
+      "title": "login peluqueria",
+      "description": "21321321",
+      "detailedDescription": "dsadadasdasda",
+      "type": "frontend",
+      "difficulty": "medium",
+      "xp": 250,
+      "reward": 150,
+      "deadline": "2026-01-27",
+      "tags": [
+        "React"
+      ],
+      "status": "available",
+      "images": [],
+      "assignedTo": null,
+      "submittedAt": null,
+      "reviewedAt": null,
+      "reviewedBy": null,
+      "reviewNotes": null,
+      "submissionNotes": null,
+      "submissionFiles": []
     }
   ],
   "achievements": [
@@ -771,5 +874,57 @@
       "allowMultipleTasks": true,
       "maxActiveTasks": 3
     }
-  }
+  },
+  "globalNotifications": [
+    {
+      "id": "1768187224580",
+      "type": "new_task",
+      "title": "🚀 Nueva tarea disponible",
+      "message": "Se ha publicado: \"tarea de react\" - 150 XP",
+      "icon": "📋",
+      "color": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      "action": {
+        "type": "open_terminal",
+        "data": null
+      },
+      "priority": "normal",
+      "createdAt": "2026-01-12T03:07:04.580Z",
+      "expiresAt": "2026-01-13T03:07:04.580Z",
+      "dismissedBy": [
+        "anonymous"
+      ]
+    },
+    {
+      "id": "1768188234010",
+      "type": "new_task",
+      "title": "🚀 Nueva tarea disponible",
+      "message": "Se ha publicado: \"tarea login canchas\" - 150 XP",
+      "icon": "📋",
+      "color": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      "action": {
+        "type": "open_terminal",
+        "data": null
+      },
+      "priority": "normal",
+      "createdAt": "2026-01-12T03:23:54.010Z",
+      "expiresAt": "2026-01-13T03:23:54.010Z",
+      "dismissedBy": []
+    },
+    {
+      "id": "1768189435787",
+      "type": "new_task",
+      "title": "🚀 Nueva tarea disponible",
+      "message": "Se ha publicado: \"login peluqueria\" - 150 XP",
+      "icon": "📋",
+      "color": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      "action": {
+        "type": "open_terminal",
+        "data": null
+      },
+      "priority": "normal",
+      "createdAt": "2026-01-12T03:43:55.787Z",
+      "expiresAt": "2026-01-13T03:43:55.788Z",
+      "dismissedBy": []
+    }
+  ]
 }
