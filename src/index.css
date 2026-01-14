@@ -121,26 +121,54 @@ body {
     }
   }
 
+  
+
   #dock {
-    @apply absolute bottom-5 left-1/2 -translate-x-1/2 z-[9999] select-none max-sm:hidden;
-
+  @apply absolute z-[9999] select-none max-sm:hidden;
+  
+  /* Posición por defecto: bottom */
+  &[data-position="bottom"] {
+    @apply bottom-5 left-1/2 -translate-x-1/2;
+    
     .dock-container {
-      @apply bg-white/20 backdrop-blur-md justify-between rounded-2xl p-1.5 flex items-end gap-1.5;
-    }
-
-
-    .tooltip {
-      @apply !py-1 !px-3 !w-fit !text-center !text-xs !rounded-md !bg-blue-200 !text-blue-900 !shadow-2xl;
-    }
-
-    .dock-icon {
-      @apply size-14 3xl:size-16 cursor-pointer;
-
-      img {
-        @apply object-cover object-center;
-      }
+      @apply flex-row items-end gap-1.5;
     }
   }
+  
+  /* Posición izquierda */
+  &[data-position="left"] {
+    @apply left-5 top-1/2 -translate-y-1/2;
+    
+    .dock-container {
+      @apply flex-col items-start gap-1.5;
+    }
+  }
+  
+  /* Posición derecha */
+  &[data-position="right"] {
+    @apply right-5 top-1/2 -translate-y-1/2;
+    
+    .dock-container {
+      @apply flex-col items-end gap-1.5;
+    }
+  }
+
+  .dock-container {
+    @apply bg-white/20 backdrop-blur-md justify-between rounded-2xl p-1.5 flex;
+  }
+
+  .tooltip {
+    @apply !py-1 !px-3 !w-fit !text-center !text-xs !rounded-md !bg-blue-200 !text-blue-900 !shadow-2xl;
+  }
+
+  .dock-icon {
+    @apply size-14 3xl:size-16 cursor-pointer;
+
+    img {
+      @apply object-cover object-center;
+    }
+  }
+}
 
 
    .modal-darklight {
@@ -435,6 +463,7 @@ body {
 #txtfile.maximized,
 #gmail.maximized,
 #profile.maximized,
+#calendar.maximized,
 #game.maximized {
   position: fixed !important;
   inset: 0 !important;
@@ -609,6 +638,23 @@ h3 {
     --tw-font-weight: var(--font-weight-medium);
     font-weight: var(--font-weight-medium);
     color: var(--color-gray-400);
+}
+  }
+
+
+    #calendar{
+        @apply  w-5xl h-200 absolute top-20 right-1/30 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
+
+    .sidebar {
+      @apply w-3/12 flex-none bg-gray-50 border-r border-gray-200 flex flex-col p-5;
+    }
+    h2 {
+    width: 100%;
+    text-align: center;
+    font-size: var(--text-sm);
+    line-height: var(--tw-leading, var(--text-sm--line-height));
+    --tw-font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-bold);
 }
   }
 }

@@ -71,7 +71,7 @@ const dockApps = [
   {
     id: "game",
     name: "game",
-    icon: "game.svg",
+    icon: "game.webp",
     canOpen: true,
   },
 ];
@@ -297,23 +297,28 @@ const settingsLinks = [
     icon: "/icons/appearance.svg",
     title: "appearance", // ⭐ Key de traducción
   },
-  {
+    {
     id: 2,
+    icon: "/icons/generalIcon.svg",
+    title: "General", // ⭐ Key de traducción
+  },
+  {
+    id: 3,
     icon: "/icons/notifications.svg",
     title: "notifications_settings", // ⭐ Key de traducción
   },
   {
-    id: 3,
+    id: 4,
     icon: "/icons/permissions.svg",
     title: "permissions", // ⭐ Key de traducción
   },
   {
-    id: 4,
+    id: 5,
     icon: "/icons/language.svg",
     title: "language", // ⭐ Key de traducción
   },
   {
-    id: 5,
+    id: 6,
     icon: "/icons/advanced.svg",
     title: "advanced", // ⭐ Key de traducción (nueva)
   },
@@ -657,9 +662,6 @@ const TRASH_LOCATION = {
   ],
 };
 
-// notifications data
-
-
 
 
 
@@ -670,7 +672,6 @@ export const locations = {
   trash: TRASH_LOCATION,
 };
 
-// src/constants/index.js
 // src/constants/index.js
 const INITIAL_Z_INDEX = 1000;
 
@@ -687,6 +688,7 @@ const WINDOW_CONFIG = {
   profile: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
   settings: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
   gmail: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
+  calendar: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
   game: { 
     isOpen: false, 
     isMinimized: false,

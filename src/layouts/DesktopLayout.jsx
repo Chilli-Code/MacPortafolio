@@ -3,7 +3,7 @@ import { Suspense, useEffect, useRef } from "react";
 import useSounds from "#hooks/useSounds";
 
 import { Navbar, Welcome, Dock } from "#components/Desktop";
-import { Terminal, Safari, Profile, Settings, Resume, Finder, Contact, Galery, Text, Gmail, ImageWindowContent } from "#components/Desktop/windows/";
+import { Terminal, Safari, Profile, Settings, Resume, Finder, Contact, Galery, Text, Gmail, ImageWindowContent, Calendar } from "#components/Desktop/windows/";
 import { usePerformanceMonitor } from '#hooks/usePerformanceMonitor'; // ✅ Importa del hook
 import SystemResourcesSection from "#components/Systemresourcessection"; // ✅ Este es el componente visual
 
@@ -73,6 +73,7 @@ const DesktopLayout = ({ user, onLogout }) => {
         {windows.resume?.isOpen && <Resume />}
         {windows.txtfile?.isOpen && <Text />}
         {windows.gmail?.isOpen && <Gmail />}
+        {windows.calendar?.isOpen && <Calendar />}
       </Suspense>
     </main>
   );

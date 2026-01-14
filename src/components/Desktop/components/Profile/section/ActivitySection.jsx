@@ -1,5 +1,5 @@
 // components/Profile/sections/ActivitySection.jsx
-import { Calendar, Flame, Trophy, Activity } from "#assets/icons";
+import {  CalendarIcon, Flame, Trophy, Activity } from "#assets/icons";
 import { userStats } from "../utils/profileData";
 import { generateActivityData, getActivityColor } from "../utils/profileHelpers";
 import clsx from "clsx";
@@ -27,7 +27,7 @@ const ActivitySection = () => {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 flex-wrap">
-        <Calendar className="w-6 h-6" />
+        <CalendarIcon className="w-6 h-6" />
         Calendario de Actividad
       </h2>
 

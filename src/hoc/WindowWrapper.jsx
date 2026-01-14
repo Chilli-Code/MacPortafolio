@@ -20,30 +20,46 @@ const WindowWrapper = (Component, windowKey) => {
         const hasRestoredPosition = useRef(false);
 
         // 🆕 Restaurar posición guardada al montar
-        useLayoutEffect(() => {
-            const el = ref.current;
-            if (!el || !isOpen || hasRestoredPosition.current) return;
+// 🆕 Restaurar posición guardada al montar
+useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || !isOpen) return;
 
-            // Si hay posición guardada, aplicarla
-            if (position) {
-                gsap.set(el, {
-                    x: position.x,
-                    y: position.y
-                });
-                console.log(`📍 Posición restaurada para ${windowKey}:`, position);
-            }
+    if (hasRestoredPosition.current) return;
 
-            // Si hay tamaño guardado, aplicarlo
-            if (size) {
-                gsap.set(el, {
-                    width: size.width,
-                    height: size.height
-                });
-                console.log(`📏 Tamaño restaurado para ${windowKey}:`, size);
-            }
+    // Restaurar posición usando porcentaje si existe
+    if (position?.xPercent != null && position?.yPercent != null) {
+        gsap.set(el, {
+            x: position.xPercent * window.innerWidth,
+            y: position.yPercent * window.innerHeight
+        });
+        console.log(`📍 Posición restaurada para ${windowKey}:`, {
+            x: position.xPercent * window.innerWidth,
+            y: position.yPercent * window.innerHeight
+        });
+    } else if (position) {
+        // Fallback píxeles
+        gsap.set(el, { x: position.x, y: position.y });
+    }
 
-            hasRestoredPosition.current = true;
-        }, [isOpen, position, size, windowKey]);
+    // Restaurar tamaño usando porcentaje si existe
+    if (size?.widthPercent != null && size?.heightPercent != null) {
+        gsap.set(el, {
+            width: size.widthPercent * window.innerWidth,
+            height: size.heightPercent * window.innerHeight
+        });
+        console.log(`📏 Tamaño restaurado para ${windowKey}:`, {
+            width: size.widthPercent * window.innerWidth,
+            height: size.heightPercent * window.innerHeight
+        });
+    } else if (size) {
+        // Fallback píxeles
+        gsap.set(el, { width: size.width, height: size.height });
+    }
+
+    hasRestoredPosition.current = true;
+}, [isOpen, position, size, windowKey]);
+
 
         // 🆕 Guardar estado de maximizado cuando cambia
         useEffect(() => {
@@ -69,23 +85,24 @@ const WindowWrapper = (Component, windowKey) => {
                         el.style.pointerEvents = 'none';
                     }
                 });
-            } else {
+            } else if (hasRestoredPosition.current) {
+                // Solo restaurar si ya se cargó la posición inicial
                 el.style.visibility = 'visible';
                 el.style.pointerEvents = 'auto';
                 gsap.to(el, {
                     scale: 1,
                     opacity: 1,
-                    y: position?.y || 0, // 🆕 Restaurar posición Y guardada
+                    // ⚠️ NO tocar Y aquí - draggable lo maneja
                     duration: 0.3,
                     ease: "back.out(1.7)"
                 });
             }
-        }, [isMinimized, position]);
+        }, [isMinimized, isOpen]);
 
         // Animación de apertura inicial
         useGSAP(() => {
             const el = ref.current;
-            if (!el || !isOpen) return;
+            if (!el || !isOpen || hasRestoredPosition.current) return;
 
             el.style.display = "none";
 
@@ -95,12 +112,12 @@ const WindowWrapper = (Component, windowKey) => {
                 { 
                     scale: 1, 
                     opacity: 1, 
-                    y: position?.y || 0, // 🆕 Usar posición guardada
+                    y: 0,
                     duration: 0.2, 
-                    ease: "power3.out" 
+                    ease: "power3.out"
                 }
             );
-        }, [isOpen, position]);
+        }, [isOpen]);
 
         // Hooks personalizados
         const dragInstance = useWindowDrag(ref, windowKey, focusWindow);

@@ -40,7 +40,7 @@ const Finder = ({ isMaximized, setIsMaximized }) => {
               draggable={false}
               src={item.icon}
               className="w-4"
-              alt={item.name}
+              alt=""
             />
             <p className="text-sm font-medium truncate">
               {item.name}
@@ -66,18 +66,23 @@ const Finder = ({ isMaximized, setIsMaximized }) => {
             className="ft flex justify-between items-center border-r border-gray-200 h-full px-4"
           >
             <div className="flex items-center gap-1">
-              <ChevronLeft className="icon" />
-              <ChevronRight className="icon" />
+              <button aria-label="Ir hacia atrás">
+                <ChevronLeft className="icon" />
+              </button>
+              <button aria-label="Ir hacia adelante">
+                <ChevronRight className="icon" />
+              </button>
+
             </div>
-            <div>
+            <button aria-label="Buscar">
               <Search className="icon" />
-            </div>
+            </button>
           </div>
         </div>
       </div>
 
       <div className="flex h-full bg-white overflow-hidden">
-        <div className="w-48 sidebar sidebarFolder flex-shrink-0 overflow-y-auto mb-10">
+        <div className="w-48 sidebar sidebarFolder flex-shrink-0 overflow-y-auto">
           {renderList('Favoritos', Object.values(locations))}
           {renderList('Mis proyectos', locations.work.children)}
         </div>

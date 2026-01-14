@@ -8,23 +8,29 @@ const MAX_Z_INDEX = 9998;
 const STORAGE_VERSION = 1;
 
 // 🔧 Validar que la ventana esté dentro del viewport
-const validateWindowPosition = (window) => {
-    if (!window.position) return window;
-    
-    const { x, y } = window.position;
-    const { width = 800, height = 600 } = window.size || {};
-    
-    const maxX = Math.max(0, window.innerWidth - width - 100); // Dejar 100px de margen
-    const maxY = Math.max(56, window.innerHeight - height - 100);
-    
-    return {
-        ...window,
-        position: {
-            x: Math.max(0, Math.min(x, maxX)),
-            y: Math.max(56, Math.min(y, maxY))
-        }
-    };
+const validateWindowPosition = (win) => {
+  if (!win.position || typeof window === "undefined") return win;
+
+  const { x, y } = win.position;
+  const { width = 800, height = 600 } = win.size || {};
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+
+  // Permitir que hasta 50% de la ventana quede fuera
+  const minX = -width * 0.5;
+  const minY = -height * 0.5;
+  const maxX = viewportWidth - width * 0.5;
+  const maxY = viewportHeight - height * 0.5;
+
+  return {
+    ...win,
+    position: {
+      x: Math.min(maxX, Math.max(minX, x)),
+      y: Math.min(maxY, Math.max(minY, y)),
+    },
+  };
 };
+
 
 const useWindowStore = create(
     persist(
@@ -78,12 +84,29 @@ const useWindowStore = create(
             // 🆕 Guardar posición de ventana (llamar en onDragStop)
             saveWindowPosition: (windowKey, position) => set((state) => {
                 const win = state.windows[windowKey];
+
+                console.log(`💾 Intentando guardar posición de ${windowKey}:`, position);
+                console.log(`📍 Posición actual:`, win.position);
+
+                // ⚠️ OPTIMIZACIÓN: No actualizar si la posición es la misma
+                if (win.position?.x === position.x && win.position?.y === position.y) {
+                    console.log(`⏭️ Posición idéntica, saltando actualización`);
+                    return; // No hacer nada, evita re-render
+                }
+
                 win.position = position;
+                console.log(`✅ Posición guardada:`, win.position);
             }),
 
             // 🆕 Guardar tamaño de ventana (llamar en onResizeStop)
             saveWindowSize: (windowKey, size) => set((state) => {
                 const win = state.windows[windowKey];
+
+                // ⚠️ OPTIMIZACIÓN: No actualizar si el tamaño es el mismo
+                if (win.size?.width === size.width && win.size?.height === size.height) {
+                    return; // No hacer nada, evita re-render
+                }
+
                 win.size = size;
             }),
 
@@ -113,7 +136,7 @@ const useWindowStore = create(
             name: 'window-storage', // Nombre en localStorage
             version: STORAGE_VERSION,
             storage: createJSONStorage(() => localStorage),
-            
+
             // 📦 Particializar: solo guardar lo necesario
             partialize: (state) => ({
                 windows: Object.fromEntries(
@@ -136,16 +159,20 @@ const useWindowStore = create(
 
             // 🔄 Merge: cómo combinar estado guardado con estado inicial
             merge: (persistedState, currentState) => {
+                console.log('🔄 Merging state:', { persistedState, currentState });
+
                 // Si no hay estado guardado o la versión es diferente, usar estado actual
                 if (!persistedState || persistedState.version !== STORAGE_VERSION) {
+                    console.warn('⚠️ No persisted state or version mismatch');
                     return currentState;
                 }
 
                 // Combinar estado guardado con configuración por defecto
                 const mergedWindows = { ...currentState.windows };
-                
+
                 Object.entries(persistedState.windows || {}).forEach(([key, savedWin]) => {
                     if (mergedWindows[key]) {
+                        console.log(`📝 Merging ${key}:`, savedWin);
                         mergedWindows[key] = {
                             ...mergedWindows[key], // Mantener configuración por defecto
                             ...savedWin,           // Sobrescribir con estado guardado
@@ -154,11 +181,14 @@ const useWindowStore = create(
                     }
                 });
 
-                return {
+                const merged = {
                     ...currentState,
                     windows: mergedWindows,
                     nextZIndex: persistedState.nextZIndex || currentState.nextZIndex
                 };
+
+                console.log('✅ Merged state:', merged);
+                return merged;
             },
 
             // ⚠️ Manejo de errores

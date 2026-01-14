@@ -315,7 +315,7 @@ const AppearanceSection = () => {
          <PerformanceMonitorToggle />
         </div>
 
-          <FontSizeSection />
+          
 
       {/* Selector de Fondo de Pantalla */}
       <div>

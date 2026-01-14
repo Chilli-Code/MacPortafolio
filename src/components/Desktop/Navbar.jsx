@@ -76,7 +76,7 @@ const Navbar = ({ onLogout }) => {
                     ))}
                 </ul>
 
-                <time>{dayjs().format("ddd MMM D h:mm A")}</time>
+                <time  onClick={() => {openWindow("calendar");}}>{dayjs().format("ddd MMM D h:mm A")}</time>
 
                 {openMode && (
                         <NotificationCenter

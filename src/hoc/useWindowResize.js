@@ -21,9 +21,9 @@ export const useWindowResize = (ref, isMaximized, isResizing, setIsResizing, res
             const matrix = new DOMMatrix(computedStyle.transform);
             const currentX = matrix.m41;
             const currentY = matrix.m42;
-            
+
             const rect = el.getBoundingClientRect();
-            
+
             const realLeft = parseFloat(computedStyle.left) || 0;
             const realTop = parseFloat(computedStyle.top) || 0;
 
@@ -47,16 +47,16 @@ export const useWindowResize = (ref, isMaximized, isResizing, setIsResizing, res
         const handleMouseMove = (e) => {
             if (!isResizing) return;
 
-            const { 
-                direction, 
-                startX, 
-                startY, 
-                startWidth, 
-                startHeight, 
+            const {
+                direction,
+                startX,
+                startY,
+                startWidth,
+                startHeight,
                 realLeft,
-                realTop
+                realTop,
             } = resizeData.current;
-            
+
             const deltaX = e.clientX - startX;
             const deltaY = e.clientY - startY;
 
@@ -67,49 +67,66 @@ export const useWindowResize = (ref, isMaximized, isResizing, setIsResizing, res
 
             const minWidth = 400;
             const minHeight = 300;
-            const minTopLimit = 56;
 
-            // Redimensionar horizontalmente (derecha)
-            if (direction.includes('e')) {
-                newWidth = Math.max(minWidth, startWidth + deltaX);
+            // 🔒 mismos límites que useWindowDrag
+            const minX = 0;
+            const minY = 40;
+            const minB = 0;
+            const maxX = window.innerWidth;
+            const maxY = window.innerHeight - minB;
+
+            // 👉 ESTE (derecha)
+            if (direction.includes("e")) {
+                const proposedWidth = startWidth + deltaX;
+                const rightEdge = realLeft + proposedWidth;
+
+                if (rightEdge <= maxX) {
+                    newWidth = Math.max(minWidth, proposedWidth);
+                } else {
+                    newWidth = maxX - realLeft;
+                }
             }
-            
-            // Redimensionar horizontalmente (izquierda)
-            if (direction.includes('w')) {
+
+            // 👉 OESTE (izquierda)
+            if (direction.includes("w")) {
+                const proposedLeft = realLeft + deltaX;
                 const proposedWidth = startWidth - deltaX;
-                if (proposedWidth >= minWidth) {
+
+                if (proposedLeft >= minX && proposedWidth >= minWidth) {
+                    newLeft = proposedLeft;
                     newWidth = proposedWidth;
-                    newLeft = realLeft + deltaX;
                 } else {
-                    newWidth = minWidth;
+                    newLeft = minX;
+                    newWidth = startWidth + (realLeft - minX);
                 }
             }
-            
-            // Redimensionar verticalmente (abajo)
-            if (direction.includes('s')) {
-                newHeight = Math.max(minHeight, startHeight + deltaY);
+
+            // 👉 SUR (abajo)
+            if (direction.includes("s")) {
+                const proposedHeight = startHeight + deltaY;
+                const bottomEdge = realTop + proposedHeight;
+
+                if (bottomEdge <= maxY) {
+                    newHeight = Math.max(minHeight, proposedHeight);
+                } else {
+                    newHeight = maxY - realTop;
+                }
             }
-            
-            // Redimensionar verticalmente (arriba)
-            if (direction.includes('n')) {
-                const proposedHeight = startHeight - deltaY;
+
+            // 👉 NORTE (arriba)
+            if (direction.includes("n")) {
                 const proposedTop = realTop + deltaY;
-                
-                if (proposedTop >= minTopLimit && proposedHeight >= minHeight) {
-                    newHeight = proposedHeight;
+                const proposedHeight = startHeight - deltaY;
+
+                if (proposedTop >= minY && proposedHeight >= minHeight) {
                     newTop = proposedTop;
-                } else if (proposedTop < minTopLimit) {
-                    newTop = minTopLimit;
-                    newHeight = startHeight + (realTop - minTopLimit);
+                    newHeight = proposedHeight;
                 } else {
-                    newHeight = minHeight;
+                    newTop = minY;
+                    newHeight = startHeight + (realTop - minY);
                 }
             }
 
-            // Asegurar límites
-            newTop = Math.max(minTopLimit, newTop);
-
-            // Limpiar transforms antes de aplicar nuevos valores
             gsap.set(el, {
                 x: 0,
                 y: 0,
@@ -119,10 +136,10 @@ export const useWindowResize = (ref, isMaximized, isResizing, setIsResizing, res
                 top: newTop,
             });
 
-            // 🆕 Guardar en resizeData solo el tamaño final
             resizeData.current.finalWidth = newWidth;
             resizeData.current.finalHeight = newHeight;
         };
+
 
         const handleMouseUp = () => {
             if (isResizing) {
@@ -131,19 +148,19 @@ export const useWindowResize = (ref, isMaximized, isResizing, setIsResizing, res
 
                 // 🆕 GUARDAR SOLO TAMAÑO AL SOLTAR (NO POSICIÓN)
                 const { finalWidth, finalHeight } = resizeData.current;
-                
+
                 if (finalWidth && finalHeight) {
                     saveWindowSize(windowKey, {
                         width: finalWidth,
                         height: finalHeight
                     });
-                    
-                    console.log(`💾 Tamaño guardado para ${windowKey}:`, { 
-                        width: finalWidth, 
+
+                    console.log(`💾 Tamaño guardado para ${windowKey}:`, {
+                        width: finalWidth,
                         height: finalHeight
                     });
                 }
-                
+
                 // ⚠️ NO guardar posición aquí porque interfiere con Draggable
                 // La posición se guarda solo en onDragEnd del useWindowDrag
             }

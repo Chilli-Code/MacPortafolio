@@ -1,6 +1,7 @@
 // src/components/Settings/sections/FontSizeSection.jsx
 import { Type, Maximize2 } from '#assets/icons';
 import { useAppSettingsStore } from '#store/appSettingsStore';
+import ZoomWarning from './Zoomwarning';
 
 const FontSizeSection = () => {
   const { fontSize, setFontSize } = useAppSettingsStore();
@@ -26,48 +27,17 @@ const FontSizeSection = () => {
           <Maximize2 className="w-4 h-4 text-white" />
         </div>
         <div>
-          <h3 className="text-base font-semibold text-gray-900 dark:text-white">
-            Zoom
+          <h3 className="text-base font-semibold text-amber-900 dark:text-amber-100">
+            Importante: Zoom del navegador
           </h3>
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Ajusta el nivel de zoom de la interfaz
           </p>
         </div>
       </div>
-      <div>
-              {/* Atajos de teclado - Estilo macOS */}
-      <div className="p-4 mb-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 overflow-hidden overflow-x-auto">
-        <div className="flex items-start gap-3">
-          <div className="w-6 h-6 rounded-md bg-blue-500 flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-xs font-bold">⌘</span>
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
-              Atajos de teclado
-            </p>
-            <div className="space-y-1 text-xs text-blue-700 dark:text-blue-300">
-              <div className="flex items-center gap-2">
-                <kbd className="px-1.5 py-0.5 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">Ctrl</kbd>
-                <span>+</span>
-                <kbd className="px-1.5 py-0.5 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">+</kbd>
-                <span className="text-blue-600 dark:text-blue-400">Aumentar zoom</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <kbd className="px-1.5 py-0.5 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">Ctrl</kbd>
-                <span>+</span>
-                <kbd className="px-1.5 py-0.5 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">-</kbd>
-                <span className="text-blue-600 dark:text-blue-400">Disminuir zoom</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <kbd className="px-1.5 py-0.5 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">Ctrl</kbd>
-                <span>+</span>
-                <kbd className="px-1.5 py-0.5 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">0</kbd>
-                <span className="text-blue-600 dark:text-blue-400">Restablecer zoom</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+
+      <ZoomWarning />
+      <div className='mb-10'>
         <h3 className="text-black dark:text-white text-lg font-medium mb-3 flex items-center gap-2">
           <Type className="w-5 h-5" />
           Tamaño de fuente

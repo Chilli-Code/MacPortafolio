@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, DollarSign, Zap, Clock, CheckCircle, XCircle, ChevronRight } from "#assets/icons";
+import {CalendarIcon, DollarSign, Zap, Clock, CheckCircle, XCircle, ChevronRight } from "#assets/icons";
 import Marquee from 'react-fast-marquee';
 import { getTechConfig } from '#assets/techIcons/techConfig.jsx';
 
@@ -25,7 +25,7 @@ const TasksList = ({ activeTab, searchQuery, tasksByStatus, onTaskDetail }) => {
       {filteredTasks.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-full text-center py-12">
           <div className="text-gray-300 dark:text-gray-600 mb-4">
-            {activeTab === 'available' && <Calendar className="w-16 h-16" />}
+            {activeTab === 'available' && <CalendarIcon className="w-16 h-16" />}
             {activeTab === 'in_progress' && <Clock className="w-16 h-16" />}
             {activeTab === 'completed' && <CheckCircle className="w-16 h-16" />}
             {activeTab === 'rejected' && <XCircle className="w-16 h-16" />}
@@ -149,7 +149,7 @@ const TasksList = ({ activeTab, searchQuery, tasksByStatus, onTaskDetail }) => {
 
                     <div className="flex items-center gap-1">
                       <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                        <Calendar className="w-3 h-3 text-purple-600" />
+                        <CalendarIcon className="w-3 h-3 text-purple-600" />
                       </div>
                       <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">{task.deadline}</span>
                     </div>

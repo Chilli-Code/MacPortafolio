@@ -14,6 +14,9 @@ const HomeScreen = ({ onAppClick }) => {
         >
           <div className="w-16 h-16 rounded-2xl overflow-hidden ">
             <img
+              loading="eager"
+  fetchpriority="high"
+  decoding="async"
               src={`/images/${app.icon}`}
               alt={app.name}
               className="w-full h-full object-cover"

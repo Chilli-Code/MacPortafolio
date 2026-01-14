@@ -1,6 +1,6 @@
 // src/components/Safari/TaskDetailView.jsx
 import {
-  CircleArrowLeft, Calendar, DollarSign, Zap, Clock, Tag, User,
+  CircleArrowLeft, CalendarIcon, DollarSign, Zap, Clock, Tag, User,
   CheckCircle2, PlayCircle, XCircle, ChevronRight,
   FileText, AlertCircle, RefreshCw, Clipboard, Eye, CheckCircle, AlarmClock
 } from '#assets/icons';
@@ -207,7 +207,7 @@ const TaskDetailView = ({ task, onClose, onAccept, onComplete, onReopen }) => {
             <div className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/40 rounded-lg flex items-center justify-center">
-                  <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <CalendarIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
                   <p className="text-xs text-purple-700 dark:text-purple-500 font-medium">Fecha Limite</p>

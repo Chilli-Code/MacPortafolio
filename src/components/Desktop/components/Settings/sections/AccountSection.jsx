@@ -2,7 +2,7 @@
 
 import { 
   User, Mail, Lock, Phone, Linkedin, Github, 
-  Twitter, Globe, MapPin, Briefcase, Calendar,
+  Twitter, Globe, MapPin, Briefcase, CalendarIcon,
   Camera, Save, X, Edit, Shield, CreditCard
 } from '#assets/icons';
 import { useState, useRef, useEffect } from 'react';
@@ -300,7 +300,7 @@ if (data.avatar && data.avatar !== null) {
 
           <button className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
             <div className="flex items-center gap-3">
-              <Calendar className="w-5 h-5 text-gray-500" />
+              <CalendarIcon className="w-5 h-5 text-gray-500" />
               <div className="text-left">
                 <p className="text-sm font-medium text-gray-900 dark:text-white">
                   Historial de Pagos

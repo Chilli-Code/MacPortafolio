@@ -10,6 +10,7 @@ import PermissionsSection from "#Desktop/components/Settings/sections/Permission
 import LanguageSection from "#Desktop/components/Settings/sections/LanguageSection";
 import AccountSection from "#Desktop/components/Settings/sections/AccountSection";
 import { useTranslate  } from "#hoc/useTranslate";
+import GeneralConfig from "../components/Settings/sections/GeneralConfig";
 
 const Settings = ({ isMaximized, setIsMaximized }) => {
     const { t } = useTranslate();
@@ -51,12 +52,14 @@ const Settings = ({ isMaximized, setIsMaximized }) => {
             case 1:
                 return <AppearanceSection />;
             case 2:
-                return <SoundSection />;
+                return <GeneralConfig />;
             case 3:
-                return <PermissionsSection />;
+                return <SoundSection />;
             case 4:
-                return <LanguageSection />;
+                return <PermissionsSection />;
             case 5:
+                return <LanguageSection />;
+            case 6:
                 return <AccountSection />;
             default:
                 return <AppearanceSection />;

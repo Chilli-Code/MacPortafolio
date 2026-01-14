@@ -1,4 +1,4 @@
-import { Calendar, DollarSign, Zap, Clock, Tag, User, CheckCircle2, PlayCircle, XCircle, RefreshCw, FileText, AlertCircle, ChevronRight } from '#assets/icons';
+import { CalendarIcon, DollarSign, Zap, Clock, Tag, User, CheckCircle2, PlayCircle, XCircle, RefreshCw, FileText, AlertCircle, ChevronRight } from '#assets/icons';
 import MobileNav from '#Mobile/MobileNav';
 import { getTechConfig } from '#assets/techIcons/techConfig.jsx';
 
@@ -131,7 +131,7 @@ const TaskDetailMobile = ({ task, onBack, onAccept, onComplete, onReopen }) => {
             <div className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 rounded-2xl p-4 border border-purple-200 dark:border-purple-800">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/40 rounded-lg flex items-center justify-center">
-                  <Calendar className="w-4 h-4 text-purple-600" />
+                  <CalendarIcon className="w-4 h-4 text-purple-600" />
                 </div>
                 <div>
                   <p className="text-xs text-purple-700 dark:text-purple-500 font-medium">Fecha Limite</p>

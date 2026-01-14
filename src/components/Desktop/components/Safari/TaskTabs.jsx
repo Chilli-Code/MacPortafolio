@@ -77,6 +77,7 @@ const TaskTabs = ({ activeTab, onTabChange, counts = {}, onAddTab, onCloseTab, t
       {/* Botón + */}
       <button
         onClick={onAddTab}
+        aria-label="Cerrar ventana"
         className="h-7 w-7 flex items-center justify-center rounded-md dark:text-white/50 text-gray-500 dark:hover:text-white hover:bg-blue-200 dark:hover:bg-white/10 transition-colors ml-1"
       >
         <Plus className="w-4 h-4" />

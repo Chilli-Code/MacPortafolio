@@ -1,5 +1,5 @@
 import Marquee from 'react-fast-marquee';
-import { Zap, DollarSign, Calendar, Eye, Clipboard, CheckCircle, AlarmClock, CircleX, MousePointerClick } from "#assets/icons";
+import { Zap, DollarSign, CalendarIcon, Eye, Clipboard, CheckCircle, AlarmClock, CircleX, MousePointerClick } from "#assets/icons";
 import { getTechConfig } from '#assets/techIcons/techConfig.jsx';
 
 const difficultyColors = {
@@ -138,7 +138,7 @@ const TaskCard = ({ task, onClick }) => {
 
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-              <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+              <CalendarIcon className="w-4 h-4 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
               <p className="text-xs text-gray-500">Fecha Limite</p>

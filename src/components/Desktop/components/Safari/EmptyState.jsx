@@ -45,9 +45,9 @@ const EmptyState = ({ type }) => {
       <div className={`w-20 h-20 bg-gradient-to-br ${state.color} rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl`}>
         <Icon className="w-12 h-12 text-white" />
       </div>
-      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
         {state.title}
-      </h3>
+      </h2>
       <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
         {state.description}
       </p>

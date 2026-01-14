@@ -10,6 +10,7 @@ import Profile from "#windows/Profile.jsx";
 import Settings from "#windows/Settings.jsx";
 import Gmail from "#windows/Chat.jsx";
 import Game from "#windows/Game.jsx";
+import Calendar from "#windows/Calendar.jsx";
 
 
 export { 
@@ -25,4 +26,5 @@ export {
     Settings,
     Gmail,
     Game,
+    Calendar,
 };
