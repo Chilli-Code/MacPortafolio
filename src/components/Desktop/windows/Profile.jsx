@@ -75,14 +75,14 @@ const Profile = ({ isMaximized, setIsMaximized }) => {
 
   return (
     <>
-      <div id="window-header-mt" className="flex w-full justify-between items-center bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 rounded-t-lg resize-handle">
+      <div id="window-header-mt" className="flex w-full justify-between items-center bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:!border-white rounded-t-lg resize-handle">
         <div className="h-full w-40 px-6">
           <WindowControls target="profile" onMaximize={handleMaximize} />
         </div>
         <div className="flex-1 min-w-0 overflow-x-hidden">
-          <div id="window-header" className="flex w-full justify-between border-l border-gray-200 dark:border-gray-700 px-4 py-3">
+          <div id="window-header" className="flex w-full justify-between border-l border-l-gray-200 dark:!bg-transparent !backdrop-blur-none rounded-none dark:border-l-white px-4 py-3">
             <div className="flex items-center gap-1 w-full justify-between">
-              <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
+              <h2 className="">
                 {activeItem.title}
               </h2>
             </div>

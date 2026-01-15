@@ -90,7 +90,7 @@ const EditSkillsModal = ({ isOpen, onClose, skills = [], onSave }) => {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b dark:border-gray-700">
-          <h2 className="text-sm font-semibold">Editar Skills</h2>
+          <h1 className="text-sm font-semibold">Editar Skills</h1>
           <button onClick={handleClose}>
             <X className="w-4 h-4" />
           </button>

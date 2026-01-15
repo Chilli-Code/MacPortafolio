@@ -1,5 +1,5 @@
 // src/components/TaskDetailModal.jsx
-import { X, Calendar, DollarSign, Zap, AlertCircle, CheckCircle, XCircle, Send, User } from '#assets/icons';
+import { X, CalendarIcon, DollarSign, Zap, AlertCircle, CheckCircle, XCircle, Send, User } from '#assets/icons';
 import { useState } from 'react';
 import { useTasksStore } from '#store/tasksStore';
 import { useNotificationStore } from './AchievementNotification';
@@ -134,7 +134,7 @@ const TaskDetailModal = ({ task, onClose }) => {
             {[
               { icon: Zap, label: 'XP', value: task.xp, color: 'yellow' },
               { icon: DollarSign, label: 'Pago', value: `$${task.reward}`, color: 'green' },
-              { icon: Calendar, label: 'Deadline', value: task.deadline, color: 'blue' },
+              { icon: CalendarIcon, label: 'Deadline', value: task.deadline, color: 'blue' },
               { icon: AlertCircle, label: 'Dificultad', value: task.difficulty, color: 'purple' }
             ].map(({ icon: Icon, label, value, color }, i) => (
               <div key={i} className="flex items-center gap-2">

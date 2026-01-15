@@ -138,58 +138,58 @@ const useWindowStore = create(
             storage: createJSONStorage(() => localStorage),
 
             // 📦 Particializar: solo guardar lo necesario
-            partialize: (state) => ({
-                windows: Object.fromEntries(
-                    Object.entries(state.windows).map(([key, win]) => [
-                        key,
-                        {
-                            isOpen: win.isOpen,
-                            isMinimized: win.isMinimized,
-                            isMaximized: win.isMaximized,
-                            position: win.position,
-                            size: win.size,
-                            zIndex: win.zIndex,
-                            // ⚠️ NO guardar 'data' para evitar problemas con datos sensibles
-                        }
-                    ])
-                ),
-                nextZIndex: state.nextZIndex,
-                version: state.version
-            }),
+partialize: (state) => ({
+    windows: Object.fromEntries(
+        Object.entries(state.windows).map(([key, win]) => [
+            key,
+            {
+                isOpen: win.isOpen,
+                isMinimized: win.isMinimized,
+                isMaximized: win.isMaximized,
+                position: win.position,
+                size: win.size,
+                zIndex: win.zIndex,
+                // ✅ GUARDAR data solo para imgfile
+                ...(['imgfile', 'txtfile'].includes(key) && win.data ? { data: win.data } : {})
+            }
+        ])
+    ),
+    nextZIndex: state.nextZIndex,
+    version: state.version
+}),
 
             // 🔄 Merge: cómo combinar estado guardado con estado inicial
-            merge: (persistedState, currentState) => {
-                console.log('🔄 Merging state:', { persistedState, currentState });
+merge: (persistedState, currentState) => {
+    console.log('🔄 Merging state:', { persistedState, currentState });
 
-                // Si no hay estado guardado o la versión es diferente, usar estado actual
-                if (!persistedState || persistedState.version !== STORAGE_VERSION) {
-                    console.warn('⚠️ No persisted state or version mismatch');
-                    return currentState;
-                }
+    if (!persistedState || persistedState.version !== STORAGE_VERSION) {
+        console.warn('⚠️ No persisted state or version mismatch');
+        return currentState;
+    }
 
-                // Combinar estado guardado con configuración por defecto
-                const mergedWindows = { ...currentState.windows };
+    const mergedWindows = { ...currentState.windows };
 
-                Object.entries(persistedState.windows || {}).forEach(([key, savedWin]) => {
-                    if (mergedWindows[key]) {
-                        console.log(`📝 Merging ${key}:`, savedWin);
-                        mergedWindows[key] = {
-                            ...mergedWindows[key], // Mantener configuración por defecto
-                            ...savedWin,           // Sobrescribir con estado guardado
-                            data: null             // Siempre resetear data
-                        };
-                    }
-                });
+    Object.entries(persistedState.windows || {}).forEach(([key, savedWin]) => {
+        if (mergedWindows[key]) {
+            console.log(`📝 Merging ${key}:`, savedWin);
+            mergedWindows[key] = {
+                ...mergedWindows[key],
+                ...savedWin,
+                // ✅ Restaurar data si existe (solo imgfile lo tendrá)
+                data: savedWin.data || null
+            };
+        }
+    });
 
-                const merged = {
-                    ...currentState,
-                    windows: mergedWindows,
-                    nextZIndex: persistedState.nextZIndex || currentState.nextZIndex
-                };
+    const merged = {
+        ...currentState,
+        windows: mergedWindows,
+        nextZIndex: persistedState.nextZIndex || currentState.nextZIndex
+    };
 
-                console.log('✅ Merged state:', merged);
-                return merged;
-            },
+    console.log('✅ Merged state:', merged);
+    return merged;
+},
 
             // ⚠️ Manejo de errores
             onRehydrateStorage: () => (state, error) => {

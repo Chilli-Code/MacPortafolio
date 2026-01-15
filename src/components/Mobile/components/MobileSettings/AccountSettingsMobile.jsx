@@ -3,7 +3,7 @@ import { useState, useRef } from 'react';
 import { 
   User, Mail, Phone, MapPin, Globe, ChevronRight,
   Camera, Linkedin, Github, Twitter, Lock, Shield,
-  CreditCard, Calendar, LogOut, Trash2, X, Check
+  CreditCard, LogOut, Trash2, X, Check
 } from '#assets/icons';
 import MobileNav from '#Mobile/MobileNav';
 

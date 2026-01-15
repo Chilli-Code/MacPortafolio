@@ -16,7 +16,7 @@ const Gmail = ({ isMaximized, setIsMaximized }) => {
             date: "10:30 AM",
             isRead: false,
             isStarred: false,
-            avatar: "/images/github-icon.png"
+            avatar: "/icons/github.svg"
         },
         {
             id: 2,
@@ -27,7 +27,7 @@ const Gmail = ({ isMaximized, setIsMaximized }) => {
             date: "9:15 AM",
             isRead: true,
             isStarred: true,
-            avatar: "/images/linkedin-icon.png"
+            avatar: "/icons/linkedin.svg"
         },
         {
             id: 3,
@@ -202,8 +202,8 @@ const Gmail = ({ isMaximized, setIsMaximized }) => {
                 <WindowControls target="gmail" onMaximize={handleMaximize} />
 
                 <h2 className="flex items-center gap-2 justify-center">
-                    <Mail size={20} className="text-gray-600 dark:text-gray-300" />
-                    <span className="text-sm font-medium text-gray-700 dark:text-white">Correos</span>
+                    <Mail className="w-4 h-4" />
+                    Correos
                 </h2>
 
             </div>

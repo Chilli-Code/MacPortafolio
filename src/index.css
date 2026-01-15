@@ -294,8 +294,8 @@ body {
     }
   }
 
-  #contact {
-    @apply max-w-2xl absolute top-60 left-5/12 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
+  #socials {
+    @apply w-3xl h-200  absolute top-40 left-5/12 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
 
     h2 {
       @apply font-bold text-sm text-center w-full;
@@ -456,7 +456,7 @@ body {
 #resume.maximized,
 #settings.maximized,
 #safari.maximized,
-#contact.maximized,
+#socials.maximized,
 #terminal.maximized,
 #photos.maximized,
 #imgfile.maximized,
@@ -545,7 +545,14 @@ body {
       .sidebar {
         @apply w-48 bg-gray-50 border-r border-gray-200 flex flex-col p-5 space-y-3;
       }
-  
+  h2 {
+    width: 100%;
+    text-align: center;
+    font-size: var(--text-sm);
+    line-height: var(--tw-leading, var(--text-sm--line-height));
+    --tw-font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-bold);
+}
       h3 {
         margin-bottom: calc(var(--spacing) * 1);
         font-size: var(--text-xs);

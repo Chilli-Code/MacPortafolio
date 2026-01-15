@@ -328,7 +328,7 @@ const AppearanceSection = () => {
               key={wallpaper.id}
               className={clsx(
                 "relative group rounded-xl overflow-hidden cursor-pointer transition-all",
-                "border-2",
+                "border-2 will-change-transform transition-transform duration-200 ease-out",
                 selectedWallpaper === wallpaper.path
                   ? "border-blue-500 ring-4 ring-blue-100 dark:ring-blue-900/50 shadow-lg"
                   : "border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600 hover:scale-[1.02]"
@@ -341,7 +341,8 @@ const AppearanceSection = () => {
                   src={wallpaper.path}
                   alt={wallpaper.name}
                   loading='lazy'
-                  className="w-full h-full object-cover"
+                   decoding="async"
+                 className="w-full h-full object-cover will-change-transform"
                   onError={(e) => {
                     e.target.src = `https://via.placeholder.com/400x225/3b82f6/ffffff?text=${wallpaper.name}`;
                   }}

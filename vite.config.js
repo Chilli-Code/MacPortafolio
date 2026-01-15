@@ -132,7 +132,7 @@ export default defineConfig({
           ],
           'windows-social': [
             './src/components/Desktop/windows/Chat.jsx',
-            './src/components/Desktop/windows/Contact.jsx',
+            './src/components/Desktop/windows/Socials.jsx',
           ],
           'admin': [
             './src/components/AdminDashboard.jsx',

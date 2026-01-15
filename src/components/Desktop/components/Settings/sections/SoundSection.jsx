@@ -159,7 +159,7 @@ sounds.setVolume(soundType, newVolume);
                 step="0.01"
                 value={soundVolume}
                 onChange={handleVolumeChange}
-                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-blue-500"
+                className="ui-range flex-1 h-2  rounded-lg appearance-none cursor-pointer  accent-blue-500"
               />
               <Volume2 className="w-4 h-4 text-gray-400" />
             </div>

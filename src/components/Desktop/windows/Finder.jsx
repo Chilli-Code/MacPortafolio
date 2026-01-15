@@ -25,31 +25,29 @@ const Finder = ({ isMaximized, setIsMaximized }) => {
     openWindow(`${item.fileType}${item.kind}`, item);
   };
 
-  const renderList = (name, items) => (
-    <div>
-      <h3>{name}</h3>
+const renderList = (name, items, className = "") => (
+  <div className={className}>
+    <h3>{name}</h3>
 
-      <ul>
-        {items.map((item) => (
-          <li
-            key={item.id}
-            onClick={() => setActiveLocation(item)}
-            className={clsx(item.id == activeLocation.id ? "active" : "not-active notActive",)}
-          >
-            <img
-              draggable={false}
-              src={item.icon}
-              className="w-4"
-              alt=""
-            />
-            <p className="text-sm font-medium truncate">
-              {item.name}
-            </p>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+    <ul>
+      {items.map((item) => (
+        <li
+          key={item.id}
+          onClick={() => setActiveLocation(item)}
+          className={clsx(
+            item.id == activeLocation.id
+              ? "active"
+              : "not-active notActive"
+          )}
+        >
+          <img draggable={false} src={item.icon} className="w-4" alt="" />
+          <p className="text-sm font-medium truncate">{item.name}</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
 
   return (
     <>
@@ -84,7 +82,7 @@ const Finder = ({ isMaximized, setIsMaximized }) => {
       <div className="flex h-full bg-white overflow-hidden">
         <div className="w-48 sidebar sidebarFolder flex-shrink-0 overflow-y-auto">
           {renderList('Favoritos', Object.values(locations))}
-          {renderList('Mis proyectos', locations.work.children)}
+          {renderList('Mis proyectos', locations.work.children, 'mb-10')}
         </div>
 
         {/* Área principal: misma que en el header */}

@@ -15,7 +15,7 @@ const ProfileHeader = ({ isMaximized, setIsMaximized }) => {
 
       <div className="flex-1 min-w-0 overflow-x-hidden">
         <div className="flex w-full justify-between border-l px-4 py-3">
-          <h2 className="text-sm font-semibold">{activeItem.title}</h2>
+          <h1 className="text-sm font-semibold">{activeItem.title}</h1>
           <Search className="w-4 h-4 text-gray-500" />
         </div>
       </div>

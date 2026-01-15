@@ -4,7 +4,7 @@ import Resume from "#windows/Resume.jsx";
 import Finder from "#windows/Finder.jsx";
 import Text from "#windows/Text.jsx"
 import ImageWindowContent from "#windows/Image.jsx";
-import Contact from "#windows/Contact.jsx";
+import Socials from "#windows/Socials.jsx";
 import Galery from "#windows/Galery.jsx";
 import Profile from "#windows/Profile.jsx";
 import Settings from "#windows/Settings.jsx";
@@ -20,7 +20,7 @@ export {
     Finder, 
     Text, 
     ImageWindowContent,
-    Contact,
+    Socials,
     Galery,
     Profile,
     Settings,

@@ -1,4 +1,4 @@
-import { DollarSign, TrendingUp, Calendar } from '#assets/icons';
+import { DollarSign, TrendingUp, CalendarIcon } from '#assets/icons';
 import MobileNav from '#components/Mobile/MobileNav';
 
 const FinancesSectionMobile = ({ onBack }) => {
@@ -51,7 +51,7 @@ const FinancesSectionMobile = ({ onBack }) => {
         {/* Monthly Breakdown */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-4">
-            <Calendar className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <CalendarIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             <h3 className="text-base font-semibold text-gray-900 dark:text-white">
               Ingresos 2024
             </h3>

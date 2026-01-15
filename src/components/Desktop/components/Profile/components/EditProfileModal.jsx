@@ -71,7 +71,7 @@ const EditProfileModal = ({ isOpen, onClose, userData, onSave }) => {
             <div className="w-3 h-3 bg-yellow-400 rounded-full" />
             <div className="w-3 h-3 bg-green-500 rounded-full" />
           </div>
-          <h2 className="text-sm font-semibold">Editar Perfil</h2>
+          <h1 className="text-sm font-semibold">Editar Perfil</h1>
         </div>
 
         {/* Form */}

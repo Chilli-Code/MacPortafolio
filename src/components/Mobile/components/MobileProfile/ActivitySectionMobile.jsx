@@ -1,6 +1,6 @@
 // src/components/Mobile/screens/ActivitySectionMobile.jsx
 import { useState, useMemo } from 'react';
-import { Calendar, Flame, Trophy, Activity, ChevronLeft, ChevronRight } from '#assets/icons';
+import { CalendarIcon, Flame, Trophy, Activity, ChevronLeft, ChevronRight } from '#assets/icons';
 import MobileNav from '#Mobile/MobileNav';
 import { userStats } from '#Desktop/components/Profile/utils/profileData';
 import { generateActivityData, getActivityColor } from '#Desktop/components/Profile/utils/profileHelpers';

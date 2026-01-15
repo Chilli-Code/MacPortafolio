@@ -1,16 +1,23 @@
 import WindowWrapper from "#hoc/WindowWrapper.jsx";
 import { WindowControls } from "#components/Desktop";
 import useWindowStore from "#store/window.js";
-
+import { useEffect } from 'react'; // ← IMPORTAR useEffect
 
 const Text = ({ isMaximized, setIsMaximized }) => {
+    const { windows, closeWindow } = useWindowStore(); // ← AGREGAR closeWindow
+    const data = windows?.txtfile?.data;
 
     const handleMaximize = () => {
-    setIsMaximized(!isMaximized);
-  };
-    const { windows } = useWindowStore();
+        setIsMaximized(!isMaximized);
+    };
 
-    const data = windows?.txtfile?.data;
+    // ✅ Cerrar ventana si no hay data después de recargar
+    useEffect(() => {
+        if (!data && windows.txtfile?.isOpen) {
+            console.log('❌ No hay data, cerrando ventana txtfile');
+            closeWindow('txtfile');
+        }
+    }, [data, windows.txtfile?.isOpen, closeWindow]);
 
     if (!data) return null;
 
@@ -36,22 +43,21 @@ const Text = ({ isMaximized, setIsMaximized }) => {
                     </div>
                 ) : null}
 
-                {subtitle ? <h3
-                    className="text-lg font-semibold">{subtitle}</h3> :
-                    null}
+                {subtitle ? (
+                    <h3 className="text-lg font-semibold">{subtitle}</h3>
+                ) : null}
 
                 {Array.isArray(description) && description.length > 0 ? (
                     <div className="space-y-3 leading-relaxed text-base text-gray-800">
                         {description.map((para, idx) => (
                             <p key={idx}>{para}</p>
                         ))}
-
                     </div>
                 ) : null}
             </div>
         </>
     );
+};
 
-}
 const TextWindow = WindowWrapper(Text, "txtfile");
 export default TextWindow;
