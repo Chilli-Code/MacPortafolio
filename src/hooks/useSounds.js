@@ -8,6 +8,8 @@ let windowCloseSound = null;
 let windowMinimizeSound = null;
 let windowMaximizeSound = null;
 let hoverSound = null;
+let introSound = null;
+let loaderBiosSound = null;
 
 // 🎛️ CONTROLES GLOBALES
 let globalSoundsEnabled = true; // Para el switch principal
@@ -36,6 +38,22 @@ const getStoredVolume = (key, defaultValue) => {
 
 // 🎵 Inicializar sonidos globales
 const initGlobalSounds = () => {
+    if (!introSound) {
+    introSound = new Howl({
+      src: ['/sounds/intro.mp3'],
+      volume: getStoredVolume('intro', 0.5),
+      preload: true
+    });
+  }
+
+  if (!loaderBiosSound) {
+    loaderBiosSound = new Howl({
+      src: ['/sounds/loaderBios.mp3'],
+      volume: getStoredVolume('loaderBios', 0.4),
+      preload: true
+    });
+  }
+
   if (!clickSound) {
     clickSound = new Howl({
       src: ['/sounds/click.wav'],
@@ -94,7 +112,9 @@ const setVolume = (soundType, volume) => {
     windowClose: windowCloseSound,
     windowMinimize: windowMinimizeSound,
     windowMaximize: windowMaximizeSound,
-    hover: hoverSound
+    hover: hoverSound,
+    intro: introSound,
+  loaderBios: loaderBiosSound
   };
 
   const sound = soundMap[soundType];
@@ -130,7 +150,9 @@ const getVolume = (soundType) => {
     windowClose: windowCloseSound,
     windowMinimize: windowMinimizeSound,
     windowMaximize: windowMaximizeSound,
-    hover: hoverSound
+    hover: hoverSound,
+      intro: introSound,
+  loaderBios: loaderBiosSound
   };
 
   const sound = soundMap[soundType];
@@ -178,6 +200,27 @@ const playClick = (targetElement = null) => {
   }
 };
 
+
+const playIntro = () => {
+  if (!globalSoundsEnabled) return;
+  introSound?.play();
+};
+
+const playLoaderBios = (loop = true) => {
+  if (!globalSoundsEnabled) return;
+
+  if (loaderBiosSound) {
+    loaderBiosSound.loop(loop);
+
+    if (loop) {
+      loaderBiosSound.play();
+    } else {
+      loaderBiosSound.stop();
+    }
+  }
+};
+
+
 const playWindowOpen = () => {
   if (!globalSoundsEnabled) return;
   windowOpenSound?.play();
@@ -213,6 +256,8 @@ const useSounds = () => {
     playWindowMinimize,
     playWindowMaximize,
     playHover,
+      playIntro,
+  playLoaderBios,
     setVolume,
     getVolume,
     // 🆕 Funciones de control global

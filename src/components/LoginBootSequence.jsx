@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import useSounds from '#hooks/useSounds';
 
 const LoginBootSequence = ({ onComplete, username }) => {
   const [bootLines, setBootLines] = useState([]);
   const [progress, setProgress] = useState(0);
   const [currentPhase, setCurrentPhase] = useState('auth');
+const { playLoaderBios, initSounds } = useSounds();
 
   // Función para generar timestamp realista
   const timestamp = (time) => `[${time.toFixed(6)}]`;
@@ -58,7 +60,7 @@ const LoginBootSequence = ({ onComplete, username }) => {
     const sequence = generateLoginSequence();
     let currentIndex = 0;
     const totalLines = sequence.length;
-
+  playLoaderBios(true);
     const showNextLine = () => {
       if (currentIndex < sequence.length) {
         const line = sequence[currentIndex];
@@ -77,6 +79,7 @@ const LoginBootSequence = ({ onComplete, username }) => {
         setTimeout(showNextLine, delay);
       } else {
         // Login sequence completado
+        playLoaderBios(false);
         setTimeout(() => {
           onComplete();
         }, 800);

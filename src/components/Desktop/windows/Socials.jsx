@@ -1,101 +1,101 @@
+// src/components/Windows/Socials.jsx - VERSIÓN CORREGIDA
 import { useState } from 'react';
-import { 
-  Search, Star, MapPin, Briefcase, Code, Award, 
-  MessageCircle, Heart, UserPlus, Globe, CheckCircle,
-  Filter, TrendingUp, Users, Clock
+import {
+  Search, Heart, MessageCircle, Repeat2, Share, MoreHorizontal,
+  Image, Smile, MapPin, Send, TrendingUp, Users, Bell, Home,
+  User, Bookmark, CheckCircle, Sparkles, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import { WindowControls } from "#components/Desktop";
 import WindowWrapper from "#hoc/WindowWrapper";
-// Datos de ejemplo de freelancers
-const freelancers = [
+import clsx from 'clsx';
+
+// Usuario actual
+const currentUser = {
+  name: "María González",
+  username: "mariagdev",
+  avatar: "/images/Avatar.png",
+  isVerified: true
+};
+
+// Posts de ejemplo
+const initialPosts = [
   {
     id: 1,
-    name: "María González",
-    username: "mariagdev",
-    avatar: "/images/Avatar.png",
-    role: "Full Stack Developer",
-    level: 12,
-    rank: "Experto",
-    rankIcon: "🏆",
-    rating: 4.9,
-    reviews: 127,
-    hourlyRate: 45,
-    location: "Madrid, España",
-    isOnline: true,
-    skills: ["React", "Node.js", "TypeScript", "MongoDB"],
-    badges: ["⭐", "🔥", "💎"],
-    completedProjects: 89,
-    bio: "Desarrolladora full stack especializada en aplicaciones web modernas y escalables.",
-    responseTime: "2h"
+    author: {
+      name: "Ana Silva",
+      username: "anabackend",
+      avatar: null,
+      isVerified: true
+    },
+    content: "Acabo de lanzar mi nuevo proyecto en producción 🚀 Una API REST con Node.js y PostgreSQL que maneja +10k requests/segundo. El secreto: índices bien optimizados y caching inteligente con Redis.",
+    timestamp: "Hace 2h",
+    likes: 234,
+    retweets: 45,
+    replies: 28,
+    isLiked: false,
+    isRetweeted: false,
+    isBookmarked: false
   },
   {
     id: 2,
-    name: "Carlos Ruiz",
-    username: "carlosdesign",
-    avatar: null,
-    role: "UI/UX Designer",
-    level: 8,
-    rank: "Avanzado",
-    rankIcon: "🎨",
-    rating: 4.7,
-    reviews: 64,
-    hourlyRate: 38,
-    location: "Barcelona, España",
-    isOnline: false,
-    skills: ["Figma", "Adobe XD", "Sketch", "Prototyping"],
-    badges: ["🎨", "⭐"],
-    completedProjects: 45,
-    bio: "Diseñador apasionado por crear experiencias únicas y centradas en el usuario.",
-    responseTime: "4h"
+    author: {
+      name: "Carlos Ruiz",
+      username: "carlosdesign",
+      avatar: null,
+      isVerified: false
+    },
+    content: "Hot take: El mejor diseño es el que no se nota. Si tu usuario tiene que pensar en cómo usar tu interfaz, ya fallaste. La simplicidad siempre gana. 🎨",
+    timestamp: "Hace 5h",
+    likes: 892,
+    retweets: 156,
+    replies: 67,
+    isLiked: true,
+    isRetweeted: false,
+    isBookmarked: true
   },
   {
     id: 3,
-    name: "Ana Silva",
-    username: "anabackend",
-    avatar: null,
-    role: "Backend Developer",
-    level: 15,
-    rank: "Master",
-    rankIcon: "👑",
-    rating: 5.0,
-    reviews: 203,
-    hourlyRate: 55,
-    location: "Buenos Aires, Argentina",
-    isOnline: true,
-    skills: ["Python", "Django", "PostgreSQL", "AWS"],
-    badges: ["👑", "💎", "🔥", "⭐"],
-    completedProjects: 156,
-    bio: "Backend developer con 8+ años de experiencia en arquitecturas escalables.",
-    responseTime: "1h"
-  },
-  {
-    id: 4,
-    name: "Luis Moreno",
-    username: "luismobile",
-    avatar: null,
-    role: "Mobile Developer",
-    level: 10,
-    rank: "Profesional",
-    rankIcon: "📱",
-    rating: 4.8,
-    reviews: 91,
-    hourlyRate: 42,
-    location: "Ciudad de México, México",
-    isOnline: true,
-    skills: ["React Native", "Flutter", "iOS", "Android"],
-    badges: ["📱", "⭐", "🔥"],
-    completedProjects: 67,
-    bio: "Desarrollador mobile especializado en apps nativas y multiplataforma.",
-    responseTime: "3h"
+    author: {
+      name: "Luis Moreno",
+      username: "luismobile",
+      avatar: null,
+      isVerified: true
+    },
+    content: "¿Alguien más emocionado por el nuevo React 19? Las Server Actions van a cambiar completamente cómo construimos apps. Ya estoy migrando mis proyectos 💪",
+    timestamp: "Hace 1d",
+    likes: 445,
+    retweets: 89,
+    replies: 92,
+    isLiked: false,
+    isRetweeted: true,
+    isBookmarked: false
   }
 ];
 
+const sidebarItems = [
+  {
+    name: "Principal",
+    items: [
+      { id: "home", name: "Inicio", icon: Home },
+      { id: "trending", name: "Tendencias", icon: TrendingUp },
+      { id: "notifications", name: "Notificaciones", icon: Bell },
+    ],
+  },
+  {
+    name: "Cuenta",
+    items: [
+      { id: "bookmarks", name: "Guardados", icon: Bookmark },
+      { id: "profile", name: "Perfil", icon: User },
+    ],
+  },
+];
+
 const MAC_COLORS = [
-  'bg-gradient-to-br from-blue-400 to-blue-600',
-  'bg-gradient-to-br from-purple-400 to-purple-600',
-  'bg-gradient-to-br from-pink-400 to-pink-600',
-  'bg-gradient-to-br from-indigo-400 to-indigo-600',
-  'bg-gradient-to-br from-emerald-400 to-emerald-600',
+  'bg-gradient-to-br from-blue-500 to-blue-600',
+  'bg-gradient-to-br from-purple-500 to-purple-600',
+  'bg-gradient-to-br from-pink-500 to-pink-600',
+  'bg-gradient-to-br from-indigo-500 to-indigo-600',
+  'bg-gradient-to-br from-emerald-500 to-emerald-600',
 ];
 
 const getAvatarColor = (name = '') => {
@@ -104,278 +104,372 @@ const getAvatarColor = (name = '') => {
   return MAC_COLORS[code % MAC_COLORS.length];
 };
 
-const Socials = ({ isMaximized, setIsMaximized }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState('all');
-  const [likedUsers, setLikedUsers] = useState(new Set());
 
-        const handleMaximize = () => {
+
+const Socials = ({ isMaximized, setIsMaximized }) => {
+  const [activeTab, setActiveTab] = useState('home');
+  const [posts, setPosts] = useState(initialPosts);
+  const [newPost, setNewPost] = useState('');
+  const [showSidebars, setShowSidebars] = useState(true); // 👈 NUEVO
+
+  const handleMaximize = () => {
     setIsMaximized(!isMaximized);
   };
 
-  const toggleLike = (userId) => {
-    setLikedUsers(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(userId)) {
-        newSet.delete(userId);
-      } else {
-        newSet.add(userId);
-      }
-      return newSet;
-    });
+  const toggleLike = (postId) => {
+    setPosts(prev => prev.map(post =>
+      post.id === postId
+        ? {
+          ...post,
+          isLiked: !post.isLiked,
+          likes: post.isLiked ? post.likes - 1 : post.likes + 1
+        }
+        : post
+    ));
   };
 
-  const filteredFreelancers = freelancers.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    if (selectedFilter === 'online') return matchesSearch && user.isOnline;
-    if (selectedFilter === 'top') return matchesSearch && user.rating >= 4.8;
-    return matchesSearch;
-  });
+  const toggleRetweet = (postId) => {
+    setPosts(prev => prev.map(post =>
+      post.id === postId
+        ? {
+          ...post,
+          isRetweeted: !post.isRetweeted,
+          retweets: post.isRetweeted ? post.retweets - 1 : post.retweets + 1
+        }
+        : post
+    ));
+  };
+
+  const toggleBookmark = (postId) => {
+    setPosts(prev => prev.map(post =>
+      post.id === postId
+        ? { ...post, isBookmarked: !post.isBookmarked }
+        : post
+    ));
+  };
+
+  const handlePost = () => {
+    if (newPost.trim()) {
+      const post = {
+        id: Date.now(),
+        author: currentUser,
+        content: newPost,
+        timestamp: "Ahora",
+        likes: 0,
+        retweets: 0,
+        replies: 0,
+        isLiked: false,
+        isRetweeted: false,
+        isBookmarked: false
+      };
+      setPosts([post, ...posts]);
+      setNewPost('');
+    }
+  };
+  const renderList = (name, items, className = "") => (
+    <div className={className}>
+
+      <ul>
+        {items.map((item) => (
+          <li
+            key={item.id}
+            onClick={() => setActiveTab(item.id)}
+            className={clsx(
+              item.id === activeTab
+                ? "active"
+                : "not-active notActive"
+            )}
+          >
+            {/* ICONO */}
+            <item.icon className="w-4 h-4 flex-shrink-0" />
+
+            <p className="text-sm font-medium truncate">{item.name}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
+
 
   return (
     <>
-            <div id="window-header" className="bgt">
-                <WindowControls target="socials" onMaximize={handleMaximize} />
-                <h2 className="flex items-center gap-2 justify-center w-full">socials</h2>
-            </div>
-                  {/* Header fijo */}
-   <div className="flex flex-col h-full min-h-0 bg-gray-50 dark:bg-gray-900">
-      <div className="flex-shrink-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-        <div className="flex items-center justify-between gap-4 mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
-              <Users className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Red de Freelancers</h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Conecta con talento de todo el mundo</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 rounded-full">
-              <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
-                {filteredFreelancers.length} disponibles
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Buscador y filtros */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Buscar por nombre, rol o habilidad..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-gray-700 border-0 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          
-          <div className="flex gap-2">
-            <button
-              onClick={() => setSelectedFilter('all')}
-              className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                selectedFilter === 'all'
-                  ? 'bg-blue-500 text-white shadow-lg'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
-            >
-              Todos
-            </button>
-            <button
-              onClick={() => setSelectedFilter('online')}
-              className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
-                selectedFilter === 'online'
-                  ? 'bg-green-500 text-white shadow-lg'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
-            >
-              <div className="w-2 h-2 bg-current rounded-full" />
-              Online
-            </button>
-            <button
-              onClick={() => setSelectedFilter('top')}
-              className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
-                selectedFilter === 'top'
-                  ? 'bg-yellow-500 text-white shadow-lg'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
-            >
-              <Star className="w-4 h-4" />
-              Top Rated
-            </button>
-          </div>
-        </div>
+      {/* 👇 HEADER ARRASTRABLE CON ID CORRECTO */}
+      <div id="window-header" className="bgt">
+        <WindowControls target="socials" onMaximize={handleMaximize} />
+        <h2 className="flex items-center gap-2 justify-center w-full">DevNetwork</h2>
       </div>
 
+      <div className="flex h-full min-h-0 bg-white dark:bg-gray-900">
+        {/* Sidebar izquierda - Con transición */}
+        <div className="w-48 sidebar !bg-white dark:!bg-gray-800 sidebarFolder flex-shrink-0 overflow-y-auto">
+          {/* Logo */}
+         
+            <h3 className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              DevNetwork
+            </h3>
 
-      {/* Grid de freelancers - scrollable */}
-       <div className="flex-1 min-h-0 overflow-y-auto">
-      <div className=" p-4 mb-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pb-6">
-          {filteredFreelancers.map((user) => {
-            const initial = user.name.charAt(0).toUpperCase();
-            const bgColor = getAvatarColor(user.name);
-            const isLiked = likedUsers.has(user.id);
 
-            return (
-              <div
-                key={user.id}
-                className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300 hover:scale-[1.02] group"
-              >
-                {/* Header de la tarjeta */}
-                <div className="flex items-start gap-4 mb-4">
-                  {/* Avatar */}
-                  <div className="relative flex-shrink-0">
-                    {user.avatar ? (
-                      <img
-                        src={user.avatar}
-                        alt={user.name}
-                        className="w-16 h-16 rounded-2xl object-cover ring-4 ring-white dark:ring-gray-700"
-                      />
-                    ) : (
-                      <div className={`w-16 h-16 rounded-2xl ${bgColor} flex items-center justify-center ring-4 ring-white dark:ring-gray-700`}>
-                        <span className="text-2xl font-bold text-white">{initial}</span>
-                      </div>
-                    )}
-                    {user.isOnline && (
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-3 border-white dark:border-gray-800 rounded-full" />
-                    )}
-                  </div>
+          {sidebarItems.map((section) =>
+            renderList(section.name, section.items)
+          )}
 
-                  {/* Info básica */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">
-                        {user.name}
-                      </h3>
-                      <button
-                        onClick={() => toggleLike(user.id)}
-                        className="flex-shrink-0 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                      >
-                        <Heart
-                          className={`w-5 h-5 transition-all ${
-                            isLiked
-                              ? 'fill-red-500 text-red-500'
-                              : 'text-gray-400 hover:text-red-500'
-                          }`}
-                        />
+          <div className="px-4 mt-4">
+            <button className="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl">
+              Publicar
+            </button>
+          </div>
+  
+        </div>
+
+
+
+        {/* Feed principal */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Header del feed con botón toggle */}
+          <div className="flex-shrink-0 border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl">
+            <div className="px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {/* 👇 BOTÓN PARA OCULTAR/MOSTRAR LATERALES */}
+                <button
+                  onClick={() => setShowSidebars(!showSidebars)}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  title={showSidebars ? 'Ocultar paneles laterales' : 'Mostrar paneles laterales'}
+                >
+                  {showSidebars ? (
+                    <PanelLeftClose className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  ) : (
+                    <PanelLeftOpen className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  )}
+                </button>
+
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  {activeTab === 'home' && 'Inicio'}
+                  {activeTab === 'trending' && 'Tendencias'}
+                  {activeTab === 'notifications' && 'Notificaciones'}
+                </h2>
+              </div>
+            </div>
+          </div>
+
+          {/* Crear nuevo post */}
+          {activeTab === 'home' && (
+            <div className="flex-shrink-0 border-b border-gray-200 dark:border-gray-800 p-4">
+              <div className="flex gap-3">
+                <div className={`w-12 h-12 rounded-xl ${getAvatarColor(currentUser.name)} flex items-center justify-center flex-shrink-0`}>
+                  <span className="text-xl font-bold text-white">
+                    {currentUser.name.charAt(0)}
+                  </span>
+                </div>
+
+                <div className="flex-1">
+                  <textarea
+                    value={newPost}
+                    onChange={(e) => setNewPost(e.target.value)}
+                    placeholder="¿Qué estás construyendo?"
+                    className="w-full bg-transparent border-0 text-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none focus:outline-none"
+                    rows="3"
+                  />
+
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+                    <div className="flex gap-2">
+                      <button className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors text-blue-500">
+                        <Image className="w-5 h-5" />
+                      </button>
+                      <button className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors text-blue-500">
+                        <Smile className="w-5 h-5" />
+                      </button>
+                      <button className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors text-blue-500">
+                        <MapPin className="w-5 h-5" />
                       </button>
                     </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">@{user.username}</p>
-                    
-                    {/* Stats inline */}
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                          {user.rating}
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          ({user.reviews})
-                        </span>
-                      </div>
-                      <div className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 rounded-full">
-                        <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
-                          {user.rankIcon} Nivel {user.level}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Rol y ubicación */}
-                <div className="flex items-center gap-4 mb-3 text-sm">
-                  <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
-                    <Briefcase className="w-4 h-4" />
-                    <span>{user.role}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-                    <MapPin className="w-4 h-4" />
-                    <span className="truncate">{user.location}</span>
-                  </div>
-                </div>
-
-                {/* Bio */}
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                  {user.bio}
-                </p>
-
-                {/* Skills */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {user.skills.slice(0, 4).map((skill) => (
-                    <span
-                      key={skill}
-                      className="px-2.5 py-1 bg-gray-100 dark:bg-gray-700 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300"
+                    <button
+                      onClick={handlePost}
+                      disabled={!newPost.trim()}
+                      className="px-6 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white font-semibold rounded-xl transition-all disabled:cursor-not-allowed shadow-lg shadow-blue-500/25"
                     >
-                      {skill}
-                    </span>
-                  ))}
-                  {user.skills.length > 4 && (
-                    <span className="px-2.5 py-1 text-xs text-gray-500 dark:text-gray-400">
-                      +{user.skills.length - 4}
-                    </span>
-                  )}
-                </div>
-
-                {/* Badges */}
-                <div className="flex items-center gap-2 mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
-                  <Award className="w-4 h-4 text-gray-400" />
-                  <div className="flex gap-1">
-                    {user.badges.map((badge, idx) => (
-                      <span key={idx} className="text-lg">{badge}</span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Footer con acciones */}
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex flex-col">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Tarifa por hora</span>
-                    <span className="text-lg font-bold text-gray-900 dark:text-white">
-                      ${user.hourlyRate}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>{user.responseTime}</span>
-                    </div>
-                    <button className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-xl transition-colors shadow-lg shadow-blue-500/25 flex items-center gap-2">
-                      <MessageCircle className="w-4 h-4" />
-                      Contactar
+                      Publicar
                     </button>
                   </div>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          )}
+
+          {/* Feed de posts */}
+          <div className="flex-1 overflow-y-auto">
+            {posts.map((post) => {
+              const initial = post.author.name.charAt(0).toUpperCase();
+              const bgColor = getAvatarColor(post.author.name);
+
+              return (
+                <div
+                  key={post.id}
+                  className="border-b border-gray-200 dark:border-gray-800 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                >
+                  <div className="flex gap-3">
+                    {post.author.avatar ? (
+                      <img
+                        src={post.author.avatar}
+                        alt={post.author.name}
+                        className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className={`w-12 h-12 rounded-xl ${bgColor} flex items-center justify-center flex-shrink-0`}>
+                        <span className="text-xl font-bold text-white">{initial}</span>
+                      </div>
+                    )}
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-bold text-gray-900 dark:text-white hover:underline cursor-pointer">
+                            {post.author.name}
+                          </span>
+                          {post.author.isVerified && (
+                            <CheckCircle className="w-4 h-4 text-blue-500 fill-blue-500 flex-shrink-0" />
+                          )}
+                          <span className="text-gray-500 dark:text-gray-400 text-sm">
+                            @{post.author.username}
+                          </span>
+                          <span className="text-gray-500 dark:text-gray-400 text-sm">·</span>
+                          <span className="text-gray-500 dark:text-gray-400 text-sm">
+                            {post.timestamp}
+                          </span>
+                        </div>
+
+                        <button className="p-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors text-gray-500 dark:text-gray-400">
+                          <MoreHorizontal className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      <p className="text-gray-900 dark:text-white text-[15px] leading-relaxed mb-3">
+                        {post.content}
+                      </p>
+
+                      <div className="flex items-center justify-between max-w-md">
+                        <button className="flex items-center gap-2 group hover:text-blue-500 transition-colors">
+                          <div className="p-2 rounded-full group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 transition-colors">
+                            <MessageCircle className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-500" />
+                          </div>
+                          <span className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-blue-500">
+                            {post.replies}
+                          </span>
+                        </button>
+
+                        <button
+                          onClick={() => toggleRetweet(post.id)}
+                          className={`flex items-center gap-2 group transition-colors ${post.isRetweeted ? 'text-green-500' : 'hover:text-green-500'
+                            }`}
+                        >
+                          <div className={`p-2 rounded-full transition-colors ${post.isRetweeted
+                              ? 'bg-green-50 dark:bg-green-900/30'
+                              : 'group-hover:bg-green-50 dark:group-hover:bg-green-900/30'
+                            }`}>
+                            <Repeat2 className={`w-5 h-5 ${post.isRetweeted
+                                ? 'text-green-500'
+                                : 'text-gray-500 dark:text-gray-400 group-hover:text-green-500'
+                              }`} />
+                          </div>
+                          <span className={`text-sm ${post.isRetweeted
+                              ? 'text-green-500'
+                              : 'text-gray-500 dark:text-gray-400 group-hover:text-green-500'
+                            }`}>
+                            {post.retweets}
+                          </span>
+                        </button>
+
+                        <button
+                          onClick={() => toggleLike(post.id)}
+                          className={`flex items-center gap-2 group transition-colors ${post.isLiked ? 'text-red-500' : 'hover:text-red-500'
+                            }`}
+                        >
+                          <div className={`p-2 rounded-full transition-colors ${post.isLiked
+                              ? 'bg-red-50 dark:bg-red-900/30'
+                              : 'group-hover:bg-red-50 dark:group-hover:bg-red-900/30'
+                            }`}>
+                            <Heart className={`w-5 h-5 ${post.isLiked
+                                ? 'text-red-500 fill-red-500'
+                                : 'text-gray-500 dark:text-gray-400 group-hover:text-red-500'
+                              }`} />
+                          </div>
+                          <span className={`text-sm ${post.isLiked
+                              ? 'text-red-500'
+                              : 'text-gray-500 dark:text-gray-400 group-hover:text-red-500'
+                            }`}>
+                            {post.likes}
+                          </span>
+                        </button>
+
+                        <button
+                          onClick={() => toggleBookmark(post.id)}
+                          className="group hover:text-blue-500 transition-colors"
+                        >
+                          <div className={`p-2 rounded-full transition-colors ${post.isBookmarked
+                              ? 'bg-blue-50 dark:bg-blue-900/30'
+                              : 'group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30'
+                            }`}>
+                            <Bookmark className={`w-5 h-5 ${post.isBookmarked
+                                ? 'text-blue-500 fill-blue-500'
+                                : 'text-gray-500 dark:text-gray-400 group-hover:text-blue-500'
+                              }`} />
+                          </div>
+                        </button>
+
+                        <button className="group hover:text-blue-500 transition-colors">
+                          <div className="p-2 rounded-full group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 transition-colors">
+                            <Share className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-500" />
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        {filteredFreelancers.length === 0 && (
-          <div className="text-center py-12">
-            <Users className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              No se encontraron freelancers
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Intenta con otros filtros o términos de búsqueda
-            </p>
-          </div>
-        )}
-      </div>
+        {/* Sidebar derecha - Con transición */}
+        <div className={`flex-shrink-0 border-l border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 overflow-y-auto transition-all duration-300 ${showSidebars ? 'w-80' : 'w-0 overflow-hidden'
+          }`}>
+          <div className="p-4 w-80">
+            <div className="mb-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Buscar"
+                  className="w-full pl-10 pr-4 py-2.5 bg-gray-200 dark:bg-gray-800 border-0 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
 
-       </div>
-    </div>
-        </>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 mb-4">
+              <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-4">
+                Tendencias para ti
+              </h3>
+              <div className="space-y-4">
+                {['React 19', 'TypeScript', 'Next.js', 'Tailwind'].map((trend, idx) => (
+                  <div key={idx} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Tecnología · Trending</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">#{trend}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{Math.floor(Math.random() * 50)}K posts</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
+
 const SocialWindow = WindowWrapper(Socials, "socials");
 
 export default SocialWindow;

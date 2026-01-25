@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Power } from '#assets/icons';
 import gsap from 'gsap';
+import useSounds from '#hooks/useSounds';
 
 const BootScreen = ({ onBootComplete }) => {
   const [isBooting, setIsBooting] = useState(false);
@@ -8,8 +9,11 @@ const BootScreen = ({ onBootComplete }) => {
   const logoRef = useRef(null);
   const textRef = useRef(null);
   const containerRef = useRef(null);
+const { playIntro, initSounds } = useSounds();
+
 
   const handlePowerOn = () => {
+     initSounds();  
     setIsBooting(true);
     setShowLogo(true);
   };
@@ -18,6 +22,9 @@ const BootScreen = ({ onBootComplete }) => {
     if (!showLogo) return;
 
     const tl = gsap.timeline({
+          onStart: () => {
+      playIntro(); // 🔊 intro.mp3 aquí
+    },
       onComplete: () => {
         setTimeout(onBootComplete, 500);
       }
@@ -75,7 +82,7 @@ const BootScreen = ({ onBootComplete }) => {
       "+=0.5"
     );
 
-  }, [showLogo, onBootComplete]);
+  }, [showLogo, onBootComplete, playIntro]);
 
   if (showLogo) {
     return (

@@ -205,7 +205,7 @@ body {
   }
 
   #safari {
-    @apply w-4xl h-8/12 absolute top-40 left-2/12 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
+    @apply w-4xl h-8/12 absolute top-40 left-2/12 !bg-transparent shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
 
     .search {
       @apply flex items-center gap-3 w-2/3 bg-white border border-gray-300 rounded-lg px-3 py-2;
@@ -295,35 +295,35 @@ body {
   }
 
   #socials {
-    @apply w-3xl h-200  absolute top-40 left-5/12 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
+    @apply w-3xl h-200  absolute top-32 left-5/12 !bg-transparent shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
+    .sidebar {
+      @apply w-48 bg-gray-50 border-r border-gray-200 flex flex-col p-5 space-y-3;
 
-    h2 {
-      @apply font-bold text-sm text-center w-full;
-    }
+      h3 {
+        @apply text-xs font-medium text-gray-400 mb-1;
+      }
 
-    h3 {
-      @apply text-xl font-semibold;
-    }
+      ul {
+        @apply space-y-1;
 
-    ul {
-      @apply flex items-center gap-3;
-
-      li {
-        @apply rounded-lg p-3 w-60 hover:-translate-y-0.5 hover:scale-105 origin-center transition-all duration-300;
-
-        a {
-          @apply space-y-5;
+        .active {
+          @apply bg-blue-100 text-blue-700;
         }
 
-        p {
-          @apply font-semibold text-sm text-white;
+        .not-active {
+          @apply text-gray-700 hover:bg-gray-200;
+        }
+
+        li {
+          @apply flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors;
         }
       }
     }
+
   }
 
   #photos {
-    @apply max-w-3xl absolute top-96 left-1/2 -translate-y-1/2 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
+    @apply max-w-3xl absolute top-96 left-1/2 -translate-y-1/2 bg-transparent shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
 
     .sidebar {
       @apply w-3/12 flex-none bg-gray-50 border-r border-gray-200 flex flex-col p-5;
@@ -332,6 +332,11 @@ body {
         @apply text-xs font-medium text-gray-400 mb-1;
       }
 
+        .sidebar {
+    h3 {
+      @apply text-xs font-medium text-gray-400 mb-1;
+    }
+  }
       ul {
         li {
           @apply flex space-y-1 items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors;
@@ -392,16 +397,7 @@ body {
     }
   }
 
-  
-#photos {
-  .sidebar {
-    h3 {
-      @apply text-xs font-medium text-gray-400 mb-1;
-    }
 
-    
-  }
-}
 
   #finder {
     @apply absolute w-3xl left-40 top-20 shadow-2xl drop-shadow-2xl overflow-hidden rounded-xl;
@@ -464,6 +460,7 @@ body {
 #gmail.maximized,
 #profile.maximized,
 #calendar.maximized,
+#codeeditor.maximized,
 #game.maximized {
   position: fixed !important;
   inset: 0 !important;
@@ -572,7 +569,7 @@ body {
     }
 
   #settings{
-        @apply  w-5xl h-200 absolute top-20 right-1/30 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
+        @apply  w-5xl h-200 absolute top-20 right-1/30 bg-transparent shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
 
     .sidebar {
       @apply w-3/12 flex-none bg-gray-50 border-r border-gray-200 flex flex-col p-5;
@@ -589,7 +586,7 @@ body {
 
 
     #gmail{
-        @apply  w-4xl h-180 absolute top-20 right-1/30 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden ;
+        @apply  w-4xl h-180 absolute top-20 right-1/30 bg-transparent shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden ;
 
     .sidebar {
       @apply w-3/12 flex-none bg-gray-50 border-r border-gray-200 flex flex-col p-5;
@@ -623,6 +620,11 @@ span{
   }
 
 
+  #codeeditor{
+    @apply  w-4xl absolute top-20 right-1/30 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden h-120;
+  }
+
+
   #game{
     @apply  w-4xl absolute top-20 right-1/30 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden h-120;
 
@@ -650,7 +652,7 @@ h3 {
 
 
     #calendar{
-        @apply  w-5xl h-200 absolute top-20 right-1/30 bg-white shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
+        @apply  w-5xl h-200 absolute top-20 right-1/30 bg-transparent shadow-2xl drop-shadow-2xl rounded-xl overflow-hidden;
 
     .sidebar {
       @apply w-3/12 flex-none bg-gray-50 border-r border-gray-200 flex flex-col p-5;

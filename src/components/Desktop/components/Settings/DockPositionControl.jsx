@@ -1,5 +1,6 @@
-import { Check, Move, ArrowDown, ArrowLeft, ArrowRight } from '#assets/icons';
+// src/components/Settings/DockPositionControl.jsx - CON ATAJO DE TECLADO
 
+import { Check, Move, ArrowDown, ArrowLeft, ArrowRight, Keyboard, Command } from '#assets/icons';
 import { useAppSettingsStore } from '#store/appSettingsStore';
 
 const DockPositionControl = () => {
@@ -12,18 +13,14 @@ const DockPositionControl = () => {
       icon: ArrowDown,
       preview: (
         <div className="w-full h-full flex flex-col">
-          {/* Ventana macOS */}
           <div className="flex-1 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-t-lg p-2">
-            {/* Botones de semáforo */}
             <div className="flex items-center gap-1 mb-2">
               <div className="w-2 h-2 rounded-full bg-red-400"></div>
               <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
               <div className="w-2 h-2 rounded-full bg-green-400"></div>
             </div>
-            {/* Contenido de ventana */}
             <div className="bg-white/40 dark:bg-gray-700/40 rounded h-12"></div>
           </div>
-          {/* Dock en la parte inferior */}
           <div className="flex justify-center py-1.5">
             <div className="bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-xl px-3 py-1.5 shadow-lg flex gap-1.5">
               <div className="w-2 h-2 rounded bg-blue-500"></div>
@@ -41,7 +38,6 @@ const DockPositionControl = () => {
       icon: ArrowLeft,
       preview: (
         <div className="w-full h-full flex">
-          {/* Dock en la izquierda */}
           <div className="flex items-center px-1.5">
             <div className="bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-xl py-3 px-1.5 shadow-lg flex flex-col gap-1.5">
               <div className="w-2 h-2 rounded bg-blue-500"></div>
@@ -50,7 +46,6 @@ const DockPositionControl = () => {
               <div className="w-2 h-2 rounded bg-orange-500"></div>
             </div>
           </div>
-          {/* Ventana macOS */}
           <div className="flex-1 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-r-lg p-2">
             <div className="flex items-center gap-1 mb-2">
               <div className="w-2 h-2 rounded-full bg-red-400"></div>
@@ -68,7 +63,6 @@ const DockPositionControl = () => {
       icon: ArrowRight,
       preview: (
         <div className="w-full h-full flex">
-          {/* Ventana macOS */}
           <div className="flex-1 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-l-lg p-2">
             <div className="flex items-center gap-1 mb-2">
               <div className="w-2 h-2 rounded-full bg-red-400"></div>
@@ -77,7 +71,6 @@ const DockPositionControl = () => {
             </div>
             <div className="bg-white/40 dark:bg-gray-700/40 rounded h-12"></div>
           </div>
-          {/* Dock en la derecha */}
           <div className="flex items-center px-1.5">
             <div className="bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-xl py-3 px-1.5 shadow-lg flex flex-col gap-1.5">
               <div className="w-2 h-2 rounded bg-blue-500"></div>
@@ -119,12 +112,10 @@ const DockPositionControl = () => {
                 }
               `}
             >
-              {/* Vista previa del sistema */}
               <div className="aspect-video bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 p-3">
                 {pos.preview}
               </div>
 
-              {/* Footer con label y check */}
               <div className={`
                 p-3 border-t transition-colors
                 ${isSelected 
@@ -134,13 +125,13 @@ const DockPositionControl = () => {
               `}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-<Icon className={`
-  w-4 h-4 transition-colors
-  ${isSelected 
-    ? 'text-blue-500 dark:text-blue-400' 
-    : 'text-gray-500 dark:text-gray-400'
-  }
-`} />
+                    <Icon className={`
+                      w-4 h-4 transition-colors
+                      ${isSelected 
+                        ? 'text-blue-500 dark:text-blue-400' 
+                        : 'text-gray-500 dark:text-gray-400'
+                      }
+                    `} />
                     <span className={`
                       text-sm font-medium transition-colors
                       ${isSelected 
@@ -160,7 +151,6 @@ const DockPositionControl = () => {
                 </div>
               </div>
 
-              {/* Hover overlay effect */}
               <div className={`
                 absolute inset-0 transition-opacity pointer-events-none
                 ${isSelected 
@@ -173,12 +163,185 @@ const DockPositionControl = () => {
         })}
       </div>
 
-      {/* Nota informativa */}
-      <div className="p-3 mb-10 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-        <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-          <span className="font-medium">Nota:</span> El cambio se aplicará inmediatamente. 
-          El Dock se adaptará automáticamente a la nueva posición.
-        </p>
+
+<div className="p-4 mb-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+  <div className="flex items-start gap-3">
+    
+    {/* Icono */}
+    <div className="w-6 h-6 rounded-md bg-blue-500 flex items-center justify-center flex-shrink-0">
+      <span className="text-white text-xs font-bold">⌘</span>
+    </div>
+
+    <div className="flex-1">
+      <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-3">
+        Atajos de teclado
+      </p>
+
+      {/* Grid OS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-blue-700 dark:text-blue-300">
+
+        {/* WINDOWS / LINUX */}
+        <div>
+          <p className="mb-2 font-semibold text-blue-800 dark:text-blue-200 flex items-center gap-2">
+            (Windows/Linux)
+          </p>
+
+          <div className="space-y-3">
+            {/* Abajo */}
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">ALT</kbd>
+                <span>+</span>
+                <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">SHIFT</kbd>
+                <span>+</span>
+                <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">↓</kbd>
+              </div>
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                Mover Dock abajo
+              </p>
+            </div>
+
+            {/* Izquierda */}
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">ALT</kbd>
+                <span>+</span>
+                <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">SHIFT</kbd>
+                <span>+</span>
+                <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">←</kbd>
+              </div>
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                Mover Dock a la izquierda
+              </p>
+            </div>
+
+            {/* Derecha */}
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">ALT</kbd>
+                <span>+</span>
+                <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">SHIFT</kbd>
+                <span>+</span>
+                <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">→</kbd>
+              </div>
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                Mover Dock a la derecha
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* MAC */}
+        <div>
+          <p className="mb-2 font-semibold text-blue-800 dark:text-blue-200 flex items-center gap-2">
+            MAC
+          </p>
+
+          <div className="space-y-3">
+            {/* Abajo */}
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">⌘</kbd>
+                <span>+</span>
+                <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">⇧</kbd>
+                <span>+</span>
+                <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">↓</kbd>
+              </div>
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                Mover Dock abajo
+              </p>
+            </div>
+
+            {/* Izquierda */}
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">⌘</kbd>
+                <span>+</span>
+                <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">⇧</kbd>
+                <span>+</span>
+                <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">←</kbd>
+              </div>
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                Mover Dock a la izquierda
+              </p>
+            </div>
+
+            {/* Derecha */}
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">⌘</kbd>
+                <span>+</span>
+                <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">⇧</kbd>
+                <span>+</span>
+                <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">→</kbd>
+              </div>
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                Mover Dock a la derecha
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+      {/* Notas informativas */}
+      <div className="space-y-3">
+        <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+            <span className="font-medium">Nota:</span> El cambio se aplicará inmediatamente. 
+            El Dock se adaptará automáticamente a la nueva posición.
+          </p>
+        </div>
+
+        {/* 👇 NUEVO: Información del atajo de teclado */}
+<div>
+  <h2 className="text-black dark:text-white text-lg font-medium mb-3 flex items-center gap-2">
+    <Command />
+    Visibilidad del Dock
+  </h2>
+  <p className="text-xs text-gray-500 dark:text-gray-400">
+Decide si el Dock se muestra u oculta para mantener tu escritorio limpio y enfocado.
+  </p>
+</div>
+
+        <div className="p-4 mb-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+          
+          <div className="flex items-start gap-3">
+            <div className="w-6 h-6 rounded-md bg-blue-500 flex items-center justify-center flex-shrink-0">
+              <span className="text-white text-xs font-bold">⌘</span>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
+                Atajo de teclado
+              </p>
+              <div className="space-y-2 text-xs text-blue-700 dark:text-blue-300">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">⌘</kbd>
+                  <span>+</span>
+                  <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">⌥</kbd>
+                  <span>+</span>
+                  <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">D</kbd>
+                  <span className="text-blue-600 dark:text-blue-400">(Mac)</span>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">ALT</kbd>
+                  <span>+</span>
+                  <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">SHIFT</kbd>
+                  <span>+</span>
+                  <kbd className="px-2 py-1 bg-white dark:bg-blue-950 rounded border border-blue-300 dark:border-blue-700 font-mono">D</kbd>
+                  <span className="text-blue-600 dark:text-blue-400">(Windows/Linux)</span>
+                </div>
+              </div>
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                Ocultar/Mostrar el Dock
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

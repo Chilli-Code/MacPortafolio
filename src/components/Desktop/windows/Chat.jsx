@@ -1,10 +1,14 @@
+// src/components/Windows/Gmail.jsx - CON TOGGLE SIDEBAR
 import { WindowControls } from "#components/Desktop";
-import { ChevronLeft, ChevronRight, Search, Send, User, Paperclip, Smile, Reply, Forward, Trash2, Star, Archive, MoreHorizontal, Mail } from "#assets/icons";
+import { ChevronLeft, ChevronRight, Search, Send, User, Paperclip, Smile, Reply, Forward, Trash2, Star, Archive, MoreHorizontal, Mail, PanelLeftClose, PanelLeftOpen } from "#assets/icons";
 import WindowWrapper from "#hoc/WindowWrapper";
 import { useState } from "react";
 import clsx from "clsx";
 
 const Gmail = ({ isMaximized, setIsMaximized }) => {
+    // Estado para mostrar/ocultar sidebar
+    const [showSidebar, setShowSidebar] = useState(true);
+
     // Datos simulados de emails estilo Gmail
     const emails = [
         {
@@ -64,7 +68,6 @@ const Gmail = ({ isMaximized, setIsMaximized }) => {
 
     const handleReply = () => {
         if (replyContent.trim()) {
-            // En un email real, esto enviaría la respuesta
             alert(`Respuesta enviada a ${activeEmail.from}: ${replyContent}`);
             setReplyContent("");
             setShowReply(false);
@@ -72,17 +75,14 @@ const Gmail = ({ isMaximized, setIsMaximized }) => {
     };
 
     const toggleStar = (emailId) => {
-        // En un estado real, esto actualizaría la base de datos
         console.log(`Star toggled for email ${emailId}`);
     };
 
     const deleteEmail = (emailId) => {
-        // En un estado real, esto movería a papelera
         alert(`Email ${emailId} movido a papelera`);
     };
 
     const archiveEmail = (emailId) => {
-        // En un estado real, esto archivaría el email
         alert(`Email ${emailId} archivado`);
     };
 
@@ -112,7 +112,6 @@ const Gmail = ({ isMaximized, setIsMaximized }) => {
                             !email.isRead && "bg-gray-50 dark:bg-gray-800/50"
                         )}
                     >
-                        {/* Checkbox para selección */}
                         <input
                             type="checkbox"
                             checked={selectedEmails.includes(email.id)}
@@ -127,7 +126,6 @@ const Gmail = ({ isMaximized, setIsMaximized }) => {
                             className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
                         />
 
-                        {/* Estrella */}
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -141,7 +139,6 @@ const Gmail = ({ isMaximized, setIsMaximized }) => {
                             <Star className={clsx("w-4 h-4", email.isStarred && "fill-current")} />
                         </button>
 
-                        {/* Avatar del remitente */}
                         <div className="relative flex-shrink-0">
                             <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
                                 {email.avatar ? (
@@ -198,20 +195,32 @@ const Gmail = ({ isMaximized, setIsMaximized }) => {
     return (
         <>
             <div id="window-header" className="bg-gray-50 dark:bg-gray-800 rounded-t-lg">
-
                 <WindowControls target="gmail" onMaximize={handleMaximize} />
-
                 <h2 className="flex items-center gap-2 justify-center">
                     <Mail className="w-4 h-4" />
                     Correos
                 </h2>
-
             </div>
+
             <div className="flex-1 min-w-0 overflow-x-hidden bg-gray-50 dark:bg-gray-800 bordertp">
                 <div className="ft flex justify-between items-center border-r border-gray-200 dark:border-gray-700 h-full border-b-w-0px px-4 !py-1">
-
                     {/* Barra de herramientas estilo Gmail */}
                     <div className="flex items-center gap-1">
+                        {/* 👇 BOTÓN TOGGLE SIDEBAR */}
+                        <button
+                            onClick={() => setShowSidebar(!showSidebar)}
+                            className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                            title={showSidebar ? 'Ocultar bandeja de entrada' : 'Mostrar bandeja de entrada'}
+                        >
+                            {showSidebar ? (
+                                <PanelLeftClose className="w-5 h-5" />
+                            ) : (
+                                <PanelLeftOpen className="w-5 h-5" />
+                            )}
+                        </button>
+
+                        <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+
                         <button
                             onClick={() => selectedEmails.forEach(id => archiveEmail(id))}
                             disabled={!selectedEmails.length}
@@ -246,9 +255,13 @@ const Gmail = ({ isMaximized, setIsMaximized }) => {
             </div>
 
             <div className="flex flex-1 min-h-0 bg-white dark:bg-gray-900 h-full">
-                {/* Sidebar - Inbox */}
-                <div className="w-80 px-2 sidebarFolder flex-shrink-0 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto py-4">
-                    {renderEmailList()}
+                {/* Sidebar - Inbox con transición */}
+                <div className={`sidebarFolder flex-shrink-0 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto py-4 transition-all duration-300 ${
+                    showSidebar ? 'w-80 px-2' : 'w-0 px-0 overflow-hidden'
+                }`}>
+                    <div className="w-80">
+                        {renderEmailList()}
+                    </div>
                 </div>
 
                 {/* Email Content Area */}

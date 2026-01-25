@@ -5,17 +5,18 @@ import gsap from "gsap";
 import { dockApps } from "#constants/index.js";
 import { useGSAP } from "@gsap/react";
 import useWindowStore from "#store/window.js";
-// ✅ BIEN
 import { useAppSettingsStore } from "#store/appSettingsStore";
-
+import { useDockKeyboard } from '#hooks/useDockKeyboard';
 
 const Dock = () => {
-    const { openWindow, closeWindow, restoreWindow, windows } = useWindowStore(); // ⭐ Agregar restoreWindow
+    const { openWindow, closeWindow, restoreWindow, minimizeWindow, windows } = useWindowStore();
     const dockRef = useRef(null);
     const gameWindowRef = useRef(null);
-    
-    const { dockPosition } = useAppSettingsStore(); // 🆕 Obtener posición del store centralizado
 
+    const { dockPosition, dockHidden } = useAppSettingsStore();
+
+    // 👇 ⚠️ CRÍTICO: Llamar el hook AQUÍ
+    useDockKeyboard();
 
     useGSAP(() => {
         const dock = dockRef.current;
@@ -23,7 +24,7 @@ const Dock = () => {
 
         const icons = dock.querySelectorAll(".dock-icon");
         const isVertical = dockPosition === 'left' || dockPosition === 'right';
-        
+
         const animateIcons = (mousePos) => {
             const rect = dock.getBoundingClientRect();
             const dockStart = isVertical ? rect.top : rect.left;
@@ -47,8 +48,8 @@ const Dock = () => {
 
         const handleMouseMove = (e) => {
             const rect = dock.getBoundingClientRect();
-            const mousePos = isVertical 
-                ? e.clientY - rect.top 
+            const mousePos = isVertical
+                ? e.clientY - rect.top
                 : e.clientX - rect.left;
             animateIcons(mousePos);
         };
@@ -64,7 +65,7 @@ const Dock = () => {
             dock.removeEventListener("mousemove", handleMouseMove);
             dock.removeEventListener("mouseleave", resetIcons);
         }
-    }, [dockPosition]); 
+    }, [dockPosition]);
 
     const openGamePopup = () => {
         if (gameWindowRef.current && !gameWindowRef.current.closed) {
@@ -108,17 +109,14 @@ const Dock = () => {
     const toggleApp = (app) => {
         if (!app.canOpen) return;
 
-        // Si es el juego, abrir popup
         if (app.id === 'game') {
             openGamePopup();
             return;
         }
 
-        // ⭐ LÓGICA ACTUALIZADA con minimizar
         const window = windows[app.id];
 
         if (!window) {
-            // Si la ventana no existe en el config, abrirla
             openWindow(app.id);
             return;
         }
@@ -126,23 +124,39 @@ const Dock = () => {
         const { isOpen, isMinimized } = window;
 
         if (isOpen && isMinimized) {
-            // ⭐ Si está minimizada, restaurarla
             restoreWindow(app.id);
         } else if (isOpen && !isMinimized) {
-            // ⭐ Si está abierta y visible, minimizarla (opcional: o cerrarla)
-            // Opción 1: Minimizar
-            // minimizeWindow(app.id);
-
-            // Opción 2: Cerrar (comportamiento clásico macOS)
-            closeWindow(app.id);
+            minimizeWindow(app.id);
         } else {
-            // Si está cerrada, abrirla
             openWindow(app.id);
         }
     };
 
+    // 👇 Clases dinámicas según posición y estado
+    const getTransformClass = () => {
+        if (!dockHidden) return '';
+
+        switch (dockPosition) {
+            case 'bottom':
+                return 'translate-y-full';
+            case 'left':
+                return '-translate-x-full';
+            case 'right':
+                return 'translate-x-full';
+            default:
+                return '';
+        }
+    };
+
     return (
-        <section id="dock" data-position={dockPosition} >
+        <section
+            id="dock"
+            data-position={dockPosition}
+            className={`transition-all duration-300 ease-out ${dockHidden
+                    ? `opacity-0 pointer-events-none ${getTransformClass()}`
+                    : 'opacity-100 pointer-events-auto'
+                }`}
+        >
             <div ref={dockRef} className="dock-container">
                 {dockApps.map(({ id, name, icon, canOpen }) => {
                     const window = windows[id];
@@ -174,17 +188,16 @@ const Dock = () => {
                                     className={canOpen ? "" : "opacity-60"}
                                 />
 
-
-                                {/* ⭐ INDICADOR MEJORADO */}
                                 {id !== 'game' && isOpen && (
                                     <span
                                         className={`
-                                            mt-1 w-2 h-2 absolute left-1/2 -translate-x-1/2 -bottom-1 rounded-full 
-                                            ${isMinimized
-                                                ? 'bg-yellow-500 animate-pulse' // ⭐ Amarillo si minimizada
-                                                : 'bg-white' // Blanco si visible
+                            mt-1 w-2 h-2 absolute left-1/2 -translate-x-1/2 -bottom-1 rounded-full 
+                            transition-all duration-200
+                            ${isMinimized
+                                                ? 'bg-yellow-500 animate-pulse shadow-lg shadow-yellow-500/50'
+                                                : 'bg-white shadow-md'
                                             }
-                                        `}
+                        `}
                                     />
                                 )}
                             </button>

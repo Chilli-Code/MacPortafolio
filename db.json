@@ -39,7 +39,8 @@
         "Tailwind",
         "Astro",
         "Vite",
-        "Flutter"
+        "Android",
+        "Figma"
       ],
       "gamification": {
         "level": 2,
@@ -119,7 +120,7 @@
         ]
       },
       "preferences": {
-        "theme": "light",
+        "theme": "dark",
         "language": "es",
         "notifications": {
           "email": true,

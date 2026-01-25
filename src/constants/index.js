@@ -554,6 +554,79 @@ const WORK_LOCATION = {
           href: "https://google.com",
           position: "top-60 right-20",
         },
+        {
+  id: 6,
+  name: "index.html",
+  icon: "/images/html.webp",
+  kind: "file",
+  fileType: "html",
+  position: "top-32 left-20",
+  content: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Food Delivery App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9fafb;
+      margin: 0;
+      padding: 2rem;
+      color: #111827;
+    }
+    header {
+      background: #ef4444;
+      color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+    section {
+      margin-top: 2rem;
+    }
+    .card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    button {
+      margin-top: 1rem;
+      padding: 0.75rem 1.5rem;
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #dc2626;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🍔 Food Delivery App</h1>
+    <p>Your favorite food, delivered fast</p>
+  </header>
+
+  <section class="card">
+    <h2>About the App</h2>
+    <p>
+      Browse restaurants, choose your meals, and track your delivery in real time.
+      Simple, fast, and delicious.
+    </p>
+    <button>Order Now</button>
+  </section>
+
+</body>
+</html>
+`
+}
+
       ],
     },
   ],
@@ -689,6 +762,7 @@ const WINDOW_CONFIG = {
   settings: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
   gmail: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
   calendar: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
+  codeeditor: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
   game: { 
     isOpen: false, 
     isMinimized: false,

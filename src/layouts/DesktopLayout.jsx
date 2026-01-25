@@ -1,13 +1,19 @@
+// src/layouts/DesktopLayout.jsx - VERSIÓN CORREGIDA
 import useWindowStore from "#store/window";
 import { Suspense, useEffect, useRef } from "react";
 import useSounds from "#hooks/useSounds";
+// ❌ QUITAR ESTE IMPORT - Ya no se necesita aquí
+// import { useDockKeyboard } from '#hooks/useDockKeyboard';
 
 import { Navbar, Welcome, Dock } from "#components/Desktop";
-import { Terminal, Safari, Profile, Settings, Resume, Finder, Socials, Galery, Text, Gmail, ImageWindowContent, Calendar } from "#components/Desktop/windows/";
-import { usePerformanceMonitor } from '#hooks/usePerformanceMonitor'; // ✅ Importa del hook
-import SystemResourcesSection from "#components/Systemresourcessection"; // ✅ Este es el componente visual
+import { Terminal, Safari, Profile, Settings, Resume, Finder, Socials, Galery, Text, Gmail, ImageWindowContent, Calendar, CodeEditor } from "#components/Desktop/windows/";
+import { usePerformanceMonitor } from '#hooks/usePerformanceMonitor';
+import SystemResourcesSection from "#components/Systemresourcessection";
 
 const DesktopLayout = ({ user, onLogout }) => {
+  // ❌ QUITAR ESTA LÍNEA - El hook ya está en Dock.jsx
+  // useDockKeyboard();
+
   const windows = useWindowStore(state => state.windows);
   const { initSounds, playWindowOpen, playClick } = useSounds();
   const prevWindowsRef = useRef({});
@@ -27,22 +33,17 @@ const DesktopLayout = ({ user, onLogout }) => {
       const isOpen = windows[windowKey]?.isOpen;
 
       if (!wasOpen && isOpen) {
-        // La ventana se acaba de abrir
-
         playWindowOpen();
       }
     });
 
-    // Actualizar referencia anterior
     prevWindowsRef.current = { ...windows };
   }, [windows, playWindowOpen]);
 
-  // Sonido de click global (excepto controles de ventana)
+  // Sonido de click global
   useEffect(() => {
     const handleGlobalClick = (e) => {
-      // Excluir SOLO los controles de ventana (close, minimize, maximize)
       if (!e.target.closest('.close, .minimize, .maximize')) {
-
         playClick();
       }
     };
@@ -55,9 +56,9 @@ const DesktopLayout = ({ user, onLogout }) => {
     <main>
       <Navbar onLogout={onLogout} user={user} />
       <Welcome />
-      <Dock />
+      <Dock /> {/* 👈 El hook useDockKeyboard está dentro de Dock */}
       {showMonitor && (
-        <div className="fixed  bottom-4 right-4 z-40 opacity-60 hover:opacity-100 transition-opacity duration-300">
+        <div className="fixed bottom-4 right-4 z-40 opacity-60 hover:opacity-100 transition-opacity duration-300">
           <SystemResourcesSection />
         </div>
       )}
@@ -66,7 +67,7 @@ const DesktopLayout = ({ user, onLogout }) => {
         {windows.safari?.isOpen && <Safari />}
         {windows.finder?.isOpen && <Finder />}
         {windows.socials?.isOpen && <Socials />}
-        {windows.galery?.isOpen && <Galery />}
+        {windows.photos?.isOpen && <Galery />}
         {windows.profile?.isOpen && <Profile />}
         {windows.imgfile?.isOpen && <ImageWindowContent />}
         {windows.settings?.isOpen && <Settings />}
@@ -74,6 +75,13 @@ const DesktopLayout = ({ user, onLogout }) => {
         {windows.txtfile?.isOpen && <Text />}
         {windows.gmail?.isOpen && <Gmail />}
         {windows.calendar?.isOpen && <Calendar />}
+        {windows.codeeditor?.isOpen && (
+          <CodeEditor
+            folderFiles={windows.codeeditor.folderFiles || []}
+            currentFile={windows.codeeditor.currentFile || null}
+          />
+        )}
+
       </Suspense>
     </main>
   );

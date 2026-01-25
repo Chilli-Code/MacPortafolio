@@ -32,7 +32,7 @@ export const useAppSettingsStore = create(
       wallpaper: '/images/wallpapers/wallpaper.webp',
       fontSize: 1.0,
       dockPosition: 'bottom', // 👈 NUEVO: Posición del Dock ('bottom', 'left', 'right')
-
+      dockHidden: false,
       // ==================== VOLÚMENES DE SONIDO ====================
       soundVolumes: {
         click: 0.3,
@@ -216,6 +216,12 @@ export const useAppSettingsStore = create(
         console.log('✅ Dock position saved:', position);
       },
 
+      toggleDockVisibility: () => set((state) => {
+  const newValue = !state.dockHidden;
+  console.log(`✅ Dock ${newValue ? 'ocultado' : 'mostrado'}`);
+  return { dockHidden: newValue };
+}),
+setDockHidden: (hidden) => set({ dockHidden: hidden }),
       // ==================== INICIALIZACIÓN ====================
       initialize: () => {
         get().checkNotificationPermission();
@@ -263,6 +269,7 @@ export const useAppSettingsStore = create(
         fontSize: state.fontSize,
         soundVolumes: state.soundVolumes,
         dockPosition: state.dockPosition, // 👈 NUEVO
+        dockHidden: state.dockHidden,
       })
     }
   )

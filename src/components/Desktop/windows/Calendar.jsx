@@ -101,7 +101,7 @@ const Calendar = ({ isMaximized, setIsMaximized }) => {
 
     return (
         <>
-            <div id="window-header" className="bg-gray-50 rounded-t-lg px-3 py-1">
+            <div id="window-header" className="bg-gray-50 rounded-t-lg px-3 ">
                 {/* Header con controles de ventana */}
                 <WindowControls target="calendar" onMaximize={handleMaximize} />
 
@@ -111,37 +111,7 @@ const Calendar = ({ isMaximized, setIsMaximized }) => {
                     Calendario
                 </h2>
 
-                <div className="flex-shrink-0 rounded-full p-1 border-b border-gray-200/50 dark:border-gray-800/50 backdrop-blur-xl bg-white/80 dark:bg-gray-800">
-                    <div className="flex items-center justify-between">
-                    </div>
-                    {/* Navegación de mes */}
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={previousMonth}
-                            className="w-7 h-7 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 flex items-center justify-center transition-colors"
-                        >
-                            <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                        </button>
 
-                        {/* MES + AÑO */}
-                        <div className="flex flex-col items-center min-w-[140px] leading-tight">
-                            <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                                {monthNames[currentDate.getMonth()]}
-                            </span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {currentDate.getFullYear()}
-                            </span>
-                        </div>
-
-                        <button
-                            onClick={nextMonth}
-                            className="w-7 h-7 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 flex items-center justify-center transition-colors"
-                        >
-                            <ChevronRight className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                        </button>
-                    </div>
-
-                </div>
             </div>
 
             <div className='bg-white dark:bg-gray-900 flex h-full overflow-hidden'>
@@ -218,7 +188,42 @@ const Calendar = ({ isMaximized, setIsMaximized }) => {
                     </div>
                 </div>
                 {/* Contenido principal */}
-                <div className="flex-1 flex p-5 pr-1 space-y-5 bgProf h-full overflow-auto">
+                <div className="flex-1 flex flex-col p-5 pr-1 space-y-5 bgProf h-full overflow-auto">
+                    <div className="flex-shrink-0 py-4 mr-2 rounded-xl p-1 border-b border-gray-200/50 dark:border-gray-800/50 backdrop-blur-xl bg-white/80 dark:bg-[var(--bg-dark-card)]">
+                        <div className="flex items-center justify-between px-3">
+                            {/* Navegación de mes */}
+                            <div className="flex items-center gap-3">
+
+
+                                {/* MES + AÑO */}
+                                <div className="flex items-center justify-center gap-3 leading-tight">
+                                    <span className="text-xl font-semibold text-gray-900 dark:text-white">
+                                        {monthNames[currentDate.getMonth()]}
+                                    </span>
+                                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                                        {currentDate.getFullYear()}
+                                    </span>
+                                </div>
+
+                            </div>
+                            <div className='flex items-center gap-2'>
+                                <button
+                                    onClick={previousMonth}
+                                    className="w-7 h-7 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 flex items-center justify-center transition-colors"
+                                >
+                                    <ChevronLeft className="w-8 h-8 icon text-gray-600 dark:text-gray-400" />
+                                </button>
+
+                                <button
+                                    onClick={nextMonth}
+                                    className="w-7 h-7 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 flex items-center justify-center transition-colors"
+                                >
+                                    <ChevronRight className="w-8 h-8 icon text-gray-600 dark:text-gray-400" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Vista de calendario */}
                     <div className="flex-1 p-6 px-2 overflow-auto mb-10">
 
@@ -266,15 +271,15 @@ const Calendar = ({ isMaximized, setIsMaximized }) => {
                                                             )
                                                         )
                                                     }
-   className={`
+                                                    className={`
   relative rounded-lg p-2 transition-colors group cursor-pointer
   min-h-[100px] flex flex-col
   ${selected
-      ? 'bg-blue-500 text-white shadow-lg border border-blue-500'
-      : today
-          ? 'border border-blue-200 dark:border-blue-100 bg-gray-300 dark:bg-gray-700 dark:text-blue-500 text-blue-600 font-semibold'
-          : 'border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100'
-  }
+                                                            ? 'bg-blue-500 text-white shadow-lg border border-blue-500'
+                                                            : today
+                                                                ? 'border border-blue-200 dark:border-blue-100 bg-gray-300 dark:bg-gray-700 dark:text-blue-500 text-blue-600 font-semibold'
+                                                                : 'border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100'
+                                                        }
   ${!isValidDay && 'opacity-40 pointer-events-none'}
 `}
                                                 >
@@ -289,7 +294,7 @@ const Calendar = ({ isMaximized, setIsMaximized }) => {
                                                     <div className="flex flex-col gap-1 mt-auto">
                                                         {dayEvents.slice(0, 3).map((event, i) => (
                                                             <div
-                                                            title={`${EVENT_TYPES[event.type].label}\n ${event.title} `}
+                                                                title={`${EVENT_TYPES[event.type].label}\n ${event.title} `}
                                                                 key={i}
                                                                 className={`
                         text-[10px] px-2 py-1 rounded truncate font-medium

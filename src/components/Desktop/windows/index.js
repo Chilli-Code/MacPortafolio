@@ -11,6 +11,7 @@ import Settings from "#windows/Settings.jsx";
 import Gmail from "#windows/Chat.jsx";
 import Game from "#windows/Game.jsx";
 import Calendar from "#windows/Calendar.jsx";
+import CodeEditor from "#windows/CodeEditor.jsx";
 
 
 export { 
@@ -27,4 +28,5 @@ export {
     Gmail,
     Game,
     Calendar,
+    CodeEditor,
 };

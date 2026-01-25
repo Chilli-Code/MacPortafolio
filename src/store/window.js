@@ -150,7 +150,7 @@ partialize: (state) => ({
                 size: win.size,
                 zIndex: win.zIndex,
                 // ✅ GUARDAR data solo para imgfile
-                ...(['imgfile', 'txtfile'].includes(key) && win.data ? { data: win.data } : {})
+                ...(['imgfile', 'txtfile','resume', 'codeeditor'].includes(key) && win.data ? { data: win.data } : {})
             }
         ])
     ),
