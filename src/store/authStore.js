@@ -2,8 +2,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-// ⭐ USAR /api EN LUGAR DE localhost:3001
-const API_BASE = '/api';
+// ✅ API BASE AL SERVIDOR BACKEND EN PUERTO 3001
+const API_BASE = 'http://localhost:3001/api';
 
 export const useAuthStore = create(
   persist(
@@ -12,30 +12,29 @@ export const useAuthStore = create(
       currentUser: null,
       isAuthenticated: false,
 
-      // ==================== LOGIN (MODIFICADO PARA TRAER TODO) ====================
+      // ==================== LOGIN SEGURO ====================
       login: async (username, password) => {
         try {
-          console.log('🌐 Intentando login en:', `${API_BASE}/users`);
+          console.log('🌐 Intentando login seguro en:', `${API_BASE}/login`);
           
-          const response = await fetch(
-            `${API_BASE}/users?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
-            {
-              headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-              }
-            }
-          );
+          const response = await fetch(`${API_BASE}/login`, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+          });
           
           if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP ${response.status}`);
           }
           
-          const users = await response.json();
-          console.log('📦 Usuarios encontrados:', users.length);
+          const result = await response.json();
 
-          if (users.length > 0) {
-            const user = users[0];
+          if (result.success) {
+            const user = result.user;
             
             // ⭐ CREAR SESIÓN CON TODOS LOS DATOS
             const userSession = {
@@ -47,20 +46,11 @@ export const useAuthStore = create(
             set({ currentUser: userSession, isAuthenticated: true });
             localStorage.setItem('userSession', JSON.stringify(userSession));
             
-            // ⭐ LOG DE DATOS CARGADOS
             console.log('✅ Login exitoso:', user.username);
-            console.log('📊 Datos de gamificación cargados:', {
-              level: user.gamification?.level,
-              xp: user.gamification?.currentXP,
-              achievements: user.gamification?.achievements?.unlocked?.length || 0,
-              skills: user.skills?.length || 0,
-              streak: user.gamification?.stats?.streaks?.current || 0
-            });
-            
             return { success: true, user: userSession };
           }
 
-          return { success: false, error: 'Usuario o contraseña incorrectos' };
+          return { success: false, error: result.error || 'Usuario o contraseña incorrectos' };
         } catch (error) {
           console.error('❌ Error en login:', error);
           

@@ -15,6 +15,9 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
 
   const [activeFile, setActiveFile] = useState(null);
   const [openTabs, setOpenTabs] = useState([]);
+  const [fileContents, setFileContents] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState(null);
 
   useEffect(() => {
     if (!data && windows.codeeditor?.isOpen) {
@@ -38,6 +41,54 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
       setOpenTabs([...openTabs, file]);
     }
   };
+
+  // ✅ GUARDADO AUTOMATICO Y MANEJO DE CAMBIOS
+  const handleEditorChange = (value) => {
+    if (!activeFile) return;
+    
+    setFileContents(prev => ({
+      ...prev,
+      [activeFile.name]: value
+    }));
+
+    // Guardado automatico despues de 2 segundos sin escribir
+    clearTimeout(window.saveTimeout);
+    window.saveTimeout = setTimeout(() => {
+      saveFile(activeFile.name, value);
+    }, 2000);
+  };
+
+  const saveFile = async (fileName, content) => {
+    setIsSaving(true);
+    try {
+      // TODO: Implementar API real aqui
+      console.log(`💾 Guardando ${fileName}...`);
+      
+      // Simular delay de red
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      setLastSaved(new Date());
+      console.log(`✅ ${fileName} guardado!`);
+    } catch (error) {
+      console.error('❌ Error guardando archivo:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Guardar manualmente con Ctrl+S
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's' && activeFile) {
+        e.preventDefault();
+        const content = fileContents[activeFile.name] || getFileContent(activeFile);
+        saveFile(activeFile.name, content);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeFile, fileContents]);
 
   const handleCloseTab = (file, e) => {
     e.stopPropagation();
@@ -158,7 +209,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
             <Editor
               height="100%"
               language={getFileLanguage(activeFile)}
-              value={getFileContent(activeFile)}
+              value={fileContents[activeFile.name] ?? getFileContent(activeFile)}
               theme="vs-dark"
               options={{
                 fontSize: 14,
@@ -172,6 +223,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
               onMount={(editor) => {
                 editorRef.current = editor;
               }}
+              onChange={handleEditorChange}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center text-gray-500">

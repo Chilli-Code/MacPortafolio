@@ -1,6 +1,7 @@
 // src/components/AdminDashboard.jsx
 import { useState } from 'react';
 import { Shield, Users, Database, Settings, Activity, Bell, LogOut, TrendingUp, AlertCircle, CheckCircle } from '#assets/icons';
+import AdminUserForm from '#components/Admin/AdminUserForm';
 import AdminTasksSection from '#components/Admin/AdminTasksSection';
 import AdminTaskForm from '#components/Admin/AdminTaskForm'; // ⭐ AGREGAR ESTO
 import TaskDetailModal from '#components/TaskDetailModal';
@@ -11,6 +12,7 @@ import TableUsers from '#components/Admin/TableUsers';
 const AdminDashboard = ({ onLogout, currentUser }) => {
   const [activeTab, setActiveTab] = useState('tasks');
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
+  const [showNewUserModal, setShowNewUserModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [editingTask, setEditingTask] = useState(null); // ⭐ AGREGAR ESTO
   
@@ -147,9 +149,9 @@ const AdminDashboard = ({ onLogout, currentUser }) => {
             <h2 className="text-2xl font-bold mb-2">Gestión de Usuarios</h2>
             <p className="text-gray-400">Administra los usuarios registrados en la plataforma</p>
           </div>
-          <button className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:opacity-90 transition-opacity">
-            + Nuevo Usuario
-          </button>
+           <button onClick={() => setShowNewUserModal(true)} className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2">
+             + Nuevo Usuario
+           </button>
         </div>
         
         {/* Aquí va tu componente TableUsers */}
@@ -185,6 +187,15 @@ const AdminDashboard = ({ onLogout, currentUser }) => {
           }} 
         />
       )}
+
+      {/* Modal de Nuevo Usuario */}
+      {showNewUserModal && (
+        <AdminUserForm 
+          onClose={() => setShowNewUserModal(false)}
+          onSuccess={() => window.location.reload()}
+        />
+      )}
+
     </div>
   );
 };

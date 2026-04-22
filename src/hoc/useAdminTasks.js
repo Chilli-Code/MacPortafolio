@@ -12,7 +12,7 @@ export const useAdminTasks = () => {
   const loadTasks = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/tasks');
+      const response = await fetch('http://localhost:3001/api/tasks');
       const tasks = await response.json();
       console.log('📋 Admin loaded tasks:', tasks.length);
       setAllTasks(tasks);
@@ -26,18 +26,21 @@ export const useAdminTasks = () => {
   // Crear tarea
   const createTask = async (taskData) => {
     try {
-      const newTask = await api.createTask({
-        ...taskData,
-        status: 'available',
-        images: [],
-        assignedTo: null,
-        submittedAt: null,
-        reviewedAt: null,
-        reviewedBy: null,
-        reviewNotes: null,
-        submissionNotes: null,
-        submissionFiles: []
+      // ✅ DIRECTAMENTE AL ENDPOINT CORRECTO
+      const response = await fetch('http://localhost:3001/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...taskData,
+          baseReward: taskData.reward,
+          bonusReward: 0,
+          status: 'available',
+          createdBy: 'admin'
+        })
       });
+
+      const data = await response.json();
+      const newTask = data.task;
 
       if (newTask) {
         await loadTasks(); // Recargar todas las tareas
@@ -88,7 +91,14 @@ const updateTask = async (taskId, taskData) => {
     // ⭐ Si taskData contiene el ID completo, extraerlo
     const actualId = typeof taskId === 'object' ? taskId.id : taskId;
     
-    const updated = await api.updateTask(actualId, taskData);
+    const response = await fetch(`http://localhost:3001/api/tasks/${actualId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(taskData)
+    });
+    
+    const data = await response.json();
+    const updated = data.task;
     
     if (updated) {
       await loadTasks(); // Recargar todas las tareas
@@ -114,7 +124,12 @@ const updateTask = async (taskId, taskData) => {
   const deleteTask = async (taskId) => {
     try {
       const task = allTasks.find(t => t.id === taskId);
-      const deleted = await api.deleteTask(taskId);
+      
+      const response = await fetch(`http://localhost:3001/api/tasks/${taskId}`, {
+        method: 'DELETE'
+      });
+      
+      const deleted = await response.json();
       
       if (deleted) {
         await loadTasks(); // Recargar todas las tareas
@@ -140,13 +155,14 @@ const updateTask = async (taskId, taskData) => {
   const approveTask = async (taskId, adminId) => {
     try {
       const task = allTasks.find(t => t.id === taskId);
-      const updated = await api.updateTask(taskId, {
-        status: 'completed',
-        completedAt: new Date().toISOString(),
-        reviewedAt: new Date().toISOString(),
-        reviewedBy: adminId,
-        reviewNotes: '✅ Tarea aprobada. Excelente trabajo!'
+      
+      const response = await fetch(`http://localhost:3001/api/tasks/${taskId}/approve`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reviewerId: adminId })
       });
+      
+      const updated = await response.json();
       
       if (updated) {
         await loadTasks(); // Recargar todas las tareas
@@ -173,13 +189,17 @@ const updateTask = async (taskId, taskData) => {
 const rejectTask = async (taskId, adminId, reason) => {
   try {
     const task = allTasks.find(t => t.id === taskId);
-    const updated = await api.updateTask(taskId, {
-      status: 'rejected', // ⭐ CAMBIAR aquí también
-      reviewStatus: 'rejected',
-      reviewedAt: new Date().toISOString(),
-      reviewedBy: adminId,
-      reviewNotes: reason || '❌ Tarea rechazada. Revisa los comentarios.'
+    
+    const response = await fetch(`http://localhost:3001/api/tasks/${taskId}/reject`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        reviewerId: adminId,
+        reviewNotes: reason || '❌ Tarea rechazada. Revisa los comentarios.'
+      })
     });
+    
+    const updated = await response.json();
     
     if (updated) {
       await loadTasks(); // Recargar todas las tareas

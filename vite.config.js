@@ -35,7 +35,7 @@ export default defineConfig({
       ),
       "#services": resolve(
         dirname(fileURLToPath(import.meta.url)),
-        "src/services"
+        "src/service"
       ),
       "#utils": resolve(
         dirname(fileURLToPath(import.meta.url)),
@@ -43,7 +43,7 @@ export default defineConfig({
       ),
       "#icons": resolve(
         dirname(fileURLToPath(import.meta.url)),
-        "src/icons"
+        "src/assets/icons"
       ),
       "#Desktop": resolve(
         dirname(fileURLToPath(import.meta.url)),
@@ -59,7 +59,7 @@ export default defineConfig({
       ),
       "#hooks": resolve(
         dirname(fileURLToPath(import.meta.url)),
-        "src/Hooks"
+        "src/hooks"
       ),
     },
   },
@@ -76,7 +76,6 @@ export default defineConfig({
         target: 'http://localhost:3001',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/api/, ''),
         configure: (proxy, options) => {
           // Logs para debug
           proxy.on('error', (err, req, res) => {

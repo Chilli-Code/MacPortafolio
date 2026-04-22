@@ -3,7 +3,7 @@
     {
       "id": "usr_001",
       "username": "jorge_dev",
-      "password": "123456",
+      "password": "$2b$12$9YaIgObhUdTy/rO5v8Ajl.51o3xNRpKtuJiHsMr6aZxFIg5NOhStK",
       "email": "jorge@example.com",
       "fullName": "Jorge Villamizar",
       "role": "",
@@ -139,7 +139,7 @@
     {
       "id": "adm_001",
       "username": "admin",
-      "password": "admin123",
+      "password": "$2b$12$SjEKohO4oP9YJ1pNb/MaAe8h5tD69PyVzzsHX8z.tpVAcUEXJYR7C",
       "email": "admin@example.com",
       "fullName": "Administrador",
       "role": "admin",
@@ -498,6 +498,30 @@
       "deadline": "2026-01-27",
       "tags": [
         "React"
+      ],
+      "status": "available",
+      "images": [],
+      "assignedTo": null,
+      "submittedAt": null,
+      "reviewedAt": null,
+      "reviewedBy": null,
+      "reviewNotes": null,
+      "submissionNotes": null,
+      "submissionFiles": []
+    },
+    {
+      "id": "1db4",
+      "title": "Crear Landing Page",
+      "description": "Desarrollar la landing del proyecto",
+      "detailedDescription": "#Requisitos\n- HTML\n- CSS\n\n#Criterios\n- Mobile First",
+      "type": "frontend",
+      "difficulty": "medium",
+      "xp": 250,
+      "reward": 150,
+      "deadline": "2026-04-15",
+      "tags": [
+        "HTML",
+        "CSS"
       ],
       "status": "available",
       "images": [],
@@ -925,6 +949,22 @@
       "priority": "normal",
       "createdAt": "2026-01-12T03:43:55.787Z",
       "expiresAt": "2026-01-13T03:43:55.788Z",
+      "dismissedBy": []
+    },
+    {
+      "id": "1776169190262",
+      "type": "new_task",
+      "title": "🚀 Nueva tarea disponible",
+      "message": "Se ha publicado: \"Crear Landing Page\" - 150 XP",
+      "icon": "📋",
+      "color": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      "action": {
+        "type": "open_terminal",
+        "data": null
+      },
+      "priority": "normal",
+      "createdAt": "2026-04-14T12:19:50.262Z",
+      "expiresAt": "2026-04-15T12:19:50.262Z",
       "dismissedBy": []
     }
   ]

@@ -1,0 +1,190 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id                   String                @id @default(uuid())
+  username             String                @unique
+  password             String
+  email                String                @unique
+  fullName             String?
+  role                 String?
+  type                 String?
+  avatar               String?
+  createdAt            DateTime              @default(now())
+  bio                  String?
+  location             String?
+  website              String?
+  timezone             String                @default("America/Bogota")
+  languages            Json
+  github               String?
+  linkedin             String?
+  twitter              String?
+  phone                String?
+  skills               Json
+  level                Int                   @default(1)
+  currentXP            Int                   @default(0)
+  xpToNextLevel        Int                   @default(1000)
+  totalXP              Int                   @default(0)
+  rank                 String                @default("Novato")
+  rankIcon             String                @default("🌱")
+  rankProgress         Int                   @default(0)
+  tasksCompleted       Int                   @default(0)
+  projectsCompleted    Int                   @default(0)
+  totalEarnings        Int                   @default(0)
+  totalHoursWorked     Int                   @default(0)
+  averageTaskTime      Int                   @default(0)
+  averageRating        Float                 @default(0)
+  perfectRatings       Int                   @default(0)
+  currentStreak        Int                   @default(0)
+  longestStreak        Int                   @default(0)
+  totalActiveDays      Int                   @default(0)
+  lastActiveDate       DateTime?
+  theme                String                @default("dark")
+  language             String                @default("es")
+  notifications        Notification[]
+  tasks                Task[]
+  unlockedAchievements UnlockedAchievement[]
+  badges               Badge[]               @relation("BadgeToUser")
+}
+
+model Task {
+  id                  String    @id @default(uuid())
+  title               String
+  description         String
+  detailedDescription String?
+  type                String
+  category            String?
+  difficulty          String
+  priority            String    @default("medium")
+  estimatedHours      Int?
+  deadline            DateTime?
+  xp                  Int
+  baseReward          Int
+  bonusReward         Int?
+  totalReward         Int
+  status              String    @default("available")
+  tags                Json
+  images              Json
+  assignedTo          String?
+  assignedAt          DateTime?
+  acceptedAt          DateTime?
+  submittedAt         DateTime?
+  submissionNotes     String?
+  submissionFiles     Json
+  reviewedAt          DateTime?
+  reviewedBy          String?
+  reviewNotes         String?
+  reviewStatus        String?
+  rating              Int?
+  completedAt         DateTime?
+  actualHours         Int?
+  rejectionReasons    Json
+  revisionCount       Int       @default(0)
+  createdAt           DateTime  @default(now())
+  createdBy           String
+  updatedAt           DateTime  @updatedAt
+  user                User?     @relation(fields: [assignedTo], references: [id])
+}
+
+model Achievement {
+  id                  String                @id
+  title               String
+  description         String
+  detailedDescription String?
+  icon                String
+  category            String
+  rarity              String
+  xpReward            Int
+  coinReward          Int
+  hidden              Boolean               @default(false)
+  secret              Boolean               @default(false)
+  requirementType     String
+  requirementValue    Int
+  totalUnlocked       Int                   @default(0)
+  users               UnlockedAchievement[]
+}
+
+model UnlockedAchievement {
+  id            String      @id @default(uuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime    @default(now())
+  progress      Int         @default(0)
+  maxProgress   Int         @default(1)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+}
+
+model Badge {
+  id          String @id
+  name        String
+  description String
+  icon        String
+  rarity      String
+  category    String
+  users       User[] @relation("BadgeToUser")
+}
+
+model Level {
+  level Int    @id @default(autoincrement())
+  minXP Int
+  maxXP Int
+  title String
+  icon  String
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model GlobalNotification {
+  id          String    @id @default(uuid())
+  type        String
+  title       String
+  message     String
+  icon        String?
+  color       String?
+  priority    String    @default("normal")
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime?
+  dismissedBy Json
+}
+
+model Setting {
+  id    String  @id
+  key   String  @unique
+  value String
+  type  String?
+}
+
+model Leaderboard {
+  id        String   @id
+  period    String
+  type      String
+  rankings  Json
+  updatedAt DateTime @updatedAt
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  data      Json?
+  createdAt DateTime @default(now())
+}

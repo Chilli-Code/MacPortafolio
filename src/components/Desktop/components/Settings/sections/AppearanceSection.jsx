@@ -8,7 +8,7 @@ import { useAuthStore } from '#store/authStore';
 import FontSizeSection from '../FontSizeSection';
 
 
-import PerformanceMonitorToggle from '#components/Desktop/Components/Settings/PerformanceMonitorToggle';
+import PerformanceMonitorToggle from '#components/Desktop/components/Settings/PerformanceMonitorToggle';
 import PerformanceMonitor from '#components/Systemresourcessection';
 
 const AppearanceSection = () => {
