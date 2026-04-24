@@ -57,8 +57,8 @@ app.post('/api/login', loginLimiter, async (req, res) => {
     // Verificar contraseña con COMPATIBILIDAD HACIA ATRAS
     let passwordValid = false;
 
-    // Primero intentar como bcrypt (nuevo formato seguro)
-    if (user.password.startsWith('$2b$')) {
+    // Primero intentar como bcrypt (cualquier versión válida: $2a$ $2b$ $2y$)
+    if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$') || user.password.startsWith('$2y$')) {
       passwordValid = await bcrypt.compare(password, user.password);
     } else {
       // Si no es hash, comparar directamente como texto plano

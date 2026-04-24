@@ -18,20 +18,44 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
   const [fileContents, setFileContents] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [allFiles, setAllFiles] = useState([]);
+  const [showTerminal, setShowTerminal] = useState(false);
+  const [terminalHistory, setTerminalHistory] = useState([]);
+  const [terminalInput, setTerminalInput] = useState('');
+  const [currentPath, setCurrentPath] = useState('');
+  const [expandedFolders, setExpandedFolders] = useState(new Set());
+  const [selectedFolder, setSelectedFolder] = useState(null);
+  const [terminalWorkingDir, setTerminalWorkingDir] = useState('');
+  const terminalRef = useRef(null);
+
+  // ✅ CARGAR ARCHIVOS DE DEMO-PROJECT
+  useEffect(() => {
+    const loadFiles = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('http://localhost:3001/api/projects/demo-project/files');
+        const files = await response.json();
+        setAllFiles(files);
+        setActiveFile(null);
+        setOpenTabs([]);
+      } catch (error) {
+        console.error('❌ Error cargando archivos:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (windows.codeeditor?.isOpen) {
+      loadFiles();
+    }
+  }, [windows.codeeditor?.isOpen]);
 
   useEffect(() => {
     if (!data && windows.codeeditor?.isOpen) {
       closeWindow('codeeditor');
     }
   }, [data, windows.codeeditor?.isOpen, closeWindow]);
-
-  useEffect(() => {
-    if (folderFiles.length > 0 && !activeFile) {
-      const firstFile = folderFiles[0];
-      setActiveFile(firstFile);
-      setOpenTabs([firstFile]);
-    }
-  }, [folderFiles, activeFile]);
 
   if (!data) return null;
 
@@ -61,19 +85,120 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
   const saveFile = async (fileName, content) => {
     setIsSaving(true);
     try {
-      // TODO: Implementar API real aqui
       console.log(`💾 Guardando ${fileName}...`);
       
-      // Simular delay de red
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      setLastSaved(new Date());
-      console.log(`✅ ${fileName} guardado!`);
+      const response = await fetch(`http://localhost:3001/api/projects/demo-project/files/${fileName}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ content })
+      });
+
+      if (response.ok) {
+        setLastSaved(new Date());
+        console.log(`✅ ${fileName} guardado correctamente!`);
+      } else {
+        console.error('❌ Error al guardar');
+      }
     } catch (error) {
       console.error('❌ Error guardando archivo:', error);
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // ✅ CREAR NUEVO ARCHIVO
+  const createNewFile = async () => {
+    const name = prompt('Nombre del nuevo archivo:');
+    if (!name) return;
+    
+    try {
+      await fetch('http://localhost:3001/api/projects/demo-project/files', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: name,
+          content: `// ${name}\n\n// Archivo creado nuevo`
+        })
+      });
+
+      // Recargar lista
+      await reloadFiles();
+    } catch (error) {
+      console.error('❌ Error creando archivo:', error);
+    }
+  };
+
+  // ✅ ELIMINAR ARCHIVO
+  const deleteCurrentFile = async () => {
+    if (!activeFile) return;
+    if (!confirm(`Eliminar ${activeFile.name}?`)) return;
+    
+    try {
+      await fetch(`http://localhost:3001/api/projects/demo-project/files/${activeFile.name}`, {
+        method: 'DELETE'
+      });
+
+      // Cerrar pestaña
+      handleCloseTab(activeFile, { stopPropagation: () => {} });
+      
+      // Recargar lista
+      await reloadFiles();
+    } catch (error) {
+      console.error('❌ Error eliminando archivo:', error);
+    }
+  };
+
+  // ✅ RECARGAR ARCHIVOS
+  const reloadFiles = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('http://localhost:3001/api/projects/demo-project/files');
+      const files = await response.json();
+      setAllFiles(files);
+      
+      const contents = {};
+      files.forEach(f => contents[f.name] = f.content);
+      setFileContents(contents);
+    } catch (error) {
+      console.error('❌ Error recargando:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ✅ DESCARGAR ARCHIVO ACTUAL
+  const downloadFile = () => {
+    if (!activeFile) return;
+    
+    const content = fileContents[activeFile.name] || '';
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = activeFile.name;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // ✅ ABRIR PREVIEW
+  const openPreview = () => {
+    if (!activeFile || !activeFile.name.endsWith('.html')) {
+      alert('Preview solo disponible para archivos HTML');
+      return;
+    }
+    
+    const content = fileContents[activeFile.name] || '';
+    const blob = new Blob([content], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  };
+
+  // ✅ FORMATEAR CODIGO
+  const formatCode = async () => {
+    if (!editorRef.current) return;
+    editorRef.current.getAction('editor.action.formatDocument').run();
   };
 
   // Guardar manualmente con Ctrl+S
@@ -103,6 +228,9 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
   };
 
   const getFileContent = (file) => {
+    if (fileContents[file.name]) {
+      return fileContents[file.name];
+    }
     if (file.fileType === 'txt') {
       return file.description?.join('\n\n') || file.content || '';
     }
@@ -144,6 +272,135 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
         </div>
       </div>
 
+      {/* ✅ BARRA DE HERRAMIENTAS */}
+      <div className="h-10 bg-[#3c3c3c] border-b border-gray-700 flex items-center px-3 gap-1">
+        <button 
+          onClick={() => activeFile && saveFile(activeFile.name, fileContents[activeFile.name])}
+          disabled={!activeFile || isSaving}
+          className="px-3 py-1 text-xs bg-[#0e639c] hover:bg-[#1177bb] rounded text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+          title="Guardar (Ctrl+S)"
+        >
+          💾 Guardar
+        </button>
+
+        <button 
+          onClick={createNewFile}
+          className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded text-white flex items-center gap-1"
+          title="Nuevo Archivo"
+        >
+          ➕
+        </button>
+
+        <button 
+          onClick={reloadFiles}
+          disabled={isLoading}
+          className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded text-white disabled:opacity-50 flex items-center gap-1"
+          title="Recargar archivos"
+        >
+          🔄
+        </button>
+
+        <button 
+          onClick={() => {
+            // Extraer todas las carpetas del arbol
+            const folders = [];
+            
+            const extractFolders = (items, parent = '') => {
+              items.forEach(item => {
+                if (item.type === 'folder') {
+                  folders.push({ path: item.path, name: item.name });
+                  extractFolders(item.children, item.path);
+                }
+              });
+            };
+            
+            extractFolders(allFiles);
+            
+            const folderList = ['. (Raiz)', ...folders.map(f => f.path)];
+            const selected = prompt(`Selecciona carpeta:\n${folderList.map((f,i) => `${i} - ${f}`).join('\n')}`);
+            
+            if (selected !== null && selected !== '') {
+              const folderIndex = parseInt(selected);
+              if (folderIndex >= 0 && folderIndex < folderList.length) {
+                const selectedPath = folderIndex === 0 ? '' : folderList[folderIndex];
+                setCurrentPath(selectedPath);
+                alert(`✅ Carpeta seleccionada: ${folderList[folderIndex]}`);
+              }
+            }
+          }}
+          className="px-2 py-1 text-xs bg-orange-600 hover:bg-orange-500 rounded text-white flex items-center gap-1"
+          title="Seleccionar carpeta"
+        >
+          📂 Carpeta
+        </button>
+
+        <button 
+          onClick={downloadFile}
+          disabled={!activeFile}
+          className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded text-white disabled:opacity-50 flex items-center gap-1"
+          title="Descargar archivo"
+        >
+          ⬇️
+        </button>
+
+        <button 
+          onClick={formatCode}
+          disabled={!activeFile}
+          className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded text-white disabled:opacity-50 flex items-center gap-1"
+          title="Formatear codigo (Shift+Alt+F)"
+        >
+          ✨
+        </button>
+
+        <button 
+          onClick={openPreview}
+          disabled={!activeFile}
+          className="px-2 py-1 text-xs bg-green-700 hover:bg-green-600 rounded text-white disabled:opacity-50 flex items-center gap-1"
+          title="Abrir Preview HTML"
+        >
+          👁️ Preview
+        </button>
+
+        <button 
+          onClick={async () => {
+            const url = prompt('URL del repositorio Git:');
+            if (!url) return;
+            
+            try {
+              await fetch('http://localhost:3001/api/projects/demo-project/git/clone', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url })
+              });
+              await reloadFiles();
+              alert('✅ Repositorio clonado correctamente!');
+            } catch (e) {
+              alert('❌ Error clonando repositorio');
+            }
+          }}
+          className="px-2 py-1 text-xs bg-purple-700 hover:bg-purple-600 rounded text-white flex items-center gap-1"
+          title="Clonar repositorio Git"
+        >
+          📥 Clone
+        </button>
+
+        <button 
+          onClick={deleteCurrentFile}
+          disabled={!activeFile}
+          className="px-2 py-1 text-xs bg-red-700 hover:bg-red-600 rounded text-white disabled:opacity-50 flex items-center gap-1 ml-auto"
+          title="Eliminar archivo"
+        >
+          🗑️
+        </button>
+
+        {/* ✅ INDICADOR DE ESTADO */}
+        <div className="ml-auto text-xs text-gray-400 flex items-center gap-2">
+          {isSaving && <span className="text-yellow-400 animate-pulse">⏳ Guardando...</span>}
+          {!isSaving && lastSaved && <span className="text-green-400">✅ Guardado</span>}
+          {activeFile && <span className="text-gray-500">{activeFile.name}</span>}
+        </div>
+      </div>
+
       <div className="flex h-full min-h-0 bg-[#1e1e1e] overflow-hidden">
         {/* Sidebar - Explorador de archivos */}
         <div className="w-64 bg-[#252526] text-gray-300 flex flex-col border-r border-gray-700">
@@ -157,22 +414,145 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
             <div className="text-xs text-gray-500 px-2 py-1 uppercase tracking-wide">
               {projectName}
             </div>
-            {folderFiles.map(file => {
-              const isActive = activeFile?.name === file.name;
-              
-              return (
-                <div 
-                  key={file.name} 
-                  className={`px-2 py-1.5 cursor-pointer rounded text-sm hover:bg-[#2a2d2e] transition-colors flex items-center gap-2 ${
-                    isActive ? 'bg-[#37373d]' : ''
-                  }`}
-                  onClick={() => handleFileClick(file)}
-                >
-                  <span className="text-base">{getFileIcon(file)}</span>
-                  <span className="truncate flex-1 text-sm">{file.name}</span>
-                </div>
-              );
-            })}
+
+            {/* ✅ BOTON VOLVER ATRAS */}
+            {currentPath !== selectedFolder?.path && (
+              <button 
+                onClick={() => {
+                  if (currentPath === selectedFolder?.path) {
+                    setSelectedFolder(null);
+                    setCurrentPath('');
+                  } else {
+                    const parentPath = currentPath.split('/').slice(0, -1).join('/');
+                    setCurrentPath(parentPath);
+                  }
+                }}
+                className="mx-2 my-1 px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded text-white flex items-center gap-1 w-full"
+              >
+                ⬅️ Volver atras
+              </button>
+            )}
+
+            {selectedFolder && (
+              <button 
+                onClick={() => {
+                  setSelectedFolder(null);
+                  setCurrentPath('');
+                  setActiveFile(null);
+                  setOpenTabs([]);
+                }}
+                className="mx-2 my-1 px-2 py-1 text-xs bg-blue-700 hover:bg-blue-600 rounded text-white flex items-center gap-1 w-full"
+              >
+                🏠 Cambiar proyecto
+              </button>
+            )}
+
+            {/* ✅ MIGA DE PAN */}
+            {currentPath !== '' && (
+              <div className="px-2 py-1 text-xs text-blue-400 border-b border-gray-700 mb-1">
+                📂 {currentPath}
+              </div>
+            )}
+            {isLoading ? (
+              <div className="text-center py-8 text-gray-500">
+                <div className="animate-pulse">⏳ Cargando archivos...</div>
+              </div>
+            ) : !selectedFolder ? (
+              // ✅ SOLO MOSTRAR CARPETAS PRIMER NIVEL DENTRO DE DEMO-PROJECT
+              <div className="p-2">
+                <div className="text-xs text-gray-400 px-2 mb-3">Selecciona la carpeta para abrir:</div>
+                {allFiles.filter(item => item.type === 'folder').map(folder => (
+                  <button
+                    key={folder.path}
+                    onClick={() => {
+                      setSelectedFolder(folder);
+                      setCurrentPath(folder.path);
+                    }}
+                    className="w-full mb-2 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm text-left flex items-center gap-2 text-yellow-400"
+                  >
+                    <span>📁</span>
+                    <span>{folder.name}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+               (() => {
+                // Filtrar archivos por ruta actual DENTRO DE LA CARPETA SELECCIONADA
+                const items = currentPath === selectedFolder.path ? selectedFolder.children : 
+                  (function findPath(items, path) {
+                    for (const item of items) {
+                      if (item.path === path) return item.children || [];
+                      if (item.type === 'folder') {
+                        const found = findPath(item.children, path);
+                        if (found.length) return found;
+                      }
+                    }
+                    return [];
+                  })(selectedFolder.children, currentPath);
+
+                // ✅ ORDENAMIENTO VS CODE: CARPETAS PRIMERO, DESPUES ARCHIVOS
+                const sortItems = (items) => {
+                  const folders = items.filter(i => i.type === 'folder').sort((a,b) => a.name.localeCompare(b.name));
+                  const files = items.filter(i => i.type !== 'folder').sort((a,b) => {
+                    // Ordenar archivos por extension y luego nombre
+                    const extA = a.name.split('.').pop();
+                    const extB = b.name.split('.').pop();
+                    if (extA !== extB) return extA.localeCompare(extB);
+                    return a.name.localeCompare(b.name);
+                  });
+                  return [...folders, ...files];
+                };
+
+                // ✅ ARBOL RECURSIVO ESTILO VSCODE
+                const renderTree = (items, level = 0) => {
+                  const sortedItems = sortItems(items);
+                  return sortedItems.map(item => {
+                    if (item.type === 'folder') {
+                      const isExpanded = expandedFolders.has(item.path);
+                      return (
+                        <div key={item.path} style={{ paddingLeft: `${level * 12}px` }}>
+                          <div 
+                            className="px-2 py-1.5 cursor-pointer rounded text-sm hover:bg-[#2a2d2e] transition-colors flex items-center gap-2 text-yellow-400"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpandedFolders(prev => {
+                                const newSet = new Set(prev);
+                                if (isExpanded) newSet.delete(item.path);
+                                else newSet.add(item.path);
+                                return newSet;
+                              });
+                            }}
+                          >
+                            <span className="text-sm w-4">{isExpanded ? '🔽' : '▶️'}</span>
+                            <span className="text-base">📁</span>
+                            <span className="truncate flex-1 text-sm">{item.name}</span>
+                          </div>
+                          {isExpanded && renderTree(item.children, level + 1)}
+                        </div>
+                      );
+                    }
+
+                    const isActive = activeFile?.name === item.name;
+                
+                    return (
+                      <div 
+                        key={item.path}
+                        style={{ paddingLeft: `${level * 12}px` }} 
+                        className={`px-2 py-1.5 cursor-pointer rounded text-sm hover:bg-[#2a2d2e] transition-colors flex items-center gap-2 ${
+                          isActive ? 'bg-[#37373d]' : ''
+                        }`}
+                        onClick={() => handleFileClick(item)}
+                      >
+                        <span className="text-base">{getFileIcon(item)}</span>
+                        <span className="truncate flex-1 text-sm">{item.name}</span>
+                      </div>
+                    );
+                  });
+                };
+
+                return renderTree(items);
+              })()
+            )}
           </div>
         </div>
 
@@ -218,7 +598,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
                 wordWrap: 'on',
                 automaticLayout: true,
                 tabSize: 2,
-                readOnly: false, // Aquí puedes poner lógica de permisos
+                readOnly: false,
               }}
               onMount={(editor) => {
                 editorRef.current = editor;
@@ -235,6 +615,95 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
           )}
         </div>
       </div>
+
+      {/* ✅ TERMINAL INTEGRADO */}
+      {showTerminal && (
+        <div className="absolute bottom-0 left-0 right-0 h-44 bg-[#1e1e1e] border-t border-gray-700 flex flex-col z-20">
+          <div className="flex items-center justify-between px-3 py-1 bg-[#252526] border-b border-gray-700">
+            <span className="text-xs text-gray-400 font-semibold">🖥️  Terminal</span>
+            <button 
+              onClick={() => setShowTerminal(false)} 
+              className="text-gray-400 hover:text-white text-xs"
+            >
+              ✕
+            </button>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto p-2 font-mono text-xs text-green-400" ref={terminalRef}>
+            {terminalHistory.map((line, i) => (
+              <div key={i} className="whitespace-pre-wrap">{line}</div>
+            ))}
+          </div>
+          
+          <div className="flex items-center px-2 py-1 bg-[#0d0d0d] border-t border-gray-800">
+            <span className="text-green-500 text-xs mr-2">$</span>
+            <input
+              type="text"
+              value={terminalInput}
+              onChange={(e) => setTerminalInput(e.target.value)}
+              className="flex-1 bg-transparent text-white text-xs font-mono outline-none"
+              placeholder="Escribe un comando..."
+              onKeyDown={async (e) => {
+                if (e.key === 'Enter' && terminalInput.trim()) {
+                  const cmd = terminalInput.trim();
+                  setTerminalHistory(prev => [...prev, `$ ${cmd}`]);
+                  setTerminalInput('');
+
+                  // ✅ MANEJO DE COMANDO CD LOCAL
+                  if (cmd.startsWith('cd ')) {
+                    const newPath = cmd.substring(3).trim();
+                    if (newPath === '..') {
+                      const parent = terminalWorkingDir.split('/').slice(0, -1).join('/');
+                      setTerminalWorkingDir(parent);
+                      setTerminalHistory(prev => [...prev, `✅ Carpeta cambiada: ${parent || '/'}`]);
+                    } else {
+                      setTerminalWorkingDir(terminalWorkingDir ? `${terminalWorkingDir}/${newPath}` : newPath);
+                      setTerminalHistory(prev => [...prev, `✅ Carpeta cambiada: ${newPath}`]);
+                    }
+                    setTimeout(() => terminalRef.current?.scrollTo(0, terminalRef.current.scrollHeight), 10);
+                    return;
+                  }
+
+                  // ✅ COMANDO PWD
+                  if (cmd === 'pwd') {
+                    setTerminalHistory(prev => [...prev, terminalWorkingDir || '/ (raiz)']);
+                    setTimeout(() => terminalRef.current?.scrollTo(0, terminalRef.current.scrollHeight), 10);
+                    return;
+                  }
+                  
+                  try {
+                    const res = await fetch('http://localhost:3001/api/terminal', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ 
+                        command: cmd, 
+                        project: selectedFolder ? selectedFolder.path : 'demo-project',
+                        cwd: terminalWorkingDir
+                      })
+                    });
+                    const data = await res.json();
+                    setTerminalHistory(prev => [...prev, data.output || '']);
+                  } catch (err) {
+                    setTerminalHistory(prev => [...prev, `❌ Error conectando con servidor`]);
+                  }
+                  
+                  setTimeout(() => terminalRef.current?.scrollTo(0, terminalRef.current.scrollHeight), 10);
+                }
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ✅ BOTON TERMINAL FIJO */}
+      {!showTerminal && (
+        <button
+          onClick={() => setShowTerminal(true)}
+          className="absolute bottom-3 right-3 bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-xs shadow-lg z-10"
+        >
+          🖥️  Abrir Terminal
+        </button>
+      )}
     </>
   );
 };

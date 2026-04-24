@@ -74,6 +74,12 @@ const dockApps = [
     icon: "game.webp",
     canOpen: true,
   },
+  {
+    id: "codeeditor",
+    name: "Code Editor",
+    icon: "atom.svg",
+    canOpen: true,
+  },
 ];
 
 const dockAppsMobile = [

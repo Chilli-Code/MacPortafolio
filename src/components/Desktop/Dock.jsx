@@ -114,6 +114,18 @@ const Dock = () => {
             return;
         }
 
+        if (app.id === 'codeeditor') {
+          openWindow('codeeditor', {
+            projectName: 'Demo Project',
+            folderFiles: [
+              { name: 'index.html' },
+              { name: 'style.css' },
+              { name: 'app.js' }
+            ]
+          });
+          return;
+        }
+
         const window = windows[app.id];
 
         if (!window) {
