@@ -5,6 +5,12 @@ const { PrismaClient } = pkg;
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
 import rateLimit from 'express-rate-limit';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -207,6 +213,57 @@ app.get('/leaderboards', async (req, res) => {
 app.get('/activityLog', async (req, res) => {
   const logs = await prisma.activityLog.findMany();
   res.json(logs);
+});
+
+// ==============================================
+// 📂 ENDPOINT PARA OBTENER ESTRUCTURA DE CARPETAS
+// ==============================================
+const scanDirectory = (dirPath, baseId = 'server-projects') => {
+  const items = [];
+  const files = fs.readdirSync(dirPath, { withFileTypes: true });
+  
+  let idCounter = 0;
+  for (const file of files) {
+    const itemId = `${baseId}-${idCounter++}`;
+    const fullPath = path.join(dirPath, file.name);
+    
+    const item = {
+      id: itemId,
+      name: file.name,
+      kind: file.isDirectory() ? 'folder' : 'file',
+      icon: file.isDirectory() ? '/images/folder.webp' : '/images/txt.webp',
+      fileType: file.isDirectory() ? null : path.extname(file.name).slice(1) || 'txt',
+      children: []
+    };
+    
+    if (file.isDirectory()) {
+      try {
+        item.children = scanDirectory(fullPath, itemId);
+      } catch (e) {
+        item.children = [];
+      }
+    }
+    
+    items.push(item);
+  }
+  
+  return items;
+};
+
+app.get('/api/folders', async (req, res) => {
+  try {
+    const projectsPath = path.join(__dirname, '../projects');
+    
+    if (!fs.existsSync(projectsPath)) {
+      return res.json([]);
+    }
+    
+    const structure = scanDirectory(projectsPath);
+    res.json(structure);
+  } catch (error) {
+    console.error('❌ Error leyendo carpetas:', error);
+    res.status(500).json({ error: 'No se pudo leer la estructura de carpetas' });
+  }
 });
 
 // Health check

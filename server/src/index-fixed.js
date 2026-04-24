@@ -308,6 +308,53 @@ app.post('/api/projects/:project/folders', async (req, res) => {
   }
 });
 
+// 📂 ENDPOINT PARA FINDER - ESTRUCTURA COMPLETA DE CARPETAS
+app.get('/api/folders', async (req, res) => {
+  try {
+    const fs = await import('fs/promises');
+    const projectsPath = path.join(__dirname, '../projects/');
+    await fs.mkdir(projectsPath, { recursive: true });
+
+    const scanDirectory = async (dirPath, baseId = 'server-projects') => {
+      const items = [];
+      const entries = await fs.readdir(dirPath, { withFileTypes: true });
+      
+      let idCounter = 0;
+      for (const entry of entries) {
+        const itemId = `${baseId}-${idCounter++}`;
+        const fullPath = path.join(dirPath, entry.name);
+        
+        const item = {
+          id: itemId,
+          name: entry.name,
+          kind: entry.isDirectory() ? 'folder' : 'file',
+          icon: entry.isDirectory() ? '/images/folder.webp' : '/images/txt.webp',
+          fileType: entry.isDirectory() ? null : path.extname(entry.name).slice(1) || 'txt',
+          children: []
+        };
+        
+        if (entry.isDirectory()) {
+          try {
+            item.children = await scanDirectory(fullPath, itemId);
+          } catch (e) {
+            item.children = [];
+          }
+        }
+        
+        items.push(item);
+      }
+      
+      return items;
+    };
+
+    const structure = await scanDirectory(projectsPath);
+    res.json(structure);
+  } catch (error) {
+    console.error('❌ Error leyendo carpetas:', error);
+    res.status(500).json([]);
+  }
+});
+
 // Listar todos los proyectos disponibles
 app.get('/api/projects', async (req, res) => {
   try {

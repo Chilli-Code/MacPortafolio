@@ -5,20 +5,61 @@ import WindowWrapper from "#hoc/WindowWrapper";
 import clsx from "clsx";
 import useWindowStore from "#store/window";
 import { ChevronLeft, ChevronRight, Search } from "#assets/icons";
+import { useEffect, useState } from "react";
 
 
 // Recibe isMaximized y setIsMaximized como props del WindowWrapper
 const Finder = ({ isMaximized, setIsMaximized }) => {
   const { openWindow } = useWindowStore();
   const { activeLocation, setActiveLocation } = useLocationStore();
+  const [serverFiles, setServerFiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // ✅ CARGAMOS LOS DATOS DEL SERVIDOR DIRECTAMENTE, SIN PASAR POR EL STORE
+  useEffect(() => {
+    const loadServerFolders = async () => {
+      try {
+        setLoading(true);
+        console.log('📂 Cargando carpetas del servidor...');
+        
+        const response = await fetch('http://localhost:3001/api/folders');
+        console.log('✅ Respuesta del servidor:', response.status);
+        
+        const serverProjects = await response.json();
+        console.log('📁 Estructura recibida:', serverProjects);
+        
+        // Mostramos directamente todas las carpetas que hay en la raiz de projects
+        setServerFiles(serverProjects);
+        console.log('✅ Carpetas cargadas:', serverProjects);
+
+      } catch (error) {
+        console.error('❌ ERROR cargando carpetas del servidor:', error);
+        setServerFiles([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadServerFolders();
+  }, [activeLocation?.type]);
 
   const handleMaximize = () => {
     setIsMaximized(!isMaximized);
   };
 
   const openItem = (item) => {
+    // SOLO PERMITIR ABRIR CARPETAS, ARCHIVOS NO HACEN NADA
+    if (item.kind == 'folder') {
+      return setActiveLocation(item);
+    }
+    
+    // Archivos del servidor solo se muestran, no se abren
+    if (item.id.startsWith('server-projects')) {
+      return;
+    }
+
+    // Mantener funcionalidad original para archivos estáticos
     if (item.fileType == 'pdf') return openWindow("resume");
-    if (item.kind == 'folder') return setActiveLocation(item);
     if (['fig', 'url'].includes(item.fileType) && item.href)
       return window.open(item.href, "_blank");
 
@@ -48,6 +89,16 @@ const renderList = (name, items, className = "") => (
   </div>
 );
 
+// ✅ Navegacion completa de carpetas
+const getDisplayFiles = () => {
+  // Si NO estamos en la raiz de Trabajo, mostramos los children de la ubicacion activa
+  if (activeLocation?.type !== 'work' && activeLocation?.children) {
+    return activeLocation.children;
+  }
+  
+  // Si estamos en la raiz de Trabajo, mostramos el contenido de demo-project
+  return serverFiles;
+};
 
   return (
     <>
@@ -82,7 +133,7 @@ const renderList = (name, items, className = "") => (
       <div className="flex h-full bg-white overflow-hidden">
         <div className="w-48 sidebar sidebarFolder flex-shrink-0 overflow-y-auto">
           {renderList('Favoritos', Object.values(locations))}
-          {renderList('Mis proyectos', locations.work.children, 'mb-10')}
+          {renderList('Mis proyectos', getDisplayFiles(), 'mb-10')}
         </div>
 
         {/* Área principal: misma que en el header */}
@@ -94,17 +145,23 @@ const renderList = (name, items, className = "") => (
               gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))'
             }}
           >
-            {activeLocation?.children.map((item) => (
-              <li
-                title={item.name}
-                key={item.id}
-                className="flex flex-col items-center cursor-pointer hover:bg-blue-50 p-3 rounded-lg transition-colors group"
-                onClick={() => openItem(item)}
-              >
-                <img draggable={false} onDragStart={(e) => e.preventDefault()} src={item.icon} alt={item.name} className="object-contain mb-2 group-hover:scale-110 transition-transform select-none" />
-                <p className="text-sm font-medium text-center truncate w-full px-1">{item.name}</p>
+            {loading ? (
+              <li className="text-center text-gray-400 col-span-3 py-20">
+                Cargando archivos del servidor...
               </li>
-            ))}
+            ) : (
+              getDisplayFiles().map((item) => (
+                <li
+                  title={item.name}
+                  key={item.id}
+                  className="flex flex-col items-center cursor-pointer hover:bg-blue-50 p-3 rounded-lg transition-colors group"
+                  onClick={() => openItem(item)}
+                >
+                  <img draggable={false} onDragStart={(e) => e.preventDefault()} src={item.icon} alt={item.name} className="object-contain mb-2 group-hover:scale-110 transition-transform select-none" />
+                  <p className="text-sm font-medium text-center truncate w-full px-1">{item.name}</p>
+                </li>
+              ))
+            )}
           </ul>
         </div>
       </div>
