@@ -4,6 +4,8 @@ import WindowWrapper from '#hoc/WindowWrapper';
 import WindowControls from '#components/Desktop/WindowControls';
 import useWindowStore from '#store/window';
 import Editor from '@monaco-editor/react';
+import { Save, RefreshCcw, CirclePlus, Folders, Download, HardDriveDownload, Eye, Terminal, Trash2, Trash} from '#assets/icons';
+import { getTechConfig } from '#assets/techIcons/techConfig';
 
 const CodeEditor = ({ isMaximized, setIsMaximized }) => {
   const { windows, closeWindow } = useWindowStore();
@@ -204,7 +206,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
   // Guardar manualmente con Ctrl+S
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 's' && activeFile) {
+      if (e.altKey && e.key.toLowerCase() === 's' && activeFile) {
         e.preventDefault();
         const content = fileContents[activeFile.name] || getFileContent(activeFile);
         saveFile(activeFile.name, content);
@@ -248,25 +250,37 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     if (file.name.endsWith('.json')) return 'json';
     return 'plaintext';
   };
+const extensionMap = {
+  js: 'Javascript',
+  jsx: 'React',
+  ts: 'TypeScript',
+  tsx: 'React',
+  css: 'CSS',
+  html: 'HTML5',
+};
+const getFileIcon = (file) => {
+  if (file.fileType === 'txt') return '📄';
+  if (file.fileType === 'img') return '🖼️';
 
-  const getFileIcon = (file) => {
-    if (file.fileType === 'txt') return '📄';
-    if (file.fileType === 'img') return '🖼️';
-    if (file.name.endsWith('.js')) return '📜';
-    if (file.name.endsWith('.jsx')) return '⚛️';
-    if (file.name.endsWith('.tsx')) return '⚛️';
-    if (file.name.endsWith('.css')) return '🎨';
-    if (file.name.endsWith('.html')) return '🌐';
-    if (file.name.endsWith('.json')) return '📦';
-    return '📄';
-  };
+  const ext = file.path.split('.').pop().toLowerCase();
+  const tech = extensionMap[ext];
+
+  if (tech) {
+    const { icon } = getTechConfig(tech);
+    return icon;
+  }
+
+  if (ext === 'json') return '📦';
+
+  return '📄';
+};
 
   return (
     <>
       <div id="window-header" className="bgt border-b border-gray-700">
         <WindowControls target="codeeditor" onMaximize={() => setIsMaximized(!isMaximized)} />
         <div className="flex-1 flex items-center justify-center">
-          <h2 className='text-sm font-semibold'>
+          <h2 className='text-sm font-semibold' >
             {projectName}
           </h2>
         </div>
@@ -274,30 +288,34 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
 
       {/* ✅ BARRA DE HERRAMIENTAS */}
       <div className="h-10 bg-[#3c3c3c] border-b border-gray-700 flex items-center px-3 gap-1">
+        <div className="flex w-full items-center gap-2">
+
         <button 
           onClick={() => activeFile && saveFile(activeFile.name, fileContents[activeFile.name])}
           disabled={!activeFile || isSaving}
-          className="px-3 py-1 text-xs bg-[#0e639c] hover:bg-[#1177bb] rounded text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-          title="Guardar (Ctrl+S)"
+          className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 rounded text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+          title="Guardar (ALT+S)"
         >
-          💾 Guardar
+          <Save size={12}/>Guardar
         </button>
+
+
 
         <button 
           onClick={createNewFile}
-          className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded text-white flex items-center gap-1"
+          className="px-2 py-1 text-xs border border-blue-800 bg-blue-900/20 hover:bg-gray-600 rounded text-white flex items-center gap-1"
           title="Nuevo Archivo"
         >
-          ➕
+          <CirclePlus size={13} className="text-blue-400"/>
         </button>
 
         <button 
           onClick={reloadFiles}
           disabled={isLoading}
-          className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded text-white disabled:opacity-50 flex items-center gap-1"
+          className="px-2 py-1 text-xs bg-blue-900/20 border border-blue-800 hover:bg-gray-600 rounded text-white disabled:opacity-50 flex items-center gap-1"
           title="Recargar archivos"
         >
-          🔄
+          < RefreshCcw size={12} className="text-blue-400"/>
         </button>
 
         <button 
@@ -328,25 +346,30 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
               }
             }
           }}
-          className="px-2 py-1 text-xs bg-orange-600 hover:bg-orange-500 rounded text-white flex items-center gap-1"
+          className="px-2 py-1 text-xs bg-orange-400 hover:bg-orange-300 rounded text-white flex items-center gap-1"
           title="Seleccionar carpeta"
         >
-          📂 Carpeta
+          <Folders size={13} />Carpeta
         </button>
 
         <button 
           onClick={downloadFile}
           disabled={!activeFile}
-          className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded text-white disabled:opacity-50 flex items-center gap-1"
+          className="px-2 py-1 text-xs bg-blue-900/20 border border-blue-800 hover:bg-gray-600 rounded text-white disabled:opacity-50 flex items-center gap-1"
           title="Descargar archivo"
         >
-          ⬇️
+          <Download size={13} className="text-blue-400" />
         </button>
+        </div>
 
+
+
+
+        <div className="flex gap-2 ">
         <button 
           onClick={formatCode}
           disabled={!activeFile}
-          className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded text-white disabled:opacity-50 flex items-center gap-1"
+          className="px-2 py-1 text-xs bbg-blue-900/20 border border-blue-800 hover:bg-gray-600 rounded text-white disabled:opacity-50 flex items-center gap-1"
           title="Formatear codigo (Shift+Alt+F)"
         >
           ✨
@@ -355,10 +378,10 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
         <button 
           onClick={openPreview}
           disabled={!activeFile}
-          className="px-2 py-1 text-xs bg-green-700 hover:bg-green-600 rounded text-white disabled:opacity-50 flex items-center gap-1"
+          className="px-2 py-1 text-xs bg-green-700 hover:bg-green-800 rounded text-white disabled:opacity-50 flex items-center gap-1"
           title="Abrir Preview HTML"
         >
-          👁️ Preview
+          <Eye size={13} /> Preview
         </button>
 
         <button 
@@ -378,19 +401,19 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
               alert('❌ Error clonando repositorio');
             }
           }}
-          className="px-2 py-1 text-xs bg-purple-700 hover:bg-purple-600 rounded text-white flex items-center gap-1"
+          className="px-2 py-1 text-xs bg-purple-700 hover:bg-purple-800 rounded text-white flex items-center gap-1"
           title="Clonar repositorio Git"
         >
-          📥 Clone
+          <HardDriveDownload size={13}/> Clone
         </button>
 
         <button 
           onClick={deleteCurrentFile}
           disabled={!activeFile}
-          className="px-2 py-1 text-xs bg-red-700 hover:bg-red-600 rounded text-white disabled:opacity-50 flex items-center gap-1 ml-auto"
+          className="px-2 py-1 text-xs bg-red-800 hover:bg-red-700 rounded text-white disabled:opacity-50 flex items-center gap-1 ml-auto"
           title="Eliminar archivo"
         >
-          🗑️
+          <Trash2 size={13} />
         </button>
 
         {/* ✅ INDICADOR DE ESTADO */}
@@ -399,6 +422,9 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
           {!isSaving && lastSaved && <span className="text-green-400">✅ Guardado</span>}
           {activeFile && <span className="text-gray-500">{activeFile.name}</span>}
         </div>
+
+        </div>
+
       </div>
 
       <div className="flex h-full min-h-0 bg-[#1e1e1e] overflow-hidden">
@@ -410,7 +436,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
             </div>
           </div>
           
-          <div className="flex-1 overflow-y-auto p-2">
+          <div className="flex-1 overflow-y-auto p-2 mb-24">
             <div className="text-xs text-gray-500 px-2 py-1 uppercase tracking-wide">
               {projectName}
             </div>
@@ -557,7 +583,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
         </div>
 
         {/* Editor principal */}
-        <div className="flex-1 mb-14 flex flex-col min-w-0">
+        <div className="flex-1 mb-14 flex flex-col min-w-0 mb-24">
           {/* Pestañas */}
           <div className="flex z-10 items-center bg-[#252526] border-b border-gray-700 overflow-x-auto">
             {openTabs.map(file => (
@@ -699,9 +725,9 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
       {!showTerminal && (
         <button
           onClick={() => setShowTerminal(true)}
-          className="absolute bottom-3 right-3 bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-xs shadow-lg z-10"
+          className="absolute flex items-center gap-2 bottom-3 right-3 bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-xs shadow-lg z-10"
         >
-          🖥️  Abrir Terminal
+          <Terminal size={13} />  Abrir Terminal
         </button>
       )}
     </>
