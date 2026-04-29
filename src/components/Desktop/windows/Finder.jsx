@@ -11,9 +11,19 @@ import { useEffect, useState } from "react";
 // Recibe isMaximized y setIsMaximized como props del WindowWrapper
 const Finder = ({ isMaximized, setIsMaximized }) => {
   const { openWindow } = useWindowStore();
-  const { activeLocation, setActiveLocation } = useLocationStore();
+  const { 
+    activeLocation, 
+    setActiveLocation, 
+    goBack, 
+    goForward,
+    canGoBack,
+    canGoForward 
+  } = useLocationStore();
+  
   const [serverFiles, setServerFiles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // ✅ CARGAMOS LOS DATOS DEL SERVIDOR DIRECTAMENTE, SIN PASAR POR EL STORE
   useEffect(() => {
@@ -115,15 +125,29 @@ const getDisplayFiles = () => {
             className="ft flex justify-between items-center border-r border-gray-200 h-full px-4"
           >
             <div className="flex items-center gap-1">
-              <button aria-label="Ir hacia atrás">
+              <button 
+                aria-label="Ir hacia atrás"
+                onClick={goBack}
+                disabled={!canGoBack()}
+                className={clsx({ 'opacity-30 cursor-not-allowed': !canGoBack() })}
+              >
                 <ChevronLeft className="icon" />
               </button>
-              <button aria-label="Ir hacia adelante">
+              <button 
+                aria-label="Ir hacia adelante"
+                onClick={goForward}
+                disabled={!canGoForward()}
+                className={clsx({ 'opacity-30 cursor-not-allowed': !canGoForward() })}
+              >
                 <ChevronRight className="icon" />
               </button>
 
             </div>
-            <button aria-label="Buscar">
+            <button 
+              aria-label="Buscar"
+              onClick={() => setShowSearch(!showSearch)}
+              className={clsx({ 'text-blue-500': showSearch })}
+            >
               <Search className="icon" />
             </button>
           </div>
