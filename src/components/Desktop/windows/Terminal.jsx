@@ -1,5 +1,5 @@
 // src/windows/Terminal.jsx
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import WindowControls from "#components/Desktop/WindowControls";
 import WindowWrapper from "#hoc/WindowWrapper.jsx";
 import { useTasksStore } from '#store/tasksStore';
@@ -28,11 +28,11 @@ const [commandParts, setCommandParts] = useState({ cmd: '', args: '' });
   const terminalStateRef = useRef({
     currentPath: '~',
   });
-    const validCommands = [
+    const validCommands = useMemo(() => [
     'help', 'ls', 'cd', 'pwd', 'open', 'clear',
     'tasks', 'type', 'tasks fetch', 'tasks list', 'tasks accept',
     'type list', 'type set'
-  ];
+  ], []);
 
   const handleCommandChange = (value) => {
     setCurrentCommand(value);
@@ -279,16 +279,16 @@ const handleKeyDown = (e) => {
   }
 };
 
-  const lineColors = {
+  const lineColors = useMemo(() => ({
     command: 'text-green-400',
     success: 'text-green-300',
     error: 'text-red-400',
     warning: 'text-yellow-400',
     info: 'text-blue-300',
     system: 'text-gray-400',
-       folder: 'text-blue-400 font-bold text-base',  // ← NUEVO: Carpetas en azul
-    file: 'text-gray-300'                    // ← NUEVO: Archivos en gris
-  };
+    folder: 'text-blue-400 font-bold text-base',
+    file: 'text-gray-300'
+  }), []);
 
   useEffect(() => {
     terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
