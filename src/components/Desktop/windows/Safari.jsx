@@ -37,93 +37,6 @@ const Safari = ({ isMaximized, setIsMaximized }) => {
   // NOTA: fetchTasks() ya se llama cuando el usuario ejecuta "tasks fetch" en terminal
   // y también después de aceptar/completar/reabrir tareas. No necesita llamarse en cada tab.
 
-  // ⭐ Vista de detalle de tarea
-  if (selectedTask) {
-    const handleAccept = async () => {
-      const currentUser = JSON.parse(localStorage.getItem('userSession'));
-      await acceptTask(selectedTask.id, currentUser.id);
-      
-      addSystemNotification({
-        type: 'task',
-        app: 'Safari',
-        title: 'Tarea aceptada',
-        message: `"${selectedTask.title}" ha sido agregada a tus tareas en progreso`,
-        showTime: true,
-        duration: 3000
-      });
-      
-      await fetchTasks();
-      setSelectedTask(null);
-      setActiveTab('in_progress');
-    };
-
-    const handleComplete = async () => {
-      await submitTask(selectedTask.id, {
-        notes: 'Tarea completada desde Safari'
-      });
-
-      addSystemNotification({
-        type: 'success',
-        app: 'Safari',
-        title: 'Tarea enviada',
-        message: `"${selectedTask.title}" está en revisión`,
-        showTime: true
-      });
-      
-      addNotification({
-        type: 'task',
-        category: '✅ Tarea Completada',
-        title: selectedTask.title,
-        description: 'Tu trabajo ha sido enviado para revisión',
-        xp: selectedTask.xp
-      });
-      
-      await fetchTasks();
-      setSelectedTask(null);
-    };
-
-    const handleReopen = async () => {
-      const success = await reopenTask(selectedTask.id);
-      
-      if (success) {
-        addSystemNotification({
-          type: 'info',
-          app: 'Safari',
-          title: 'Tarea reabierta',
-          message: `"${selectedTask.title}" ha sido movida a "En Progreso"`,
-          showTime: true
-        });
-        
-        await fetchTasks();
-        setSelectedTask(null);
-        setActiveTab('in_progress');
-      } else {
-        addSystemNotification({
-          type: 'error',
-          app: 'Safari',
-          title: 'Error al reabrir',
-          message: 'No se pudo reabrir la tarea. Intenta de nuevo.',
-          duration: 4000
-        });
-      }
-    };
-    
-    return (
-      <>
-        <div id="window-header" className="bgt">
-          <WindowControls target="safari" onMaximize={() => setIsMaximized(!isMaximized)} />
-        </div>
-        <TaskDetailView 
-          task={selectedTask}
-          onClose={() => setSelectedTask(null)}
-          onAccept={handleAccept}
-          onComplete={handleComplete}
-          onReopen={handleReopen}
-        />
-      </>
-    );
-  }
-
   // ⭐ Memoizar filtrado de tareas por status
   const tasksByStatus = useMemo(() => ({
     available: tasks.filter(t => t.status === 'available'),
@@ -172,6 +85,97 @@ const Safari = ({ isMaximized, setIsMaximized }) => {
     setTabs(prev => prev.filter(t => t.id !== tabId));
     if (activeTab === tabId) setActiveTab(tabs[0]?.id || 'available');
   }, [activeTab, tabs]);
+
+  // ⭐ Handlers para acciones de tareas
+  const handleAccept = useCallback(async () => {
+    if (!selectedTask) return;
+    const currentUser = JSON.parse(localStorage.getItem('userSession'));
+    await acceptTask(selectedTask.id, currentUser.id);
+    
+    addSystemNotification({
+      type: 'task',
+      app: 'Safari',
+      title: 'Tarea aceptada',
+      message: `"${selectedTask.title}" ha sido agregada a tus tareas en progreso`,
+      showTime: true,
+      duration: 3000
+    });
+    
+    await fetchTasks();
+    setSelectedTask(null);
+    setActiveTab('in_progress');
+  }, [selectedTask, acceptTask, addSystemNotification, fetchTasks]);
+
+  const handleComplete = useCallback(async () => {
+    if (!selectedTask) return;
+    await submitTask(selectedTask.id, {
+      notes: 'Tarea completada desde Safari'
+    });
+
+    addSystemNotification({
+      type: 'success',
+      app: 'Safari',
+      title: 'Tarea enviada',
+      message: `"${selectedTask.title}" está en revisión`,
+      showTime: true
+    });
+    
+    addNotification({
+      type: 'task',
+      category: '✅ Tarea Completada',
+      title: selectedTask.title,
+      description: 'Tu trabajo ha sido enviado para revisión',
+      xp: selectedTask.xp
+    });
+    
+    await fetchTasks();
+    setSelectedTask(null);
+  }, [selectedTask, submitTask, addSystemNotification, addNotification, fetchTasks]);
+
+  const handleReopen = useCallback(async () => {
+    if (!selectedTask) return;
+    const success = await reopenTask(selectedTask.id);
+    
+    if (success) {
+      addSystemNotification({
+        type: 'info',
+        app: 'Safari',
+        title: 'Tarea reabierta',
+        message: `"${selectedTask.title}" ha sido movida a "En Progreso"`,
+        showTime: true
+      });
+      
+      await fetchTasks();
+      setSelectedTask(null);
+      setActiveTab('in_progress');
+    } else {
+      addSystemNotification({
+        type: 'error',
+        app: 'Safari',
+        title: 'Error al reabrir',
+        message: 'No se pudo reabrir la tarea. Intenta de nuevo.',
+        duration: 4000
+      });
+    }
+  }, [selectedTask, reopenTask, addSystemNotification, fetchTasks]);
+
+  // ⭐ Renderizar vista de detalle si hay tarea seleccionada
+  if (selectedTask) {
+    return (
+      <>
+        <div id="window-header" className="bgt">
+          <WindowControls target="safari" onMaximize={() => setIsMaximized(!isMaximized)} />
+        </div>
+        <TaskDetailView 
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onAccept={handleAccept}
+          onComplete={handleComplete}
+          onReopen={handleReopen}
+        />
+      </>
+    );
+  }
 
   return (
     <>
