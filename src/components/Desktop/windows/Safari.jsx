@@ -2,7 +2,7 @@
 import { WindowControls } from "#components/Desktop";
 import WindowWrapper from "#hoc/WindowWrapper";
 import { useTasksStore } from "#store/tasksStore";
-import { useState, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import TaskDetailView from "#Desktop/components/Safari/TaskDetailView";
 import TaskTabs from "#Desktop/components/Safari/TaskTabs";
 import TaskCard from "#Desktop/components/Safari/TaskCard";
@@ -33,12 +33,9 @@ const Safari = ({ isMaximized, setIsMaximized }) => {
 
   const [tabs, setTabs] = useState(defaultTabs);  // pestañas visibles
 
-  // ⭐ Refrescar tareas cuando cambia el tab
-  useEffect(() => {
-    if (lastFetchedAt) {
-      fetchTasks();
-    }
-  }, [activeTab]);
+  // ⭐ Refrescar tareas solo si no hay datos o manualmente (no en cada tab)
+  // NOTA: fetchTasks() ya se llama cuando el usuario ejecuta "tasks fetch" en terminal
+  // y también después de aceptar/completar/reabrir tareas. No necesita llamarse en cada tab.
 
   // ⭐ Vista de detalle de tarea
   if (selectedTask) {
@@ -127,8 +124,8 @@ const Safari = ({ isMaximized, setIsMaximized }) => {
     );
   }
 
-  // ⭐ Filtrar tareas por status
-  const tasksByStatus = {
+  // ⭐ Memoizar filtrado de tareas por status
+  const tasksByStatus = useMemo(() => ({
     available: tasks.filter(t => t.status === 'available'),
     in_progress: tasks.filter(t => 
       t.status === 'in_progress' && t.reviewStatus !== 'rejected' && t.status !== 'pending_review'
@@ -138,20 +135,21 @@ const Safari = ({ isMaximized, setIsMaximized }) => {
       t.status === 'rejected' || t.reviewStatus === 'rejected'
     ),
     pending_review: tasks.filter(t => t.status === 'pending_review'),
-  };
+  }), [tasks]);
 
-  const counts = {
+  // ⭐ Memoizar conteos
+  const counts = useMemo(() => ({
     available: tasksByStatus.available.length,
     inProgress: tasksByStatus.in_progress.length,
     pending_review: tasksByStatus.pending_review.length,
     completed: tasksByStatus.completed.length,
     rejected: tasksByStatus.rejected.length,
-  };
+  }), [tasksByStatus]);
 
   const currentTasks = tasksByStatus[activeTab] || [];
 
   // ⭐ Abrir marcador como pestaña dinámica
-  const openMarkerTab = (marker) => {
+  const openMarkerTab = useCallback((marker) => {
     const exists = tabs.find(t => t.id === marker.id);
     if (exists) {
       setActiveTab(marker.id);
@@ -159,21 +157,21 @@ const Safari = ({ isMaximized, setIsMaximized }) => {
       setTabs(prev => [...prev, marker]);
       setActiveTab(marker.id);
     }
-  };
+  }, [tabs]);
 
   // ⭐ Agregar pestañas de comunidad
-  const handleAddCommunityTab = (label = 'Proyectos Comunidad') => {
+  const handleAddCommunityTab = useCallback((label = 'Proyectos Comunidad') => {
     const newTabId = `community-${Date.now()}`;
     const newTab = { id: newTabId, label };
     setTabs(prev => [...prev, newTab]);
     setActiveTab(newTabId);
-  };
+  }, []);
 
   // ⭐ Cerrar pestaña
-  const handleCloseTab = (tabId) => {
+  const handleCloseTab = useCallback((tabId) => {
     setTabs(prev => prev.filter(t => t.id !== tabId));
     if (activeTab === tabId) setActiveTab(tabs[0]?.id || 'available');
-  };
+  }, [activeTab, tabs]);
 
   return (
     <>
