@@ -18,6 +18,29 @@ const calculateSkillXPForNextLevel = (level) => {
   return level * 500;
 };
 
+// ⭐ Función para normalizar tags (asegurar que sea siempre un array)
+const normalizeTags = (tags) => {
+  if (Array.isArray(tags)) return tags;
+  if (typeof tags === 'string') {
+    try {
+      const parsed = JSON.parse(tags);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return []; // null, undefined, objetos, etc.
+};
+
+// ⭐ Normalizar una tarea completa
+const normalizeTask = (task) => ({
+  ...task,
+  tags: normalizeTags(task.tags),
+  images: Array.isArray(task.images) ? task.images : [],
+  submissionFiles: Array.isArray(task.submissionFiles) ? task.submissionFiles : [],
+  rejectionReasons: Array.isArray(task.rejectionReasons) ? task.rejectionReasons : [],
+});
+
 export const useTasksStore = create(
   persist(
     (set, get) => ({
@@ -44,8 +67,11 @@ export const useTasksStore = create(
 
           const allTasks = [...available, ...inProgress, ...completed, ...rejected, ...pending_review];
 
+          // ✅ Normalizar cada tarea (asegurar tags como array, etc.)
+          const normalizedAllTasks = allTasks.map(normalizeTask);
+
           // ✅ Eliminar duplicados por ID para evitar errores de keys en React
-          const uniqueTasks = allTasks.filter((task, index, self) => 
+          const uniqueTasks = normalizedAllTasks.filter((task, index, self) => 
             index === self.findIndex(t => t.id === task.id)
           );
 
