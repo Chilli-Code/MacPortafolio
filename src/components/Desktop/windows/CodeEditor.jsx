@@ -729,7 +729,7 @@ const getFileIcon = (file) => {
               onMount={(editor) => {
                 editorRef.current = editor;
               }}
-              onChange={handleEditorChange}
+              // onChange={handleEditorChange} // Deshabilitado para test
             />
           ) : (
             <div className="flex-1 flex items-center justify-center text-gray-500">
