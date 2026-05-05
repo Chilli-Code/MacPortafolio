@@ -208,7 +208,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
       return;
     }
     
-    const content = fileContents[activeFile.name] || '';
+    const content = fileContents[activeFile.name] || activeFile.content || '';
     const blob = new Blob([content], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank');
