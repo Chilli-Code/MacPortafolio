@@ -107,28 +107,55 @@ app.post('/api/login', loginLimiter, async (req, res) => {
 
 // USERS
 app.get('/users', async (req, res) => {
-  const users = await prisma.user.findMany();
-  res.json(users);
+  try {
+    const users = await prisma.user.findMany();
+    res.json(users);
+  } catch (error) {
+    console.error('Error getting users:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.get('/users/:id', async (req, res) => {
-  const user = await prisma.user.findUnique({ where: { id: req.params.id } });
-  res.json(user);
+  try {
+    console.log('GET user:', req.params.id);
+    const user = await prisma.user.findUnique({ where: { id: req.params.id } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (error) {
+    console.error('Error getting user:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.post('/users', async (req, res) => {
-  const user = await prisma.user.create({ data: req.body });
-  res.json(user);
+  try {
+    const user = await prisma.user.create({ data: req.body });
+    res.json(user);
+  } catch (error) {
+    console.error('Error creating user:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.put('/users/:id', async (req, res) => {
-  const user = await prisma.user.update({ where: { id: req.params.id }, data: req.body });
-  res.json(user);
+  try {
+    const user = await prisma.user.update({ where: { id: req.params.id }, data: req.body });
+    res.json(user);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.patch('/users/:id', async (req, res) => {
-  const user = await prisma.user.update({ where: { id: req.params.id }, data: req.body });
-  res.json(user);
+  try {
+    const user = await prisma.user.update({ where: { id: req.params.id }, data: req.body });
+    res.json(user);
+  } catch (error) {
+    console.error('Error patching user:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.delete('/users/:id', async (req, res) => {
@@ -143,23 +170,47 @@ app.get('/tasks', async (req, res) => {
 });
 
 app.get('/tasks/:id', async (req, res) => {
-  const task = await prisma.task.findUnique({ where: { id: req.params.id } });
-  res.json(task);
+  try {
+    console.log('GET task:', req.params.id);
+    const task = await prisma.task.findUnique({ where: { id: req.params.id } });
+    if (!task) return res.status(404).json({ error: 'Task not found' });
+    res.json(task);
+  } catch (error) {
+    console.error('Error getting task:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.post('/tasks', async (req, res) => {
-  const task = await prisma.task.create({ data: req.body });
-  res.json(task);
+  try {
+    const task = await prisma.task.create({ data: req.body });
+    res.json(task);
+  } catch (error) {
+    console.error('Error creating task:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.put('/tasks/:id', async (req, res) => {
-  const task = await prisma.task.update({ where: { id: req.params.id }, data: req.body });
-  res.json(task);
+  try {
+    console.log('PUT task:', req.params.id, req.body);
+    const task = await prisma.task.update({ where: { id: req.params.id }, data: req.body });
+    res.json(task);
+  } catch (error) {
+    console.error('Error updating task (PUT):', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.patch('/tasks/:id', async (req, res) => {
-  const task = await prisma.task.update({ where: { id: req.params.id }, data: req.body });
-  res.json(task);
+  try {
+    console.log('PATCH task:', req.params.id, req.body);
+    const task = await prisma.task.update({ where: { id: req.params.id }, data: req.body });
+    res.json(task);
+  } catch (error) {
+    console.error('Error patching task:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.delete('/tasks/:id', async (req, res) => {
