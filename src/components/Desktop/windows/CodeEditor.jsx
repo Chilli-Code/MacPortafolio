@@ -105,31 +105,22 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     });
   }, [activeFile]);
 
-  const saveFile = async (fileName, content) => {
+  // ✅ Función de guardado simplificada - sin estados que causen re-renders
+  const saveFile = useCallback(async (fileName, content) => {
     const projectToUse = getCurrentProject();
     
-    setIsSaving(true);
+    // Hacer fetch directamente sin modificar estados
     try {
-      const response = await fetch(`http://localhost:3001/api/projects/${projectToUse}/files/${fileName}`, {
+      await fetch(`http://localhost:3001/api/projects/${projectToUse}/files/${fileName}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content })
       });
-
-      if (response.ok) {
-        // Solo actualizar lastSaved si el servidor respondió bien
-        // No causará re-render innecesario
-      } else {
-        console.error('Error al guardar');
-      }
+      console.log('✅ Archivo guardado:', fileName);
     } catch (error) {
-      console.error('Error guardando archivo:', error);
-    } finally {
-      setIsSaving(false);
+      console.error('Error guardando:', error);
     }
-  };
+  }, []); // Sin dependencias
 
   // ✅ CREAR NUEVO ARCHIVO
   const createNewFile = async () => {
@@ -390,8 +381,12 @@ const getFileIcon = (file) => {
         <div className="flex w-full items-center gap-2">
 
         <button 
-          onClick={() => console.log('CLICK GUARDAR')}
-          disabled={!activeFile || isSaving}
+          onClick={() => {
+            if (!activeFile) return;
+            const content = fileContents[activeFile.name] ?? activeFile.content ?? '';
+            saveFile(activeFile.name, content);
+          }}
+          disabled={!activeFile}
           className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 rounded text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
           title="Guardar (ALT+S)"
         >
@@ -729,7 +724,7 @@ const getFileIcon = (file) => {
               onMount={(editor) => {
                 editorRef.current = editor;
               }}
-              // onChange={handleEditorChange} // Deshabilitado para test
+              onChange={handleEditorChange}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center text-gray-500">
