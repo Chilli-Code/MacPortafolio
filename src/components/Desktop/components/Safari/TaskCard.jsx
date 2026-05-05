@@ -81,7 +81,7 @@ const TaskCard = ({ task, onClick }) => {
                 pauseOnHover={true}
                 className="flex items-center"
               >
-                {task.tags.map((tag, i) => {
+                {(task.tags || []).map((tag, i) => {
                   const config = getTechConfig(tag);
                   return (
                     <span 
@@ -97,7 +97,7 @@ const TaskCard = ({ task, onClick }) => {
             ) : (
               // Sin Marquee cuando hay 4 o menos tags
               <div className="flex flex-wrap gap-2">
-                {task.tags.map((tag, i) => {
+                {(task.tags || []).map((tag, i) => {
                   const config = getTechConfig(tag);
                   return (
                     <span 
