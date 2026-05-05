@@ -105,34 +105,64 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     });
   }, [activeFile]);
 
-  // ✅ Función de guardado - sin estados que causen re-renders
-  const saveFile = (fileName, content) => {
+  // ✅ Función de guardado con reload automático
+  const saveFile = async (fileName, content) => {
     const projectToUse = getCurrentProject();
     const url = `http://localhost:3001/api/projects/${projectToUse}/files/${fileName}`;
     console.log('=== SAVE START ===');
     console.log('Project:', projectToUse);
     console.log('File:', fileName);
-    console.log('URL:', url);
-    console.log('Content length:', content?.length);
     
-    fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content })
-    })
-    .then(response => {
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content })
+      });
+      
       console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-      return response.json();
-    })
-    .then(data => {
-      console.log('Response data:', data);
-      console.log('=== SAVE END ===');
-    })
-    .catch(err => {
+      
+      if (response.ok) {
+        console.log('=== SAVE END - RELOADING ===');
+        
+        // Recargar archivos después de guardar
+        const reloadResponse = await fetch(`http://localhost:3001/api/projects/${projectToUse}/files`);
+        const newFiles = await reloadResponse.json();
+        
+        console.log('Files reloaded:', newFiles.length);
+        
+        // Actualizar allFiles
+        setAllFiles(newFiles);
+        
+        // Actualizar fileContents con los nuevos contenidos
+        const newContents = {};
+        newFiles.forEach(f => {
+          if (f.content) newContents[f.name] = f.content;
+          // También buscar en subcarpetas
+          if (f.children) {
+            f.children.forEach(child => {
+              if (child.content) newContents[child.name] = child.content;
+            });
+          }
+        });
+        setFileContents(newContents);
+        
+        // Si el archivo activo es el que guardamos, actualizar su contenido
+        if (activeFile && activeFile.name === fileName) {
+          const updatedFile = newFiles.find(f => f.name === fileName) || 
+                             newFiles.flatMap(f => f.children || []).find(f => f.name === fileName);
+          if (updatedFile) {
+            setActiveFile({ ...updatedFile });
+            console.log('Active file updated with new content');
+          }
+        }
+        
+        console.log('=== SAVE COMPLETE ===');
+      }
+    } catch (err) {
       console.error('Save failed:', err);
       console.log('=== SAVE ERROR ===');
-    });
+    }
   };
 
   // ✅ CREAR NUEVO ARCHIVO
@@ -394,12 +424,12 @@ const getFileIcon = (file) => {
         <div className="flex w-full items-center gap-2">
 
         <button 
-          onMouseDown={(e) => {
+          onMouseDown={async (e) => {
             e.preventDefault();
             e.stopPropagation();
             if (activeFile) {
               const content = fileContents[activeFile.name] || activeFile.content || '';
-              saveFile(activeFile.name, content);
+              await saveFile(activeFile.name, content);
             }
           }}
           disabled={!activeFile}
