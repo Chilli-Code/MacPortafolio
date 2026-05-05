@@ -13,7 +13,7 @@ Especialista en diagnosticar y resolver errores del proyecto.
 
 #### ¿Cómo usarlo?
 
-Simply describe your error and the agent will analyze it:
+Simplemente describe tu error y el agente lo analizará:
 
 ```
 /debug When I try to accept a task, I get "GET http://localhost:3001/tasks/523f 404"
@@ -37,8 +37,47 @@ Simply describe your error and the agent will analyze it:
 /debug Login returns 401 even with correct credentials
 ```
 
+---
+
+### 2. Feature Analysis Agent (`/feature`)
+Especialista en evaluar viabilidad y mejor implementación de nuevas funcionalidades.
+
+#### ¿Cómo usarlo?
+
+Describe qué quieres implementar:
+
+```
+/feature Add dark mode toggle to settings
+```
+
+```
+/feature Implement real-time notifications
+```
+
+#### ¿Qué hace el agente?
+
+1. **Evalúa** viabilidad técnica (dependencias, APIs, estado)
+2. **Analiza** beneficio (usuarios afectados, frecuencia de uso)
+3. **Mide** impacto (archivos a modificar, complejidad, riesgos)
+4. **Propone** plan de implementación por fases
+5. **Recomienda** si es prudente implementar o no
+
+#### Estructura de análisis
+
+- ✅ Viabilidad: Alta/Media/Baja
+- 📈 Beneficio: Alto/Medio/Bajo
+- ⚠️ Impacto: Alto/Medio/Bajo
+- ⏱️ Estimación de tiempo
+- 🛠️ Plan por fases
+
+#### Ejemplos de uso
+
 ```bash
-/debug PATCH /tasks/3cd5 returns "Cannot PATCH /tasks/3cd5"
+/feature Add export to PDF for completed tasks
+```
+
+```bash
+/feature Create a team collaboration system
 ```
 
 ## Estructura del Proyecto
@@ -46,8 +85,10 @@ Simply describe your error and the agent will analyze it:
 ```
 .opencode/
 ├── agents/
-│   └── debug-agent.md    # Agente de debugging
-├── README.md             # Este archivo
+│   ├── debug-agent.md       # Agente de debugging
+│   └── feature-agent.md    # Agente de análisis de features
+├── config.json             # Configuración de agentes
+├── README.md               # Este archivo
 ```
 
 ## Tips para mejores resultados
