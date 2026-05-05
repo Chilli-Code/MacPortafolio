@@ -44,7 +44,9 @@ const Finder = ({ isMaximized, setIsMaximized }) => {
       }
     };
 
-    loadServerFolders();
+    if (activeLocation?.type === 'work' || !activeLocation) {
+      loadServerFolders();
+    }
   }, [activeLocation?.type]);
 
   const handleMaximize = () => {
