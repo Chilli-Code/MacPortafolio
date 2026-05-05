@@ -390,11 +390,7 @@ const getFileIcon = (file) => {
         <div className="flex w-full items-center gap-2">
 
         <button 
-          onClick={() => {
-            if (!activeFile) return;
-            const content = fileContents[activeFile.name] ?? activeFile.content ?? '';
-            saveFile(activeFile.name, content);
-          }}
+          onClick={() => console.log('CLICK GUARDAR')}
           disabled={!activeFile || isSaving}
           className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 rounded text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
           title="Guardar (ALT+S)"
