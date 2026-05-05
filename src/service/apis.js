@@ -3,9 +3,6 @@
 // ⭐ USAR VARIABLE DE ENTORNO CON FALLBACK
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-// ⭐ Log para debug
-console.log('🌐 API URL configurada:', API_URL);
-
 // ============ FUNCIONES AUXILIARES ============
 
 // ⭐ Helper function para normalizar IDs
@@ -19,36 +16,18 @@ const normalizeIdForJsonServer = (id) => {
 // ⭐ Función para buscar tarea por ID
 const findTaskById = async (id) => {
   try {
-    console.log('🔍 findTaskById: Searching for task with id:', id, typeof id);
-    
-    // Intento 1: Buscar directamente
     const directResponse = await fetch(`${API_URL}/tasks/${normalizeIdForJsonServer(id)}`);
-    console.log('🔍 findTaskById: Direct search status:', directResponse.status);
     
     if (directResponse.ok) {
-      const task = await directResponse.json();
-      console.log('🔍 findTaskById: Found directly:', task.id, typeof task.id);
-      return task;
+      return await directResponse.json();
     }
     
-    // Intento 2: Buscar en todas las tareas
-    console.log('🔍 findTaskById: Direct search failed, searching in all tasks...');
     const allTasksResponse = await fetch(`${API_URL}/tasks`);
     const allTasks = await allTasksResponse.json();
-    
-    // Usar comparación flexible (==) porque json-server puede cambiar el tipo
-    const foundTask = allTasks.find(t => t.id == id);
-    
-    if (foundTask) {
-      console.log('🔍 findTaskById: Found in all tasks:', foundTask.id, typeof foundTask.id);
-    } else {
-      console.log('🔍 findTaskById: Task not found in all tasks');
-    }
-    
-    return foundTask || null;
+    return allTasks.find(t => t.id == id) || null;
     
   } catch (error) {
-    console.error('🔍 findTaskById: Error:', error);
+    console.error('Error finding task:', error);
     return null;
   }
 };
@@ -60,7 +39,6 @@ export const api = {
   
   async login(username, password) {
     try {
-      console.log('🔐 Attempting login to:', `${API_URL}/users`);
       const response = await fetch(`${API_URL}/users`);
       
       if (!response.ok) {
@@ -68,21 +46,18 @@ export const api = {
       }
       
       const users = await response.json();
-      console.log('👥 Users fetched:', users.length);
       
       const user = users.find(u => 
         (u.username === username || u.email === username) && u.password === password
       );
       
       if (user) {
-        console.log('✅ Login successful:', user.username);
         return { success: true, user };
       }
       
-      console.log('❌ Invalid credentials');
       return { success: false, error: 'Usuario o contraseña incorrectos' };
     } catch (error) {
-      console.error('❌ Login error:', error);
+      console.error('Login error:', error);
       return { success: false, error: 'Error de conexión con el servidor' };
     }
   },
@@ -90,18 +65,15 @@ export const api = {
   // ⭐ NUEVO: Obtener usuario por ID
   async getUser(userId) {
     try {
-      console.log('👤 Fetching user:', userId);
       const response = await fetch(`${API_URL}/users/${normalizeIdForJsonServer(userId)}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const user = await response.json();
-      console.log('✅ User fetched:', user.username);
-      return user;
+      return await response.json();
     } catch (error) {
-      console.error('❌ Error fetching user:', error);
+      console.error('Error fetching user:', error);
       return null;
     }
   },
@@ -109,7 +81,6 @@ export const api = {
   // ⭐ NUEVO: Actualizar usuario
   async updateUser(userId, userData) {
     try {
-      console.log('✏️ Updating user:', userId);
       const response = await fetch(`${API_URL}/users/${normalizeIdForJsonServer(userId)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -120,11 +91,9 @@ export const api = {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const updatedUser = await response.json();
-      console.log('✅ User updated:', updatedUser.username);
-      return updatedUser;
+      return await response.json();
     } catch (error) {
-      console.error('❌ Error updating user:', error);
+      console.error('Error updating user:', error);
       return null;
     }
   },
@@ -159,7 +128,7 @@ export const api = {
       return filtered;
       
     } catch (error) {
-      console.error('❌ Error obteniendo tareas:', error);
+      console.error('Error getting tasks:', error);
       return [];
     }
   },
@@ -181,7 +150,6 @@ export const api = {
 
   createTask: async (taskData) => {
     try {
-      console.log('➕ Creating task:', taskData.title);
       const response = await fetch(`${API_URL}/tasks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -192,27 +160,21 @@ export const api = {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const created = await response.json();
-      console.log('✅ Task created:', created.id);
-      return created;
+      return await response.json();
     } catch (error) {
-      console.error('❌ Error creating task:', error);
+      console.error('Error creating task:', error);
       return null;
     }
   },
 
   updateTask: async (taskId, taskData) => {
     try {
-      console.log('🔄 API: Updating task', taskId, typeof taskId, taskData);
-      
       const existingTask = await findTaskById(taskId);
       
       if (!existingTask) {
-        console.error('🔄 API: Task not found with id:', taskId);
+        console.error('Task not found:', taskId);
         return null;
       }
-      
-      console.log('🔄 API: Found task with real id:', existingTask.id, typeof existingTask.id);
       
       const realTaskId = normalizeIdForJsonServer(existingTask.id);
       
@@ -225,91 +187,52 @@ export const api = {
         })
       });
       
-      console.log('🔄 API: Update response status:', response.status);
-      
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('🔄 API: Update failed:', response.status, errorText);
-        
-        if (response.status === 404) {
-          console.log('🔄 API: Trying PUT instead...');
-          const putResponse = await fetch(`${API_URL}/tasks/${realTaskId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              ...existingTask,
-              ...taskData
-            })
-          });
-          
-          if (putResponse.ok) {
-            return await putResponse.json();
-          }
-        }
-        
+        console.error('Update failed:', response.status, errorText);
         return null;
       }
       
-      const updatedTask = await response.json();
-      console.log('🔄 API: Task updated successfully:', updatedTask);
-      return updatedTask;
+      return await response.json();
       
     } catch (error) {
-      console.error('🔄 API: Error updating task:', error);
+      console.error('Error updating task:', error);
       return null;
     }
   },
 
   deleteTask: async (taskId) => {
     try {
-      console.log('🗑️ API: Deleting task', taskId, typeof taskId);
-      
       const existingTask = await findTaskById(taskId);
       
       if (!existingTask) {
-        console.error('🗑️ API: Task not found with id:', taskId);
+        console.error('Task not found:', taskId);
         return false;
       }
-      
-      console.log('🗑️ API: Found task with real id:', existingTask.id, typeof existingTask.id);
       
       const realTaskId = normalizeIdForJsonServer(existingTask.id);
-      
-      const response = await fetch(`${API_URL}/tasks/${realTaskId}`, {
-        method: 'DELETE'
-      });
-      
-      console.log('🗑️ API: DELETE response status:', response.status);
+      const response = await fetch(`${API_URL}/tasks/${realTaskId}`, { method: 'DELETE' });
       
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('🗑️ API: Delete failed:', response.status, errorText);
+        console.error('Delete failed:', response.status);
         return false;
       }
       
-      console.log('🗑️ API: Task deleted successfully');
       return true;
       
     } catch (error) {
-      console.error('🗑️ API: Error deleting task:', error);
+      console.error('Error deleting task:', error);
       return false;
     }
   },
 
   getAllTasksAdmin: async () => {
     try {
-      console.log('📋 Admin: Fetching all tasks');
       const response = await fetch(`${API_URL}/tasks`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const allTasks = await response.json();
-      console.log('📋 Admin: Loaded all tasks:', allTasks.length);
-      return allTasks;
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
     } catch (error) {
-      console.error('❌ Error getting all tasks for admin:', error);
+      console.error('Error getting all tasks for admin:', error);
       return [];
     }
   },
@@ -319,18 +242,11 @@ export const api = {
   // 🏆 Obtener logros
   async getAchievements() {
     try {
-      console.log('🏆 Fetching achievements');
       const response = await fetch(`${API_URL}/achievements`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const achievements = await response.json();
-      console.log('✅ Achievements fetched:', achievements.length);
-      return achievements;
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
     } catch (error) {
-      console.error('❌ Error fetching achievements:', error);
+      console.error('Error fetching achievements:', error);
       return [];
     }
   },
@@ -338,18 +254,11 @@ export const api = {
   // 🎖️ Obtener badges
   async getBadges() {
     try {
-      console.log('🎖️ Fetching badges');
       const response = await fetch(`${API_URL}/badges`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const badges = await response.json();
-      console.log('✅ Badges fetched:', badges.length);
-      return badges;
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
     } catch (error) {
-      console.error('❌ Error fetching badges:', error);
+      console.error('Error fetching badges:', error);
       return [];
     }
   },
@@ -357,18 +266,11 @@ export const api = {
   // 📊 Obtener niveles
   async getLevels() {
     try {
-      console.log('📊 Fetching levels');
       const response = await fetch(`${API_URL}/levels`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const levels = await response.json();
-      console.log('✅ Levels fetched:', levels.length);
-      return levels;
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
     } catch (error) {
-      console.error('❌ Error fetching levels:', error);
+      console.error('Error fetching levels:', error);
       return [];
     }
   },
@@ -376,7 +278,6 @@ export const api = {
   // 📜 Crear log de actividad
   async createActivityLog(logData) {
     try {
-      console.log('📜 Creating activity log:', logData.type);
       const response = await fetch(`${API_URL}/activityLog`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -390,11 +291,9 @@ export const api = {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const log = await response.json();
-      console.log('✅ Activity log created:', log.id);
-      return log;
+      return await response.json();
     } catch (error) {
-      console.error('❌ Error creating activity log:', error);
+      console.error('Error creating activity log:', error);
       return null;
     }
   },
@@ -402,18 +301,12 @@ export const api = {
   // 🏅 Obtener leaderboard
   async getLeaderboard(type = 'xp', period = 'all_time') {
     try {
-      console.log('🏅 Fetching leaderboard:', type, period);
       const response = await fetch(`${API_URL}/leaderboards?type=${type}&period=${period}`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const leaderboards = await response.json();
-      console.log('✅ Leaderboard fetched:', leaderboards.length);
       return leaderboards[0] || null;
     } catch (error) {
-      console.error('❌ Error fetching leaderboard:', error);
+      console.error('Error fetching leaderboard:', error);
       return null;
     }
   },
@@ -423,17 +316,14 @@ export const api = {
   // 📢 Crear notificación global (visible para todos los usuarios)
   async createGlobalNotification(notificationData) {
     try {
-      console.log('📢 Creating global notification:', notificationData.title);
       const response = await fetch(`${API_URL}/globalNotifications`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: Date.now().toString(),
           ...notificationData,
           createdAt: new Date().toISOString(),
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 horas
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           dismissedBy: []
         }),
       });
@@ -442,11 +332,9 @@ export const api = {
         throw new Error(`Error creating global notification: ${response.status}`);
       }
 
-      const notification = await response.json();
-      console.log('✅ Global notification created:', notification);
-      return notification;
+      return await response.json();
     } catch (error) {
-      console.error('❌ Error creating global notification:', error);
+      console.error('Error creating global notification:', error);
       throw error;
     }
   },
@@ -454,25 +342,20 @@ export const api = {
   // 📥 Obtener notificaciones globales activas
   async getGlobalNotifications() {
     try {
-      console.log('📥 Fetching global notifications');
       const response = await fetch(`${API_URL}/globalNotifications`);
       if (!response.ok) {
         throw new Error(`Error fetching global notifications: ${response.status}`);
       }
       const notifications = await response.json();
 
-      // Filtrar notificaciones expiradas y no descartadas por el usuario actual
       const currentUserId = localStorage.getItem('currentUserId') || 'anonymous';
-      const activeNotifications = notifications.filter(notification => {
+      return notifications.filter(notification => {
         const isExpired = new Date(notification.expiresAt) < new Date();
         const isDismissed = notification.dismissedBy?.includes(currentUserId);
         return !isExpired && !isDismissed;
       });
-
-      console.log('✅ Active global notifications:', activeNotifications.length);
-      return activeNotifications;
     } catch (error) {
-      console.error('❌ Error fetching global notifications:', error);
+      console.error('Error fetching global notifications:', error);
       return [];
     }
   },
@@ -480,9 +363,6 @@ export const api = {
   // 🚫 Marcar notificación global como descartada por el usuario actual
   async dismissGlobalNotification(notificationId) {
     try {
-      console.log('🚫 Dismissing global notification:', notificationId);
-
-      // Obtener la notificación actual
       const notificationResponse = await fetch(`${API_URL}/globalNotifications/${notificationId}`);
       if (!notificationResponse.ok) {
         throw new Error(`Error fetching notification: ${notificationResponse.status}`);
@@ -509,11 +389,9 @@ export const api = {
         throw new Error(`Error updating notification: ${updateResponse.status}`);
       }
 
-      const updated = await updateResponse.json();
-      console.log('✅ Global notification dismissed');
-      return updated;
+      return await updateResponse.json();
     } catch (error) {
-      console.error('❌ Error dismissing global notification:', error);
+      console.error('Error dismissing global notification:', error);
       throw error;
     }
   }
