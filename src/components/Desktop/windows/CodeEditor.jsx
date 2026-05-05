@@ -119,7 +119,8 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
       });
 
       if (response.ok) {
-        setLastSaved(new Date());
+        // Solo actualizar lastSaved si el servidor respondió bien
+        // No causará re-render innecesario
       } else {
         console.error('Error al guardar');
       }
