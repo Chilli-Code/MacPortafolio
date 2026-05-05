@@ -1,0 +1,10 @@
+{
+  "agents": {
+    "debug": {
+      "name": "Debug Agent",
+      "description": "Analiza errores del proyecto y propone soluciones profesionales",
+      "trigger": "/debug",
+      "file": "agents/debug-agent.md"
+    }
+  }
+}
