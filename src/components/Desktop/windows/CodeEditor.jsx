@@ -14,6 +14,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
 
   const folderFiles = data?.folderFiles || [];
   const projectName = data?.projectName || 'Proyecto';
+  const currentProjectName = data?.projectName || 'demo-project';
 
   const [activeFile, setActiveFile] = useState(null);
   const [openTabs, setOpenTabs] = useState([]);
@@ -31,18 +32,34 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
   const [terminalWorkingDir, setTerminalWorkingDir] = useState('');
   const terminalRef = useRef(null);
 
-  // ✅ CARGAR ARCHIVOS DE DEMO-PROJECT
+  // ✅ CARGAR ARCHIVOS - Soporta projectName dinámico o folderFiles directo
   useEffect(() => {
     const loadFiles = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('http://localhost:3001/api/projects/demo-project/files');
-        const files = await response.json();
+        
+        let files = [];
+        
+        // Si se pasan folderFiles directamente, usarlos
+        if (data?.folderFiles && data.folderFiles.length > 0) {
+          files = data.folderFiles;
+        } 
+        // Si hay projectName, cargar del endpoint
+        else if (data?.projectName) {
+          const response = await fetch(`http://localhost:3001/api/projects/${data.projectName}/files`);
+          files = await response.json();
+        } 
+        // Fallback a demo-project
+        else {
+          const response = await fetch(`http://localhost:3001/api/projects/${currentProjectName}/files`);
+          files = await response.json();
+        }
+        
         setAllFiles(files);
         setActiveFile(null);
         setOpenTabs([]);
       } catch (error) {
-        console.error('❌ Error cargando archivos:', error);
+        console.error('Error cargando archivos:', error);
       } finally {
         setIsLoading(false);
       }
@@ -51,7 +68,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     if (windows.codeeditor?.isOpen) {
       loadFiles();
     }
-  }, [windows.codeeditor?.isOpen]);
+  }, [windows.codeeditor?.isOpen, data?.projectName]);
 
   useEffect(() => {
     if (!data && windows.codeeditor?.isOpen) {
@@ -89,7 +106,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     try {
       console.log(`💾 Guardando ${fileName}...`);
       
-      const response = await fetch(`http://localhost:3001/api/projects/demo-project/files/${fileName}`, {
+      const response = await fetch(`http://localhost:3001/api/projects/${currentProjectName}/files/${fileName}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -116,7 +133,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     if (!name) return;
     
     try {
-      await fetch('http://localhost:3001/api/projects/demo-project/files', {
+      await fetch(`http://localhost:3001/api/projects/${currentProjectName}/files`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -138,7 +155,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     if (!confirm(`Eliminar ${activeFile.name}?`)) return;
     
     try {
-      await fetch(`http://localhost:3001/api/projects/demo-project/files/${activeFile.name}`, {
+      await fetch(`http://localhost:3001/api/projects/${currentProjectName}/files/${activeFile.name}`, {
         method: 'DELETE'
       });
 
@@ -156,7 +173,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
   const reloadFiles = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:3001/api/projects/demo-project/files');
+      const response = await fetch(`http://localhost:3001/api/projects/${currentProjectName}/files`);
       const files = await response.json();
       setAllFiles(files);
       
@@ -390,7 +407,7 @@ const getFileIcon = (file) => {
             if (!url) return;
             
             try {
-              await fetch('http://localhost:3001/api/projects/demo-project/git/clone', {
+              await fetch(`http://localhost:3001/api/projects/${currentProjectName}/git/clone`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url })
@@ -703,7 +720,7 @@ const getFileIcon = (file) => {
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ 
                         command: cmd, 
-                        project: selectedFolder ? selectedFolder.path : 'demo-project',
+                        project: selectedFolder ? selectedFolder.path : currentProjectName,
                         cwd: terminalWorkingDir
                       })
                     });

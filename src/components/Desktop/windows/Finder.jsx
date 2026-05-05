@@ -24,6 +24,7 @@ const Finder = ({ isMaximized, setIsMaximized }) => {
   const [loading, setLoading] = useState(true);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [contextMenu, setContextMenu] = useState({ show: false, x: 0, y: 0, item: null });
 
   // ✅ CARGAMOS LOS DATOS DEL SERVIDOR DIRECTAMENTE, SIN PASAR POR EL STORE
   useEffect(() => {
@@ -68,6 +69,27 @@ const Finder = ({ isMaximized, setIsMaximized }) => {
 
     openWindow(`${item.fileType}${item.kind}`, item);
   }, [setActiveLocation, openWindow]);
+
+  // ✅ Context Menu - Click derecho
+  const handleContextMenu = useCallback((e, item) => {
+    e.preventDefault();
+    if (item.kind === 'folder') {
+      setContextMenu({ show: true, x: e.clientX, y: e.clientY, item });
+    }
+  }, []);
+
+  // ✅ Cerrar context menu al hacer click en cualquier parte
+  useEffect(() => {
+    const handleClick = () => setContextMenu(prev => ({ ...prev, show: false }));
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, []);
+
+  // ✅ Abrir carpeta con CodeEditor
+  const openWithCodeEditor = useCallback((item) => {
+    openWindow('codeeditor', { projectName: item.name });
+    setContextMenu(prev => ({ ...prev, show: false }));
+  }, [openWindow]);
 
 const renderList = (name, items, className = "") => (
   <div className={className}>
@@ -171,6 +193,7 @@ const favoriteLocations = useMemo(() => Object.values(locations), [locations]);
                   key={item.id}
                   className="flex flex-col items-center cursor-pointer hover:bg-blue-50 p-3 rounded-lg transition-colors group"
                   onClick={() => openItem(item)}
+                  onContextMenu={(e) => handleContextMenu(e, item)}
                 >
                   <img draggable={false} onDragStart={(e) => e.preventDefault()} src={item.icon} alt={item.name} className="object-contain mb-2 group-hover:scale-110 transition-transform select-none" />
                   <p className="text-sm font-medium text-center truncate w-full px-1">{item.name}</p>
@@ -180,6 +203,33 @@ const favoriteLocations = useMemo(() => Object.values(locations), [locations]);
           </ul>
         </div>
       </div>
+
+      {/* ✅ Context Menu */}
+      {contextMenu.show && (
+        <div
+          className="fixed bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 min-w-[180px]"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 flex items-center gap-2"
+            onClick={() => openWithCodeEditor(contextMenu.item)}
+          >
+            <span className="text-lg">📝</span>
+            <span>Abrir con CodeEditor</span>
+          </button>
+          <button
+            className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 flex items-center gap-2"
+            onClick={() => {
+              setActiveLocation(contextMenu.item);
+              setContextMenu(prev => ({ ...prev, show: false }));
+            }}
+          >
+            <span className="text-lg">📁</span>
+            <span>Abrir como carpeta</span>
+          </button>
+        </div>
+      )}
     </>
   );
 };
