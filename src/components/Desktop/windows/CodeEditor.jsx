@@ -105,25 +105,21 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     });
   }, [activeFile]);
 
-  // ✅ Guardado - envía filepath en el body
+  // ✅ Guardado - usar XMLHttpRequest en lugar de fetch
   const saveFile = (fileName, content) => {
     const project = getCurrentProject();
-    
-    // Usar la ruta completa (path) del archivo si existe
     const filePath = activeFile?.path || fileName;
-    const url = `http://localhost:3001/api/projects/${project}/files`;
     
-    console.log('Save:', project, filePath);
-    
-    fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ filepath: filePath, content })
-    }).then(res => {
-      console.log('Result:', res.ok);
-    }).catch(err => {
-      console.error('Error:', err);
-    });
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `http://localhost:3001/api/projects/${project}/files`, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onload = () => {
+      console.log('Saved:', xhr.status === 200);
+    };
+    xhr.onerror = () => {
+      console.error('Error:', xhr.statusText);
+    };
+    xhr.send(JSON.stringify({ filepath: filePath, content }));
   };
 
   // ✅ CREAR NUEVO ARCHIVO
