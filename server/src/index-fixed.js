@@ -109,6 +109,164 @@ app.get('/tasks', async (req, res) => {
   }
 });
 
+// 📋 OBTENER TAREA POR ID
+app.get('/tasks/:id', async (req, res) => {
+  try {
+    const db = await open({
+      filename: './dev.db',
+      driver: sqlite3.Database
+    });
+    
+    const task = await db.get('SELECT * FROM Task WHERE id = ?', req.params.id);
+    await db.close();
+    
+    if (!task) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+    
+    console.log(`✅ /tasks/${req.params.id} - tarea encontrada`);
+    res.json(task);
+  } catch (error) {
+    console.error('❌ Error /tasks/:id:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 📋 CREAR TAREA
+app.post('/tasks', async (req, res) => {
+  try {
+    const db = await open({
+      filename: './dev.db',
+      driver: sqlite3.Database
+    });
+    
+    const { id, title, description, detailedDescription, type, difficulty, status, priority, estimatedHours, deadline, xp, baseReward, bonusReward, totalReward, tags, images, assignedTo } = req.body;
+    
+    const taskId = id || `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const taskTags = Array.isArray(tags) ? JSON.stringify(tags) : '[]';
+    const taskImages = Array.isArray(images) ? JSON.stringify(images) : '[]';
+    const submissionFiles = JSON.stringify([]);
+    const rejectionReasons = JSON.stringify([]);
+    
+    await db.run(`
+      INSERT INTO Task (id, title, description, detailedDescription, type, difficulty, status, priority, estimatedHours, deadline, xp, baseReward, bonusReward, totalReward, tags, images, assignedTo, submissionFiles, rejectionReasons)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [taskId, title || '', description || '', detailedDescription || '', type || 'frontend', difficulty || 'medium', status || 'available', priority || 'medium', estimatedHours || 8, deadline || null, xp || 100, baseReward || 5000, bonusReward || 0, totalReward || 5000, taskTags, taskImages, assignedTo || null, submissionFiles, rejectionReasons]);
+    
+    const task = await db.get('SELECT * FROM Task WHERE id = ?', taskId);
+    await db.close();
+    
+    console.log(`✅ POST /tasks - tarea creada: ${taskId}`);
+    res.json(task);
+  } catch (error) {
+    console.error('❌ Error POST /tasks:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 📋 ACTUALIZAR TAREA (PUT)
+app.put('/tasks/:id', async (req, res) => {
+  try {
+    const db = await open({
+      filename: './dev.db',
+      driver: sqlite3.Database
+    });
+    
+    const existing = await db.get('SELECT * FROM Task WHERE id = ?', req.params.id);
+    if (!existing) {
+      await db.close();
+      return res.status(404).json({ error: 'Task not found' });
+    }
+    
+    const merged = { ...existing, ...req.body };
+    
+    const fields = ['title', 'description', 'detailedDescription', 'type', 'difficulty', 'status', 'priority', 'estimatedHours', 'deadline', 'xp', 'baseReward', 'bonusReward', 'totalReward', 'tags', 'images', 'assignedTo', 'assignedAt', 'acceptedAt', 'submittedAt', 'submissionNotes', 'submissionFiles', 'reviewedAt', 'reviewedBy', 'reviewNotes', 'reviewStatus', 'rejectionReasons', 'completedAt', 'revisionCount', 'rewards', 'gamification'];
+    const setClause = fields.filter(f => merged[f] !== undefined).map(f => `${f} = ?`).join(', ');
+    const values = fields.filter(f => merged[f] !== undefined).map(f => {
+      const val = merged[f];
+      if (typeof val === 'object') return JSON.stringify(val);
+      return val;
+    });
+    
+    if (setClause) {
+      await db.run(`UPDATE Task SET ${setClause} WHERE id = ?`, [...values, req.params.id]);
+    }
+    
+    const task = await db.get('SELECT * FROM Task WHERE id = ?', req.params.id);
+    await db.close();
+    
+    console.log(`✅ PUT /tasks/${req.params.id} - tarea actualizada`);
+    res.json(task);
+  } catch (error) {
+    console.error('❌ Error PUT /tasks/:id:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 📋 ACTUALIZAR PARCIALMENTE (PATCH)
+app.patch('/tasks/:id', async (req, res) => {
+  try {
+    const db = await open({
+      filename: './dev.db',
+      driver: sqlite3.Database
+    });
+    
+    const existing = await db.get('SELECT * FROM Task WHERE id = ?', req.params.id);
+    if (!existing) {
+      await db.close();
+      return res.status(404).json({ error: 'Task not found' });
+    }
+    
+    const merged = { ...existing, ...req.body };
+    
+    const fields = ['title', 'description', 'detailedDescription', 'type', 'difficulty', 'status', 'priority', 'estimatedHours', 'deadline', 'xp', 'baseReward', 'bonusReward', 'totalReward', 'tags', 'images', 'assignedTo', 'assignedAt', 'acceptedAt', 'submittedAt', 'submissionNotes', 'submissionFiles', 'reviewedAt', 'reviewedBy', 'reviewNotes', 'reviewStatus', 'rejectionReasons', 'completedAt', 'revisionCount', 'rewards', 'gamification'];
+    const setClause = fields.filter(f => merged[f] !== undefined).map(f => `${f} = ?`).join(', ');
+    const values = fields.filter(f => merged[f] !== undefined).map(f => {
+      const val = merged[f];
+      if (typeof val === 'object') return JSON.stringify(val);
+      return val;
+    });
+    
+    if (setClause) {
+      await db.run(`UPDATE Task SET ${setClause} WHERE id = ?`, [...values, req.params.id]);
+    }
+    
+    const task = await db.get('SELECT * FROM Task WHERE id = ?', req.params.id);
+    await db.close();
+    
+    console.log(`✅ PATCH /tasks/${req.params.id} - tarea actualizada`);
+    res.json(task);
+  } catch (error) {
+    console.error('❌ Error PATCH /tasks/:id:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 📋 ELIMINAR TAREA
+app.delete('/tasks/:id', async (req, res) => {
+  try {
+    const db = await open({
+      filename: './dev.db',
+      driver: sqlite3.Database
+    });
+    
+    const existing = await db.get('SELECT * FROM Task WHERE id = ?', req.params.id);
+    if (!existing) {
+      await db.close();
+      return res.status(404).json({ error: 'Task not found' });
+    }
+    
+    await db.run('DELETE FROM Task WHERE id = ?', req.params.id);
+    await db.close();
+    
+    console.log(`✅ DELETE /tasks/${req.params.id} - tarea eliminada`);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('❌ Error DELETE /tasks/:id:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==============================================
 // 🔐 ENDPOINT DE LOGIN SEGURO
 // ==============================================
