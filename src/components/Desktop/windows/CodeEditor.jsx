@@ -201,17 +201,64 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     URL.revokeObjectURL(url);
   };
 
-  // ✅ ABRIR PREVIEW
-  const openPreview = () => {
+  // ✅ ABRIR PREVIEW - Con soporte para recursos externos
+  const openPreview = async () => {
     if (!activeFile || !activeFile.name.endsWith('.html')) {
       alert('Preview solo disponible para archivos HTML');
       return;
     }
     
-    const content = fileContents[activeFile.name] || activeFile.content || '';
-    const blob = new Blob([content], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+    try {
+      // Obtener contenido (del estado local o del servidor)
+      let content = fileContents[activeFile.name] || activeFile.content || '';
+      
+      // Si no hay contenido, intentar obtenerlo del servidor
+      if (!content) {
+        const response = await fetch(`http://localhost:3001/api/projects/${currentProjectName}/files`);
+        const files = await response.json();
+        const htmlFile = findFileByName(files, activeFile.name);
+        content = htmlFile?.content || '';
+      }
+      
+      // Si hay contenido, corregir rutas relativas para recursos
+      if (content) {
+        // Obtener la ruta base del archivo HTML
+        const basePath = activeFile.path?.replace(activeFile.name, '') || '';
+        
+        // Corregir rutas de CSS y JS
+        content = content.replace(/href=["']([^"']+)["']/g, (match, href) => {
+          if (href.startsWith('http') || href.startsWith('//')) return match;
+          // Ruta absoluta al recurso en el servidor
+          const newHref = `http://localhost:3001/api/projects/${currentProjectName}/files/${basePath}${href}`;
+          return `href="${newHref}"`;
+        });
+        
+        content = content.replace(/src=["']([^"']+)["']/g, (match, src) => {
+          if (src.startsWith('http') || src.startsWith('//')) return match;
+          const newSrc = `http://localhost:3001/api/projects/${currentProjectName}/files/${basePath}${src}`;
+          return `src="${newSrc}"`;
+        });
+      }
+      
+      const blob = new Blob([content], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch (error) {
+      console.error('Error opening preview:', error);
+      alert('Error al abrir preview');
+    }
+  };
+  
+  // ✅ Función auxiliar para buscar archivo por nombre
+  const findFileByName = (files, name) => {
+    for (const file of files) {
+      if (file.name === name) return file;
+      if (file.children) {
+        const found = findFileByName(file.children, name);
+        if (found) return found;
+      }
+    }
+    return null;
   };
 
   // ✅ FORMATEAR CODIGO
