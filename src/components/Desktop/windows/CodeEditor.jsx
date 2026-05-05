@@ -86,12 +86,18 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
 
   if (!data) return null;
 
-  const handleFileClick = (file) => {
+  const handleFileClick = useCallback((file) => {
     setActiveFile(file);
     if (!openTabs.find(t => t.name === file.name)) {
-      setOpenTabs([...openTabs, file]);
+      setOpenTabs(prev => [...prev, file]);
     }
-  };
+  }, [openTabs]);
+
+  // ✅ Valor memoizado para el editor - evitar re-renders
+  const editorValue = useMemo(() => {
+    if (!activeFile) return '';
+    return fileContents[activeFile.name] ?? activeFile.content ?? '';
+  }, [activeFile, fileContents]);
 
   // ✅ GUARDADO AUTOMATICO Y MANEJO DE CAMBIOS
   const handleEditorChange = useCallback((value) => {
@@ -101,13 +107,22 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
       ...prev,
       [activeFile.name]: value
     }));
+  }, [activeFile]);
 
-    // Guardado automatico despues de 2 segundos sin escribir
+  // ✅ Auto-guardado separado - se ejecuta cuando cambia fileContents
+  useEffect(() => {
+    if (!activeFile || !currentProjectName) return;
+    
+    const content = fileContents[activeFile.name];
+    if (!content || content === activeFile.content) return;
+    
     clearTimeout(window.saveTimeout);
     window.saveTimeout = setTimeout(() => {
-      saveFile(activeFile.name, value);
+      saveFile(activeFile.name, content);
     }, 2000);
-  }, [activeFile]);
+    
+    return () => clearTimeout(window.saveTimeout);
+  }, [fileContents, activeFile, currentProjectName]);
 
   const saveFile = async (fileName, content) => {
     // ✅ Validar que hay un proyecto seleccionado
@@ -722,7 +737,7 @@ const getFileIcon = (file) => {
             <Editor
               height="100%"
               language={getFileLanguage(activeFile)}
-              value={fileContents[activeFile.name] ?? getFileContent(activeFile)}
+              value={editorValue}
               theme="vs-dark"
               options={{
                 fontSize: 14,
