@@ -44,14 +44,19 @@ export const useTasksStore = create(
 
           const allTasks = [...available, ...inProgress, ...completed, ...rejected, ...pending_review];
 
+          // ✅ Eliminar duplicados por ID para evitar errores de keys en React
+          const uniqueTasks = allTasks.filter((task, index, self) => 
+            index === self.findIndex(t => t.id === task.id)
+          );
+
           set({
-            tasks: allTasks,
+            tasks: uniqueTasks,
             lastFetchedAt: new Date().toISOString(),
             hasNewTasks: false,
             isLoading: false
           });
 
-          return allTasks;
+          return uniqueTasks;
         } catch (error) {
           console.error('Error fetching tasks:', error);
           set({ isLoading: false });
