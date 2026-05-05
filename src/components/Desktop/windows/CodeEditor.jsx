@@ -99,30 +99,18 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     return fileContents[activeFile.name] ?? activeFile.content ?? '';
   }, [activeFile, fileContents]);
 
-  // ✅ GUARDADO AUTOMATICO Y MANEJO DE CAMBIOS
+  // ✅ GUARDADO AUTOMATICO -Solo actualizar sin triggers
   const handleEditorChange = useCallback((value) => {
     if (!activeFile) return;
     
-    setFileContents(prev => ({
-      ...prev,
-      [activeFile.name]: value
-    }));
+    // Solo actualizar el contenido para el auto-guardado
+    // No causará re-render del componente completo
+    setFileContents(prev => {
+      // Solo actualizar si el contenido es diferente
+      if (prev[activeFile.name] === value) return prev;
+      return { ...prev, [activeFile.name]: value };
+    });
   }, [activeFile]);
-
-  // ✅ Auto-guardado separado - se ejecuta cuando cambia fileContents
-  useEffect(() => {
-    if (!activeFile || !currentProjectName) return;
-    
-    const content = fileContents[activeFile.name];
-    if (!content || content === activeFile.content) return;
-    
-    clearTimeout(window.saveTimeout);
-    window.saveTimeout = setTimeout(() => {
-      saveFile(activeFile.name, content);
-    }, 2000);
-    
-    return () => clearTimeout(window.saveTimeout);
-  }, [fileContents, activeFile, currentProjectName]);
 
   const saveFile = async (fileName, content) => {
     // ✅ Validar que hay un proyecto seleccionado
@@ -732,9 +720,10 @@ const getFileIcon = (file) => {
             ))}
           </div>
 
-          {/* Editor Monaco */}
+          {/* Editor Monaco - con key única para evitar re-creación */}
           {activeFile ? (
             <Editor
+              key={`editor-${activeFile.name}`}
               height="100%"
               language={getFileLanguage(activeFile)}
               value={editorValue}
