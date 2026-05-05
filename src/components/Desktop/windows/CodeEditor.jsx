@@ -14,7 +14,9 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
 
   const folderFiles = data?.folderFiles || [];
   const projectName = data?.projectName || 'Proyecto';
-  const currentProjectName = data?.projectName || 'demo-project';
+  
+  // ✅ Estado para gestionar el proyecto actual
+  const [currentProjectName, setCurrentProjectName] = useState(data?.projectName || '');
 
   const [activeFile, setActiveFile] = useState(null);
   const [openTabs, setOpenTabs] = useState([]);
@@ -39,20 +41,33 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
         setIsLoading(true);
         
         let files = [];
+        let projectToUse = currentProjectName;
         
         // Si se pasan folderFiles directamente, usarlos
         if (data?.folderFiles && data.folderFiles.length > 0) {
           files = data.folderFiles;
+          // No hay projectName, intentar detectar de allFiles
         } 
-        // Si hay projectName, cargar del endpoint
+        // Si hay projectName nuevo, actualizar estado
         else if (data?.projectName) {
+          projectToUse = data.projectName;
           const response = await fetch(`http://localhost:3001/api/projects/${data.projectName}/files`);
           files = await response.json();
         } 
-        // Fallback a demo-project
-        else {
-          const response = await fetch(`http://localhost:3001/api/projects/${currentProjectName}/files`);
-          files = await response.json();
+        // Si no hay projectName, intentar detectar de la estructura de archivos
+        else if (allFiles.length > 0) {
+          // Ya tenemos archivos cargados, mantenerlos
+          return;
+        }
+        
+        // Si tenemos un proyecto para usar, cargar archivos
+        if (projectToUse) {
+          try {
+            const response = await fetch(`http://localhost:3001/api/projects/${projectToUse}/files`);
+            files = await response.json();
+          } catch (e) {
+            console.warn('No se pudieron cargar archivos del proyecto:', projectToUse);
+          }
         }
         
         setAllFiles(files);
@@ -68,7 +83,14 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     if (windows.codeeditor?.isOpen) {
       loadFiles();
     }
-  }, [windows.codeeditor?.isOpen, data?.projectName]);
+  }, [windows.codeeditor?.isOpen, data?.projectName, currentProjectName]);
+  
+  // ✅ Sincronizar projectName cuando cambia data
+  useEffect(() => {
+    if (data?.projectName && data.projectName !== currentProjectName) {
+      setCurrentProjectName(data.projectName);
+    }
+  }, [data?.projectName]);
 
   useEffect(() => {
     if (!data && windows.codeeditor?.isOpen) {
@@ -102,10 +124,15 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
   };
 
   const saveFile = async (fileName, content) => {
+    // ✅ Validar que hay un proyecto seleccionado
+    if (!currentProjectName) {
+      console.error('No se puede guardar: proyecto no identificado');
+      alert('Error: Abre un proyecto desde el Finder primero');
+      return;
+    }
+    
     setIsSaving(true);
     try {
-      console.log(`💾 Guardando ${fileName}...`);
-      
       const response = await fetch(`http://localhost:3001/api/projects/${currentProjectName}/files/${fileName}`, {
         method: 'POST',
         headers: {
@@ -116,12 +143,11 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
 
       if (response.ok) {
         setLastSaved(new Date());
-        console.log(`✅ ${fileName} guardado correctamente!`);
       } else {
-        console.error('❌ Error al guardar');
+        console.error('Error al guardar');
       }
     } catch (error) {
-      console.error('❌ Error guardando archivo:', error);
+      console.error('Error guardando archivo:', error);
     } finally {
       setIsSaving(false);
     }
@@ -201,44 +227,75 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     URL.revokeObjectURL(url);
   };
 
-  // ✅ ABRIR PREVIEW - Con soporte para recursos externos
+  // ✅ ABRIR PREVIEW - Con soporte completo para recursos externos
   const openPreview = async () => {
     if (!activeFile || !activeFile.name.endsWith('.html')) {
       alert('Preview solo disponible para archivos HTML');
       return;
     }
     
+    if (!currentProjectName) {
+      alert('Error: Abre un proyecto desde el Finder primero');
+      return;
+    }
+    
     try {
-      // Obtener contenido (del estado local o del servidor)
-      let content = fileContents[activeFile.name] || activeFile.content || '';
+      // 1. Obtener todos los archivos del proyecto
+      const response = await fetch(`http://localhost:3001/api/projects/${currentProjectName}/files`);
+      const allFiles = await response.json();
       
-      // Si no hay contenido, intentar obtenerlo del servidor
+      // 2. Encontrar el archivo HTML actual
+      const htmlFile = findFileByPath(allFiles, activeFile.path || activeFile.name);
+      let content = fileContents[activeFile.name] || htmlFile?.content || '';
+      
       if (!content) {
-        const response = await fetch(`http://localhost:3001/api/projects/${currentProjectName}/files`);
-        const files = await response.json();
-        const htmlFile = findFileByName(files, activeFile.name);
-        content = htmlFile?.content || '';
+        alert('No se pudo obtener el contenido del archivo');
+        return;
       }
       
-      // Si hay contenido, corregir rutas relativas para recursos
-      if (content) {
-        // Obtener la ruta base del archivo HTML
-        const basePath = activeFile.path?.replace(activeFile.name, '') || '';
+      // 3. Obtener la ruta base del archivo HTML
+      const basePath = (activeFile.path || activeFile.name).replace(activeFile.name, '');
+      
+      // 4. Función para buscar archivo por nombre en toda la estructura
+      const findFileByName = (files, name) => {
+        for (const file of files) {
+          if (file.name === name) return file;
+          if (file.children) {
+            const found = findFileByName(file.children, name);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+      
+      // 5. Corregir rutas de CSS (href)
+      content = content.replace(/href=["']([^"']+)["']/g, (match, href) => {
+        // Mantener URLs absolutas
+        if (href.startsWith('http') || href.startsWith('//')) return match;
         
-        // Corregir rutas de CSS y JS
-        content = content.replace(/href=["']([^"']+)["']/g, (match, href) => {
-          if (href.startsWith('http') || href.startsWith('//')) return match;
-          // Ruta absoluta al recurso en el servidor
-          const newHref = `http://localhost:3001/api/projects/${currentProjectName}/files/${basePath}${href}`;
+        // Buscar el archivo CSS en toda la estructura
+        const cssFile = findFileByName(allFiles, href);
+        if (cssFile && cssFile.path) {
+          const newHref = `http://localhost:3001/api/projects/${currentProjectName}/files/${cssFile.path}`;
           return `href="${newHref}"`;
-        });
+        }
         
-        content = content.replace(/src=["']([^"']+)["']/g, (match, src) => {
-          if (src.startsWith('http') || src.startsWith('//')) return match;
-          const newSrc = `http://localhost:3001/api/projects/${currentProjectName}/files/${basePath}${src}`;
+        // Fallback: intentar ruta relativa
+        return `href="http://localhost:3001/api/projects/${currentProjectName}/files/${basePath}${href}"`;
+      });
+      
+      // 6. Corregir rutas de JS (src)
+      content = content.replace(/src=["']([^"']+)["']/g, (match, src) => {
+        if (src.startsWith('http') || src.startsWith('//')) return match;
+        
+        const jsFile = findFileByName(allFiles, src);
+        if (jsFile && jsFile.path) {
+          const newSrc = `http://localhost:3001/api/projects/${currentProjectName}/files/${jsFile.path}`;
           return `src="${newSrc}"`;
-        });
-      }
+        }
+        
+        return `src="http://localhost:3001/api/projects/${currentProjectName}/files/${basePath}${src}"`;
+      });
       
       const blob = new Blob([content], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
@@ -249,12 +306,12 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     }
   };
   
-  // ✅ Función auxiliar para buscar archivo por nombre
-  const findFileByName = (files, name) => {
+  // ✅ Función auxiliar para buscar archivo por ruta
+  const findFileByPath = (files, targetPath) => {
     for (const file of files) {
-      if (file.name === name) return file;
+      if (file.path === targetPath || file.name === targetPath) return file;
       if (file.children) {
-        const found = findFileByName(file.children, name);
+        const found = findFileByPath(file.children, targetPath);
         if (found) return found;
       }
     }
