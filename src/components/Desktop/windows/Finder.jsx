@@ -5,7 +5,7 @@ import WindowWrapper from "#hoc/WindowWrapper";
 import clsx from "clsx";
 import useWindowStore from "#store/window";
 import { ChevronLeft, ChevronRight, Search } from "#assets/icons";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 
 
 // Recibe isMaximized y setIsMaximized como props del WindowWrapper
@@ -30,20 +30,14 @@ const Finder = ({ isMaximized, setIsMaximized }) => {
     const loadServerFolders = async () => {
       try {
         setLoading(true);
-        console.log('📂 Cargando carpetas del servidor...');
         
         const response = await fetch('http://localhost:3001/api/folders');
-        console.log('✅ Respuesta del servidor:', response.status);
         
         const serverProjects = await response.json();
-        console.log('📁 Estructura recibida:', serverProjects);
         
-        // Mostramos directamente todas las carpetas que hay en la raiz de projects
         setServerFiles(serverProjects);
-        console.log('✅ Carpetas cargadas:', serverProjects);
 
       } catch (error) {
-        console.error('❌ ERROR cargando carpetas del servidor:', error);
         setServerFiles([]);
       } finally {
         setLoading(false);
@@ -57,24 +51,21 @@ const Finder = ({ isMaximized, setIsMaximized }) => {
     setIsMaximized(!isMaximized);
   };
 
-  const openItem = (item) => {
-    // SOLO PERMITIR ABRIR CARPETAS, ARCHIVOS NO HACEN NADA
+  const openItem = useCallback((item) => {
     if (item.kind == 'folder') {
       return setActiveLocation(item);
     }
     
-    // Archivos del servidor solo se muestran, no se abren
     if (item.id.startsWith('server-projects')) {
       return;
     }
 
-    // Mantener funcionalidad original para archivos estáticos
     if (item.fileType == 'pdf') return openWindow("resume");
     if (['fig', 'url'].includes(item.fileType) && item.href)
       return window.open(item.href, "_blank");
 
     openWindow(`${item.fileType}${item.kind}`, item);
-  };
+  }, [setActiveLocation, openWindow]);
 
 const renderList = (name, items, className = "") => (
   <div className={className}>
@@ -99,16 +90,14 @@ const renderList = (name, items, className = "") => (
   </div>
 );
 
-// ✅ Navegacion completa de carpetas
-const getDisplayFiles = () => {
-  // Si NO estamos en la raiz de Trabajo, mostramos los children de la ubicacion activa
+const displayFiles = useMemo(() => {
   if (activeLocation?.type !== 'work' && activeLocation?.children) {
     return activeLocation.children;
   }
-  
-  // Si estamos en la raiz de Trabajo, mostramos el contenido de demo-project
   return serverFiles;
-};
+}, [activeLocation, serverFiles]);
+
+const favoriteLocations = useMemo(() => Object.values(locations), [locations]);
 
   return (
     <>
@@ -156,8 +145,8 @@ const getDisplayFiles = () => {
 
       <div className="flex h-full bg-white overflow-hidden">
         <div className="w-48 sidebar sidebarFolder flex-shrink-0 overflow-y-auto">
-          {renderList('Favoritos', Object.values(locations))}
-          {renderList('Mis proyectos', getDisplayFiles(), 'mb-10')}
+          {renderList('Favoritos', favoriteLocations)}
+          {renderList('Mis proyectos', displayFiles, 'mb-10')}
         </div>
 
         {/* Área principal: misma que en el header */}
@@ -174,7 +163,7 @@ const getDisplayFiles = () => {
                 Cargando archivos del servidor...
               </li>
             ) : (
-              getDisplayFiles().map((item) => (
+              displayFiles.map((item) => (
                 <li
                   title={item.name}
                   key={item.id}
