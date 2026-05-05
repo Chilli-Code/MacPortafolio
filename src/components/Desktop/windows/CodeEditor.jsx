@@ -108,14 +108,20 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
   // ✅ Guardado mínimo - solo fetch
   const saveFile = (fileName, content) => {
     const project = getCurrentProject();
-    const url = `http://localhost:3001/api/projects/${project}/files/${fileName}`;
+    console.log('Save - Project:', project, 'File:', fileName, 'Path:', activeFile?.path);
+    
+    // Usar activeFile.path si existe, si no usar fileName
+    const filePath = activeFile?.path || fileName;
+    const url = `http://localhost:3001/api/projects/${project}/files/${filePath}`;
+    
+    console.log('URL:', url);
     
     fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content })
     }).then(res => {
-      console.log('Guardado:', res.ok, 'Proyecto:', project, 'Archivo:', fileName);
+      console.log('Guardado:', res.ok);
     }).catch(err => {
       console.error('Error:', err);
     });
