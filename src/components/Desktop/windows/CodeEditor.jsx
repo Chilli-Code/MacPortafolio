@@ -108,16 +108,30 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
   // ✅ Función de guardado - sin estados que causen re-renders
   const saveFile = (fileName, content) => {
     const projectToUse = getCurrentProject();
-    console.log('Save attempt:', fileName, projectToUse);
+    const url = `http://localhost:3001/api/projects/${projectToUse}/files/${fileName}`;
+    console.log('=== SAVE START ===');
+    console.log('Project:', projectToUse);
+    console.log('File:', fileName);
+    console.log('URL:', url);
+    console.log('Content length:', content?.length);
     
-    fetch(`http://localhost:3001/api/projects/${projectToUse}/files/${fileName}`, {
+    fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content })
-    }).then(() => {
-      console.log('Saved successfully');
-    }).catch(err => {
+    })
+    .then(response => {
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      return response.json();
+    })
+    .then(data => {
+      console.log('Response data:', data);
+      console.log('=== SAVE END ===');
+    })
+    .catch(err => {
       console.error('Save failed:', err);
+      console.log('=== SAVE ERROR ===');
     });
   };
 
