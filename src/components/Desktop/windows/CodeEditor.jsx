@@ -1,5 +1,5 @@
 // src/windows/CodeEditor.jsx
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import WindowWrapper from '#hoc/WindowWrapper';
 import WindowControls from '#components/Desktop/WindowControls';
 import useWindowStore from '#store/window';
@@ -108,7 +108,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
   };
 
   // ✅ GUARDADO AUTOMATICO Y MANEJO DE CAMBIOS
-  const handleEditorChange = (value) => {
+  const handleEditorChange = useCallback((value) => {
     if (!activeFile) return;
     
     setFileContents(prev => ({
@@ -121,7 +121,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     window.saveTimeout = setTimeout(() => {
       saveFile(activeFile.name, value);
     }, 2000);
-  };
+  }, [activeFile]);
 
   const saveFile = async (fileName, content) => {
     // ✅ Validar que hay un proyecto seleccionado
