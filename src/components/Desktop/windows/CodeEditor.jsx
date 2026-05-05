@@ -105,15 +105,15 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     });
   }, [activeFile]);
 
-  // ✅ Guardado mínimo - solo nombre de archivo
+  // ✅ Guardado - usa ruta completa del archivo
   const saveFile = (fileName, content) => {
     const project = getCurrentProject();
     
-    // Extraer solo el nombre del archivo, no la ruta completa
-    const justFileName = fileName.split('/').pop();
-    const url = `http://localhost:3001/api/projects/${project}/files/${justFileName}`;
+    // Usar la ruta completa (path) del archivo si existe
+    const filePath = activeFile?.path || fileName;
+    const url = `http://localhost:3001/api/projects/${project}/files/${filePath}`;
     
-    console.log('Save:', project, justFileName);
+    console.log('Save:', project, filePath);
     
     fetch(url, {
       method: 'POST',
