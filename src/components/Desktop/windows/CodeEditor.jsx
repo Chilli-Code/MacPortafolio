@@ -34,45 +34,31 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
   const [terminalWorkingDir, setTerminalWorkingDir] = useState('');
   const terminalRef = useRef(null);
 
-  // ✅ CARGAR ARCHIVOS - Soporta projectName dinámico o folderFiles directo
+  // ✅ CARGAR ARCHIVOS - Solo cuando cambia el proyecto, no en cada render
   useEffect(() => {
     const loadFiles = async () => {
       try {
         setIsLoading(true);
         
         let files = [];
-        let projectToUse = currentProjectName;
+        let projectToUse = data?.projectName || currentProjectName;
         
         // Si se pasan folderFiles directamente, usarlos
         if (data?.folderFiles && data.folderFiles.length > 0) {
           files = data.folderFiles;
-          // No hay projectName, intentar detectar de allFiles
         } 
-        // Si hay projectName nuevo, actualizar estado
-        else if (data?.projectName) {
-          projectToUse = data.projectName;
-          const response = await fetch(`http://localhost:3001/api/projects/${data.projectName}/files`);
+        // Si hay un proyecto para usar, cargar archivos
+        else if (projectToUse) {
+          const response = await fetch(`http://localhost:3001/api/projects/${projectToUse}/files`);
           files = await response.json();
-        } 
-        // Si no hay projectName, intentar detectar de la estructura de archivos
-        else if (allFiles.length > 0) {
-          // Ya tenemos archivos cargados, mantenerlos
-          return;
         }
         
-        // Si tenemos un proyecto para usar, cargar archivos
-        if (projectToUse) {
-          try {
-            const response = await fetch(`http://localhost:3001/api/projects/${projectToUse}/files`);
-            files = await response.json();
-          } catch (e) {
-            console.warn('No se pudieron cargar archivos del proyecto:', projectToUse);
-          }
+        // Solo actualizar si el componente sigue montado
+        if (!files.length || allFiles.length === 0) {
+          setAllFiles(files);
+          setActiveFile(null);
+          setOpenTabs([]);
         }
-        
-        setAllFiles(files);
-        setActiveFile(null);
-        setOpenTabs([]);
       } catch (error) {
         console.error('Error cargando archivos:', error);
       } finally {
@@ -80,10 +66,10 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
       }
     };
 
-    if (windows.codeeditor?.isOpen) {
+    if (windows.codeeditor?.isOpen && (data?.projectName || currentProjectName)) {
       loadFiles();
     }
-  }, [windows.codeeditor?.isOpen, data?.projectName, currentProjectName]);
+  }, [windows.codeeditor?.isOpen, data?.projectName]);
   
   // ✅ Sincronizar projectName cuando cambia data
   useEffect(() => {
