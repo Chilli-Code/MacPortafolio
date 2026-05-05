@@ -15,8 +15,8 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
   const folderFiles = data?.folderFiles || [];
   const projectName = data?.projectName || 'Proyecto';
   
-  // ✅ Estado para gestionar el proyecto actual
-  const [currentProjectName, setCurrentProjectName] = useState(data?.projectName || '');
+  // ✅ Helper para obtener el nombre del proyecto actual
+  const getCurrentProject = () => data?.projectName || 'demo-project';
 
   const [activeFile, setActiveFile] = useState(null);
   const [openTabs, setOpenTabs] = useState([]);
@@ -41,7 +41,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
         setIsLoading(true);
         
         let files = [];
-        let projectToUse = data?.projectName || currentProjectName;
+        let projectToUse = getCurrentProject();
         
         // Si se pasan folderFiles directamente, usarlos
         if (data?.folderFiles && data.folderFiles.length > 0) {
@@ -66,17 +66,10 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
       }
     };
 
-    if (windows.codeeditor?.isOpen && (data?.projectName || currentProjectName)) {
+    if (windows.codeeditor?.isOpen && getCurrentProject()) {
       loadFiles();
     }
   }, [windows.codeeditor?.isOpen, data?.projectName]);
-  
-  // ✅ Sincronizar projectName cuando cambia data
-  useEffect(() => {
-    if (data?.projectName && data.projectName !== currentProjectName) {
-      setCurrentProjectName(data.projectName);
-    }
-  }, [data?.projectName]);
 
   useEffect(() => {
     if (!data && windows.codeeditor?.isOpen) {
@@ -113,16 +106,11 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
   }, [activeFile]);
 
   const saveFile = async (fileName, content) => {
-    // ✅ Validar que hay un proyecto seleccionado
-    if (!currentProjectName) {
-      console.error('No se puede guardar: proyecto no identificado');
-      alert('Error: Abre un proyecto desde el Finder primero');
-      return;
-    }
+    const projectToUse = getCurrentProject();
     
     setIsSaving(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/projects/${currentProjectName}/files/${fileName}`, {
+      const response = await fetch(`http://localhost:3001/api/projects/${projectToUse}/files/${fileName}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -148,7 +136,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     if (!name) return;
     
     try {
-      await fetch(`http://localhost:3001/api/projects/${currentProjectName}/files`, {
+      await fetch(`http://localhost:3001/api/projects/${getCurrentProject()}/files`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -170,7 +158,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     if (!confirm(`Eliminar ${activeFile.name}?`)) return;
     
     try {
-      await fetch(`http://localhost:3001/api/projects/${currentProjectName}/files/${activeFile.name}`, {
+      await fetch(`http://localhost:3001/api/projects/${getCurrentProject()}/files/${activeFile.name}`, {
         method: 'DELETE'
       });
 
@@ -188,7 +176,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
   const reloadFiles = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`http://localhost:3001/api/projects/${currentProjectName}/files`);
+      const response = await fetch(`http://localhost:3001/api/projects/${getCurrentProject()}/files`);
       const files = await response.json();
       setAllFiles(files);
       
@@ -223,14 +211,14 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
       return;
     }
     
-    if (!currentProjectName) {
+    if (!getCurrentProject()) {
       alert('Error: Abre un proyecto desde el Finder primero');
       return;
     }
     
     try {
       // 1. Obtener todos los archivos del proyecto
-      const response = await fetch(`http://localhost:3001/api/projects/${currentProjectName}/files`);
+      const response = await fetch(`http://localhost:3001/api/projects/${getCurrentProject()}/files`);
       const allFiles = await response.json();
       
       // 2. Encontrar el archivo HTML actual
@@ -265,12 +253,12 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
         // Buscar el archivo CSS en toda la estructura
         const cssFile = findFileByName(allFiles, href);
         if (cssFile && cssFile.path) {
-          const newHref = `http://localhost:3001/api/projects/${currentProjectName}/files/${cssFile.path}`;
+          const newHref = `http://localhost:3001/api/projects/${getCurrentProject()}/files/${cssFile.path}`;
           return `href="${newHref}"`;
         }
         
         // Fallback: intentar ruta relativa
-        return `href="http://localhost:3001/api/projects/${currentProjectName}/files/${basePath}${href}"`;
+        return `href="http://localhost:3001/api/projects/${getCurrentProject()}/files/${basePath}${href}"`;
       });
       
       // 6. Corregir rutas de JS (src)
@@ -279,11 +267,11 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
         
         const jsFile = findFileByName(allFiles, src);
         if (jsFile && jsFile.path) {
-          const newSrc = `http://localhost:3001/api/projects/${currentProjectName}/files/${jsFile.path}`;
+          const newSrc = `http://localhost:3001/api/projects/${getCurrentProject()}/files/${jsFile.path}`;
           return `src="${newSrc}"`;
         }
         
-        return `src="http://localhost:3001/api/projects/${currentProjectName}/files/${basePath}${src}"`;
+        return `src="http://localhost:3001/api/projects/${getCurrentProject()}/files/${basePath}${src}"`;
       });
       
       const blob = new Blob([content], { type: 'text/html' });
@@ -500,7 +488,7 @@ const getFileIcon = (file) => {
             if (!url) return;
             
             try {
-              await fetch(`http://localhost:3001/api/projects/${currentProjectName}/git/clone`, {
+              await fetch(`http://localhost:3001/api/projects/${getCurrentProject()}/git/clone`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url })
@@ -814,7 +802,7 @@ const getFileIcon = (file) => {
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ 
                         command: cmd, 
-                        project: selectedFolder ? selectedFolder.path : currentProjectName,
+                        project: selectedFolder ? selectedFolder.path : getCurrentProject(),
                         cwd: terminalWorkingDir
                       })
                     });
