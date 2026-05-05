@@ -368,17 +368,23 @@ app.get('/api/projects/:project/files', async (req, res) => {
   }
 });
 
-// Guardar archivo de un proyecto - Soporta subdirectorios
-app.post('/api/projects/:project/files/:filename', async (req, res) => {
+// Guardar archivo - usar query param para la ruta
+app.post('/api/projects/:project/files', async (req, res) => {
   try {
-    const { project, filename } = req.params;
-    const { content } = req.body;
+    const { project } = req.params;
+    const { filename, content, filepath } = req.body;
+    
+    // Soportar tanto filename como filepath
+    const filePathParam = filepath || filename;
+    if (!filePathParam) {
+      return res.status(400).json({ error: 'Filename or filepath required' });
+    }
     
     const fs = await import('fs/promises');
     
     // Obtener la ruta completa y crear directorios si no existen
     const basePath = path.resolve(__dirname, '../projects/', project);
-    const filePath = path.resolve(basePath, filename);
+    const filePath = path.resolve(basePath, filePathParam);
     
     // Verificar que la ruta esté dentro del proyecto (seguridad)
     if (!filePath.startsWith(basePath)) {
@@ -392,7 +398,7 @@ app.post('/api/projects/:project/files/:filename', async (req, res) => {
     // Escribir el archivo
     await fs.writeFile(filePath, content, 'utf8');
     
-    console.log(`✅ Archivo guardado: ${project}/${filename}`);
+    console.log(`✅ Archivo guardado: ${project}/${filePathParam}`);
     res.json({ success: true, message: 'Archivo guardado correctamente' });
   } catch (error) {
     console.error('❌ Error guardando archivo:', error);

@@ -105,20 +105,20 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     });
   }, [activeFile]);
 
-  // ✅ Guardado - usa ruta completa del archivo
+  // ✅ Guardado - envía filepath en el body
   const saveFile = (fileName, content) => {
     const project = getCurrentProject();
     
     // Usar la ruta completa (path) del archivo si existe
     const filePath = activeFile?.path || fileName;
-    const url = `http://localhost:3001/api/projects/${project}/files/${filePath}`;
+    const url = `http://localhost:3001/api/projects/${project}/files`;
     
     console.log('Save:', project, filePath);
     
     fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content })
+      body: JSON.stringify({ filepath: filePath, content })
     }).then(res => {
       console.log('Result:', res.ok);
     }).catch(err => {
