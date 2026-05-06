@@ -2,8 +2,8 @@
 const navLinks = [
   {
     id: 1,
-    name: "Proyectos",
-    type: "finder",
+    name: "Anuncios",
+    type: "werbung",
   },
   {
     id: 3,
@@ -769,6 +769,7 @@ const WINDOW_CONFIG = {
   gmail: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
   calendar: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
   codeeditor: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
+  werbung: { isOpen: false, isMinimized: false, zIndex: INITIAL_Z_INDEX, data: null },
   game: { 
     isOpen: false, 
     isMinimized: false,

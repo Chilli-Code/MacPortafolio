@@ -10,6 +10,12 @@ export {
   Download, BarChart3,
   HardDriveDownload,
 Figma,
+Bookmark,
+Heart,
+Repeat2,
+Sparkles,
+
+
 Home,
   Palette, Monitor, Sun, Check,
   Mic, Camera, Languages, CreditCard, Github, Linkedin, Lock, Phone,

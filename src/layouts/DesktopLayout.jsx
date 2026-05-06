@@ -6,7 +6,7 @@ import useSounds from "#hooks/useSounds";
 // import { useDockKeyboard } from '#hooks/useDockKeyboard';
 
 import { Navbar, Welcome, Dock } from "#components/Desktop";
-import { Terminal, Safari, Profile, Settings, Resume, Finder, Socials, Galery, Text, Gmail, ImageWindowContent, Calendar, CodeEditor } from "#components/Desktop/windows/";
+import { Terminal, Safari, Profile, Settings, Resume, Finder, Socials, Galery, Text, Gmail, ImageWindowContent, Calendar, CodeEditor, Werbung } from "#components/Desktop/windows/";
 import { usePerformanceMonitor } from '#hooks/usePerformanceMonitor';
 import SystemResourcesSection from "#components/Systemresourcessection";
 
@@ -75,6 +75,7 @@ const DesktopLayout = ({ user, onLogout }) => {
         {windows.txtfile?.isOpen && <Text />}
         {windows.gmail?.isOpen && <Gmail />}
         {windows.calendar?.isOpen && <Calendar />}
+        {windows.werbung?.isOpen && <Werbung />}
         {windows.codeeditor?.isOpen && (
           <CodeEditor
             folderFiles={windows.codeeditor.folderFiles || []}

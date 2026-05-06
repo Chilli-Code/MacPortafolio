@@ -4,7 +4,7 @@ import {
   Search, Heart, MessageCircle, Repeat2, Share, MoreHorizontal,
   Image, Smile, MapPin, Send, TrendingUp, Users, Bell, Home,
   User, Bookmark, CheckCircle, Sparkles, PanelLeftClose, PanelLeftOpen
-} from 'lucide-react';
+} from '#assets/icons';
 import { WindowControls } from "#components/Desktop";
 import WindowWrapper from "#hoc/WindowWrapper";
 import clsx from 'clsx';

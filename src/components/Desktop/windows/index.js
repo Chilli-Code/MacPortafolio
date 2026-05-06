@@ -12,6 +12,7 @@ import Gmail from "#windows/Chat.jsx";
 import Game from "#windows/Game.jsx";
 import Calendar from "#windows/Calendar.jsx";
 import CodeEditor from "#windows/CodeEditor.jsx";
+import Werbung from "#windows/Werbung.jsx";
 
 
 export { 
@@ -29,4 +30,5 @@ export {
     Game,
     Calendar,
     CodeEditor,
+    Werbung,
 };
