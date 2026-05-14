@@ -10,7 +10,6 @@ import { useRef, useEffect } from "react";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import ScrollSmoother from "gsap/ScrollSmoother";
-
 const App = () => {
 
   const contentRef = useRef(null)
@@ -32,6 +31,7 @@ const App = () => {
 
   return(
   <div id="smooth-content" ref={contentRef} className="min-h-screen bg-white antialiased">
+  <h2>Bienvenidosss</h2>
     <Header />
     <HeroSection />
     <TaglineSection />

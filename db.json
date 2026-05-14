@@ -148,81 +148,6 @@
   ],
   "tasks": [
     {
-      "id": "task_001",
-      "title": "Crear componente de Login",
-      "description": "Diseñar e implementar el formulario de login con validación",
-      "detailedDescription": "# Requisitos:\n- Formulario con email y contraseña\n- Validación en tiempo real\n- Mostrar mensajes de error\n- Integrar con la API de autenticación\n- Diseño responsive\n\n# Criterios de aceptación:\n- [ ] Validación funciona correctamente\n- [ ] Diseño responsive en mobile\n- [ ] Errores se muestran claramente\n- [ ] Código está documentado",
-      "type": "frontend",
-      "category": "development",
-      "difficulty": "medium",
-      "priority": "high",
-      "rewards": {
-        "xp": 250,
-        "baseReward": 150,
-        "bonusReward": 50,
-        "totalReward": 200,
-        "bonusConditions": {
-          "earlyCompletion": 25,
-          "perfectRating": 25,
-          "noRevisions": 20
-        }
-      },
-      "gamification": {
-        "achievementTriggers": [
-          "first_task",
-          "frontend_specialist"
-        ],
-        "skillXP": {
-          "skill_react": 100,
-          "skill_vite": 50
-        },
-        "streakContribution": true,
-        "milestoneContribution": {
-          "tasks": 1,
-          "frontend_tasks": 1
-        }
-      },
-      "requirements": {
-        "skills": [
-          "React",
-          "Forms",
-          "Validation"
-        ],
-        "minLevel": 1,
-        "completedTasks": 0
-      },
-      "deadline": "2025-01-15T23:59:59.000Z",
-      "estimatedHours": 8,
-      "status": "completed",
-      "tags": [
-        "React",
-        "Forms",
-        "Validation",
-        "Vite",
-        "SocketIO"
-      ],
-      "images": [],
-      "assignedTo": "usr_001",
-      "assignedAt": null,
-      "acceptedAt": "2025-12-22T23:18:56.166Z",
-      "submittedAt": "2025-12-22T23:33:40.285Z",
-      "submissionNotes": "Tarea completada desde Safari",
-      "submissionFiles": [],
-      "reviewedAt": "2025-12-22T23:59:10.375Z",
-      "reviewedBy": "adm_001",
-      "reviewNotes": "✅ Tarea aprobada. Excelente trabajo!",
-      "reviewStatus": null,
-      "rating": null,
-      "completedAt": "2025-12-22T23:59:10.375Z",
-      "actualHours": null,
-      "rejectionReasons": [],
-      "revisionCount": 0,
-      "revisionHistory": [],
-      "createdAt": "2024-12-01T10:00:00.000Z",
-      "createdBy": "adm_001",
-      "updatedAt": "2024-12-01T10:00:00.000Z"
-    },
-    {
       "id": "task_002",
       "title": "Implementar Dashboard de Estadísticas",
       "description": "Crear un dashboard interactivo con gráficos de progreso",
@@ -532,6 +457,42 @@
       "reviewNotes": null,
       "submissionNotes": null,
       "submissionFiles": []
+    },
+    {
+      "id": "17ba",
+      "title": "adas",
+      "description": "dsad",
+      "detailedDescription": "sadsadasd",
+      "type": "frontend",
+      "difficulty": "medium",
+      "xp": 250,
+      "reward": 150,
+      "deadline": "2026-06-05",
+      "tags": [
+        "Node.js"
+      ],
+      "baseReward": 150,
+      "createdBy": "admin",
+      "bonusReward": 0,
+      "status": "available"
+    },
+    {
+      "id": "6e71",
+      "title": "adas",
+      "description": "dsad",
+      "detailedDescription": "sadsadasd",
+      "type": "frontend",
+      "difficulty": "medium",
+      "xp": 250,
+      "reward": 150,
+      "deadline": "2026-06-05",
+      "tags": [
+        "Node.js"
+      ],
+      "baseReward": 150,
+      "createdBy": "admin",
+      "bonusReward": 0,
+      "status": "available"
     }
   ],
   "achievements": [
