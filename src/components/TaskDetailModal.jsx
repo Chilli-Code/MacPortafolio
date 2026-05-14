@@ -13,6 +13,7 @@ const TaskDetailModal = ({ task, onClose }) => {
   // Obtener usuario actual
   const currentUser = JSON.parse(localStorage.getItem('userSession') || '{}');
   const isAdmin = currentUser.role === 'admin';
+  const taskReward = task.rewards?.totalReward || task.rewards?.baseReward || task.baseReward || task.reward || 0;
 
   const handleAccept = async () => {
     try {
@@ -21,7 +22,7 @@ const TaskDetailModal = ({ task, onClose }) => {
         type: 'task',
         category: 'Tarea Aceptada',
         title: task.title,
-        description: `Recompensa: $${task.reward}`,
+        description: `Recompensa: $${taskReward}`,
         xp: 25
       });
       onClose();
@@ -58,7 +59,7 @@ const TaskDetailModal = ({ task, onClose }) => {
         type: 'milestone',
         category: '✅ Tarea Aprobada',
         title: task.title,
-        description: `El usuario ganó $${task.reward} y ${task.xp} XP`,
+        description: `El usuario ganó $${taskReward} y ${task.xp} XP`,
         xp: task.xp
       });
       onClose();
@@ -108,7 +109,7 @@ const TaskDetailModal = ({ task, onClose }) => {
   const status = statusConfig[task.status];
 
   return (
-    <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="bg-gray-800 dark:bg-gray-800/30 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
         
         {/* Header */}
@@ -122,7 +123,7 @@ const TaskDetailModal = ({ task, onClose }) => {
             </div>
             <p className="text-gray-600 dark:text-gray-400">{task.description}</p>
           </div>
-          <button onClick={onClose} className="ml-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+          <button onClick={onClose} className="ml-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-700">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -133,7 +134,7 @@ const TaskDetailModal = ({ task, onClose }) => {
           <div className="grid grid-cols-4 gap-4">
             {[
               { icon: Zap, label: 'XP', value: task.xp, color: 'yellow' },
-              { icon: DollarSign, label: 'Pago', value: `$${task.reward}`, color: 'green' },
+              { icon: DollarSign, label: 'Pago', value: `$${taskReward}`, color: 'green' },
               { icon: CalendarIcon, label: 'Deadline', value: task.deadline, color: 'blue' },
               { icon: AlertCircle, label: 'Dificultad', value: task.difficulty, color: 'purple' }
             ].map(({ icon: Icon, label, value, color }, i) => (
@@ -177,18 +178,21 @@ const TaskDetailModal = ({ task, onClose }) => {
           </div>
 
           {/* Tags */}
-          {task.tags && task.tags.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold mb-2">🏷️ Tecnologías:</h3>
-              <div className="flex flex-wrap gap-2">
-                {task.tags.map((tag, i) => (
-                  <span key={i} className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium rounded-full">
-                    {tag}
-                  </span>
-                ))}
+          {(() => {
+            const tags = typeof task.tags === 'string' ? JSON.parse(task.tags || '[]') : (task.tags || []);
+            return tags.length > 0 ? (
+              <div>
+                <h3 className="text-sm font-semibold mb-2">🏷️ Tecnologías:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag, i) => (
+                    <span key={i} className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium rounded-full">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            ) : null;
+          })()}
 
           {/* Submission Notes */}
           {task.status === 'pending_review' && task.submissionNotes && (

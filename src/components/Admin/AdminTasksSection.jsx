@@ -1,4 +1,4 @@
-import { Plus } from '#assets/icons';
+import { Plus, ArrowUpDown, ArrowUp, ArrowDown, DollarSign, Zap, Calendar } from '#assets/icons';
 import AdminTaskCard from './AdminTaskCard';
 import { useState } from 'react';
 
@@ -13,8 +13,9 @@ const AdminTasksSection = ({
   onRejectTask
 }) => {
   const [activeFilter, setActiveFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('newest');
+  const [sortOrder, setSortOrder] = useState('desc');
 
-  // PARA ADMIN: Mostrar TODAS las tareas, no filtradas por usuario
   const filters = [
     { id: 'all', label: 'Todas', count: allTasks.length },
     { id: 'available', label: 'Disponibles', count: allTasks.filter(t => t.status === 'available').length },
@@ -23,10 +24,63 @@ const AdminTasksSection = ({
     { id: 'completed', label: 'Completadas', count: allTasks.filter(t => t.status === 'completed').length }
   ];
 
-  // Filtrar tareas según el filtro activo
+  const sortOptions = [
+    { id: 'newest', label: 'Más Recientes', icon: Calendar },
+    { id: 'oldest', label: 'Más Antiguas', icon: Calendar },
+    { id: 'xp_high', label: 'Mayor XP', icon: Zap },
+    { id: 'xp_low', label: 'Menor XP', icon: Zap },
+    { id: 'pay_high', label: 'Mayor Pago', icon: DollarSign },
+    { id: 'pay_low', label: 'Menor Pago', icon: DollarSign }
+  ];
+
+  const sortTasks = (tasks) => {
+    return [...tasks].sort((a, b) => {
+      const rewardA = a.rewards?.baseReward || a.baseReward || a.reward || 0;
+      const rewardB = b.rewards?.baseReward || b.baseReward || b.reward || 0;
+      const xpA = a.rewards?.xp || a.xp || 0;
+      const xpB = b.rewards?.xp || b.xp || 0;
+      const dateA = new Date(a.createdAt || 0);
+      const dateB = new Date(b.createdAt || 0);
+
+      let comparison = 0;
+      switch (sortBy) {
+        case 'newest':
+          comparison = dateB - dateA;
+          break;
+        case 'oldest':
+          comparison = dateA - dateB;
+          break;
+        case 'xp_high':
+          comparison = xpB - xpA;
+          break;
+        case 'xp_low':
+          comparison = xpA - xpB;
+          break;
+        case 'pay_high':
+          comparison = rewardB - rewardA;
+          break;
+        case 'pay_low':
+          comparison = rewardA - rewardB;
+          break;
+        default:
+          comparison = 0;
+      }
+      return sortOrder === 'desc' ? comparison : -comparison;
+    });
+  };
+
   const filteredTasks = activeFilter === 'all' 
-    ? allTasks 
-    : allTasks.filter(t => t.status === activeFilter);
+    ? sortTasks(allTasks) 
+    : sortTasks(allTasks.filter(t => t.status === activeFilter));
+
+  const handleSortChange = (sortId) => {
+    if (sortBy === sortId) {
+      setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSortBy(sortId);
+      setSortOrder('desc');
+    }
+  };
 
   return (
     <>
@@ -49,8 +103,8 @@ const AdminTasksSection = ({
         </div>
       </div>
 
-      {/* Filtros como pestañas */}
-      <div className="flex gap-3 mb-6 overflow-x-auto">
+      {/* Filtros de estado */}
+      <div className="flex gap-3 mb-4 overflow-x-auto">
         {filters.map(({ id, label, count }) => (
           <button
             key={id}
@@ -69,6 +123,31 @@ const AdminTasksSection = ({
             }`}>
               {count}
             </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Filtros de ordenamiento */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        <span className="text-gray-400 text-sm flex items-center">
+          <ArrowUpDown className="w-4 h-4 mr-1" />
+          Ordenar:
+        </span>
+        {sortOptions.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            onClick={() => handleSortChange(id)}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs transition-colors ${
+              sortBy === id
+                ? 'bg-purple-500 text-white'
+                : 'bg-gray-800/50 hover:bg-gray-800 text-gray-400'
+            }`}
+          >
+            <Icon className="w-3 h-3" />
+            {label}
+            {sortBy === id && (
+              sortOrder === 'desc' ? <ArrowDown className="w-3 h-3" /> : <ArrowUp className="w-3 h-3" />
+            )}
           </button>
         ))}
       </div>

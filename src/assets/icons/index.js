@@ -14,8 +14,9 @@ Bookmark,
 Heart,
 Repeat2,
 Sparkles,
-
-
+ArrowUp,
+ArrowUpDown,
+Calendar,
 Home,
   Palette, Monitor, Sun, Check,
   Mic, Camera, Languages, CreditCard, Github, Linkedin, Lock, Phone,

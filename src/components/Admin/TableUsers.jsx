@@ -1,7 +1,7 @@
-import { Search, Trash2, Edit } from "#assets/icons";
+import { Search, Trash2, Edit, User } from "#assets/icons";
 import { useState, useEffect } from 'react';
 
-const TableUsers = () => {
+const TableUsers = ({ onViewUser, onEditUser }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -14,7 +14,7 @@ const TableUsers = () => {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:3001/api/users');
+      const res = await fetch('/api/users');
       const data = await res.json();
       setUsers(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -28,7 +28,7 @@ const TableUsers = () => {
     if (!window.confirm('¿Estas seguro de eliminar este usuario?')) return;
     
     try {
-      await fetch(`http://localhost:3001/api/users/${userId}`, { method: 'DELETE' });
+      await fetch(`/api/users/${userId}`, { method: 'DELETE' });
       loadUsers();
     } catch (error) {
       console.error('❌ Error eliminando usuario:', error);
@@ -124,7 +124,17 @@ const TableUsers = () => {
                   <td className="py-3 px-4 text-gray-400 text-sm">{new Date(user.createdAt).toLocaleDateString('es-ES')}</td>
                   <td className="py-3 px-4 text-right">
                     <div className="flex justify-end gap-2">
-                      <button className="p-1 hover:bg-gray-700 rounded transition-colors">
+                      <button 
+                        onClick={() => onViewUser?.(user)}
+                        className="p-1 hover:bg-blue-500/20 rounded transition-colors text-blue-400"
+                        title="Ver usuario"
+                      >
+                        <User className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => onEditUser?.(user)}
+                        className="p-1 hover:bg-gray-700 rounded transition-colors"
+                      >
                         <Edit className="w-4 h-4 text-gray-400" />
                       </button>
                       <button 

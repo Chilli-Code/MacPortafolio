@@ -8,10 +8,13 @@ import TaskDetailModal from '#components/TaskDetailModal';
 import { useAdminTasks } from '#hoc/useAdminTasks';
 import CardHome from '#components/Admin/CardHome';
 import TableUsers from '#components/Admin/TableUsers';
+import UserDetailModal from '#components/Admin/UserDetailModal';
 
 const AdminDashboard = ({ onLogout, currentUser }) => {
   const [activeTab, setActiveTab] = useState('tasks');
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
   const [showNewUserModal, setShowNewUserModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [editingTask, setEditingTask] = useState(null); // ⭐ AGREGAR ESTO
@@ -39,6 +42,15 @@ const AdminDashboard = ({ onLogout, currentUser }) => {
     console.log('📝 Editando tarea:', task);
     setEditingTask(task);
     setShowNewTaskModal(true);
+  };
+
+  const handleViewUser = (user) => {
+    setSelectedUser(user);
+  };
+
+  const handleEditUser = (user) => {
+    setEditingUser(user);
+    setShowNewUserModal(true);
   };
 
   // ⭐ AGREGAR ESTA FUNCIÓN
@@ -155,7 +167,10 @@ const AdminDashboard = ({ onLogout, currentUser }) => {
         </div>
         
         {/* Aquí va tu componente TableUsers */}
-        <TableUsers />
+        <TableUsers 
+          onViewUser={handleViewUser}
+          onEditUser={handleEditUser}
+        />
         
       </div>
       
@@ -191,8 +206,24 @@ const AdminDashboard = ({ onLogout, currentUser }) => {
       {/* Modal de Nuevo Usuario */}
       {showNewUserModal && (
         <AdminUserForm 
-          onClose={() => setShowNewUserModal(false)}
-          onSuccess={() => window.location.reload()}
+          onClose={() => {
+            setShowNewUserModal(false);
+            setEditingUser(null);
+          }}
+          onSuccess={() => {
+            setEditingUser(null);
+          }}
+          initialData={editingUser}
+          isEditing={!!editingUser}
+        />
+      )}
+
+      {/* Modal de detalle de usuario */}
+      {selectedUser && (
+        <UserDetailModal 
+          user={selectedUser}
+          onClose={() => setSelectedUser(null)}
+          onEdit={handleEditUser}
         />
       )}
 

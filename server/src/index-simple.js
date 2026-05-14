@@ -6,6 +6,12 @@ import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
 import rateLimit from 'express-rate-limit';
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ✅ MANEJO GLOBAL DE ERRORES PARA QUE NO SE CIERRE EL SERVIDOR
 process.on('uncaughtException', (err) => {
@@ -193,6 +199,47 @@ app.post('/api/users', async (req, res) => {
   }
 });
 
+// Actualizar usuario
+app.put('/api/users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { username, email, password, fullName, role } = req.body;
+
+    if (!username || !email) {
+      return res.status(400).json({ success: false, error: 'Usuario y email son requeridos' });
+    }
+
+    const db = await getDB();
+    
+    let updateQuery = 'UPDATE User SET username = ?, email = ?, fullName = ?, role = ?';
+    let params = [username, email, fullName || username, role || 'user'];
+
+    if (password && password.trim()) {
+      const hashedPassword = await bcrypt.hash(password, 12);
+      updateQuery += ', password = ?';
+      params.push(hashedPassword);
+    }
+
+    updateQuery += ' WHERE id = ?';
+    params.push(id);
+
+    await db.run(updateQuery, params);
+    
+    const updatedUser = await db.get('SELECT id, username, email, fullName, role, type, avatar, createdAt, level FROM User WHERE id = ?', id);
+    await db.close();
+
+    res.json({
+      success: true,
+      user: updatedUser,
+      message: 'Usuario actualizado correctamente'
+    });
+
+  } catch (error) {
+    console.error('❌ Error actualizando usuario:', error);
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
+  }
+});
+
 // Eliminar usuario
 app.delete('/api/users/:id', async (req, res) => {
   try {
@@ -241,19 +288,20 @@ app.post('/api/tasks', async (req, res) => {
 
     const taskId = crypto.randomUUID();
     const totalReward = baseReward + (bonusReward || 0);
+    const now = new Date().toISOString();
 
     const db = await getDB();
     
     await db.run(`
       INSERT INTO Task (
         id, title, description, detailedDescription, type, category, difficulty, priority,
-        estimatedHours, deadline, xp, baseReward, bonusReward, totalReward, tags,
-        status, createdBy, createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        estimatedHours, deadline, xp, baseReward, bonusReward, totalReward, tags, images,
+        status, createdBy, createdAt, updatedAt, rejectionReasons, submissionFiles
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       taskId, title, description, detailedDescription, type, category, difficulty,
       priority || 'medium', estimatedHours, deadline, xp, baseReward, bonusReward || 0,
-      totalReward, JSON.stringify(tags || []), 'available', createdBy,
-      new Date().toISOString(), new Date().toISOString()
+      totalReward, JSON.stringify(tags || []), '[]', 'available', createdBy,
+      now, now, '[]', '[]'
     );
 
     const newTask = await db.get('SELECT * FROM Task WHERE id = ?', taskId);
@@ -394,6 +442,112 @@ app.patch('/api/tasks/:id/reject', async (req, res) => {
   }
 });
 
+
+// ==============================================
+// 📂 ENDPOINTS PARA EL EDITOR DE CODIGO
+// ==============================================
+
+const scanDirectory = (dirPath, basePath = '') => {
+  const items = [];
+  const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+  
+  for (const entry of entries) {
+    const fullPath = path.join(dirPath, entry.name);
+    const relativePath = path.join(basePath, entry.name);
+    
+    if (entry.isDirectory()) {
+      items.push({
+        name: entry.name,
+        path: relativePath,
+        type: 'folder',
+        children: scanDirectory(fullPath, relativePath)
+      });
+    } else {
+      const stat = fs.statSync(fullPath);
+      items.push({
+        name: entry.name,
+        path: relativePath,
+        type: 'file',
+        size: stat.size,
+        content: fs.readFileSync(fullPath, 'utf8')
+      });
+    }
+  }
+  
+  return items;
+};
+
+// Obtener lista de archivos de un proyecto
+app.get('/api/projects/:project/files', async (req, res) => {
+  try {
+    const { project } = req.params;
+    const projectPath = path.join(__dirname, '../projects', project);
+    
+    if (!fs.existsSync(projectPath)) {
+      return res.json([]);
+    }
+    
+    const fileTree = scanDirectory(projectPath);
+    res.json(fileTree);
+  } catch (error) {
+    console.error('❌ Error listando archivos:', error);
+    res.status(500).json([]);
+  }
+});
+
+// Guardar archivo
+app.post('/api/projects/:project/files', async (req, res) => {
+  try {
+    const { project } = req.params;
+    const { filename, content, filepath } = req.body;
+    
+    const filePathParam = filepath || filename;
+    if (!filePathParam) {
+      return res.status(400).json({ error: 'Filename or filepath required' });
+    }
+    
+    const basePath = path.resolve(__dirname, '../projects/', project);
+    const fullPath = path.resolve(basePath, filePathParam);
+    
+    if (!fullPath.startsWith(basePath)) {
+      throw new Error('Ruta no autorizada');
+    }
+    
+    const dir = path.dirname(fullPath);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(fullPath, content, 'utf8');
+    
+    console.log(`✅ Archivo guardado: ${project}/${filePathParam}`);
+    res.json({ success: true, message: 'Archivo guardado correctamente' });
+  } catch (error) {
+    console.error('❌ Error guardando archivo:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Eliminar archivo
+app.delete('/api/projects/:project/files/:filename', async (req, res) => {
+  try {
+    const { project, filename } = req.params;
+    const basePath = path.resolve(__dirname, '../projects/', project);
+    const filePath = path.resolve(basePath, filename);
+    
+    if (!filePath.startsWith(basePath)) {
+      throw new Error('Ruta no autorizada');
+    }
+    
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Archivo no encontrado' });
+    }
+    
+    fs.unlinkSync(filePath);
+    console.log(`🗑️ Archivo eliminado: ${project}/${filename}`);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('❌ Error eliminando archivo:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 // Health check
 app.get('/health', (req, res) => {

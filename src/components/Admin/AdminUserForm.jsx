@@ -1,27 +1,49 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, User } from '#assets/icons';
 
-const AdminUserForm = ({ onClose, onSuccess }) => {
+const AdminUserForm = ({ onClose, onSuccess, initialData, isEditing }) => {
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
+    username: initialData?.username || '',
+    email: initialData?.email || '',
     password: '',
-    fullName: '',
-    role: 'user'
+    fullName: initialData?.fullName || '',
+    role: initialData?.role || 'user'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        username: initialData.username || '',
+        email: initialData.email || '',
+        password: '',
+        fullName: initialData.fullName || '',
+        role: initialData.role || 'user'
+      });
+    }
+  }, [initialData]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
     setError('');
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:3001/api/users', {
-        method: 'POST',
+      const url = isEditing 
+        ? `/api/users/${initialData.id}` 
+        : '/api/users';
+      const method = isEditing ? 'PUT' : 'POST';
+      
+      const bodyData = isEditing 
+        ? { ...formData, ...(formData.password ? {} : { password: undefined }) }
+        : formData;
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(bodyData)
       });
 
       const data = await res.json();
@@ -32,8 +54,8 @@ const AdminUserForm = ({ onClose, onSuccess }) => {
         return;
       }
 
-      onSuccess && onSuccess();
-      onClose();
+      onSuccess?.();
+      onClose?.();
 
     } catch (err) {
       setError('Error de conexion con el servidor');
@@ -54,8 +76,8 @@ const AdminUserForm = ({ onClose, onSuccess }) => {
               <User className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-xl font-bold">Crear Nuevo Usuario</h3>
-              <p className="text-sm text-gray-400">Ingresa los datos del nuevo usuario</p>
+              <h3 className="text-xl font-bold">{isEditing ? 'Editar Usuario' : 'Crear Nuevo Usuario'}</h3>
+              <p className="text-sm text-gray-400">{isEditing ? 'Modifica los datos del usuario' : 'Ingresa los datos del nuevo usuario'}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
@@ -106,13 +128,16 @@ const AdminUserForm = ({ onClose, onSuccess }) => {
           </div>
 
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Contraseña</label>
+            <label className="block text-sm text-gray-400 mb-1">
+              {isEditing ? 'Nueva Contraseña (dejar vacío para no cambiar)' : 'Contraseña'}
+            </label>
             <input
               type="password"
-              required
-              minLength={6}
+              required={!isEditing}
+              minLength={isEditing ? 0 : 6}
               value={formData.password}
               onChange={(e) => setFormData({...formData, password: e.target.value})}
+              placeholder={isEditing ? 'Dejar vacío para mantener' : 'Mínimo 6 caracteres'}
               className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
             />
           </div>
@@ -142,7 +167,7 @@ const AdminUserForm = ({ onClose, onSuccess }) => {
               disabled={loading}
               className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
             >
-              {loading ? 'Creando...' : 'Crear Usuario'}
+              {loading ? (isEditing ? 'Actualizando...' : 'Creando...') : (isEditing ? 'Actualizar Usuario' : 'Crear Usuario')}
             </button>
           </div>
 

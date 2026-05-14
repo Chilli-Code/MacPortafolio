@@ -16,7 +16,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
   const projectName = data?.projectName || 'Proyecto';
   
   // ✅ Helper para obtener el nombre del proyecto actual
-  const getCurrentProject = () => data?.projectName || 'demo-project';
+  const currentProject = useMemo(() => data?.projectName || 'demo-project', [data?.projectName]);
 
   const [activeFile, setActiveFile] = useState(null);
   const [openTabs, setOpenTabs] = useState([]);
@@ -41,7 +41,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
         setIsLoading(true);
         
         let files = [];
-        let projectToUse = getCurrentProject();
+        let projectToUse = currentProject;
         
         // Si se pasan folderFiles directamente, usarlos
         if (data?.folderFiles && data.folderFiles.length > 0) {
@@ -49,7 +49,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
         } 
         // Si hay un proyecto para usar, cargar archivos
         else if (projectToUse) {
-          const response = await fetch(`http://localhost:3001/api/projects/${projectToUse}/files`);
+          const response = await fetch(`/api/projects/${projectToUse}/files`);
           files = await response.json();
         }
         
@@ -66,7 +66,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
       }
     };
 
-    if (windows.codeeditor?.isOpen && getCurrentProject()) {
+    if (windows.codeeditor?.isOpen && currentProject) {
       loadFiles();
     }
   }, [windows.codeeditor?.isOpen, data?.projectName]);
@@ -86,6 +86,33 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     }
   }, [openTabs]);
 
+  // ✅ Obtener contenido original del archivo desde el árbol de archivos
+  const getOriginalContent = useCallback((fileName) => {
+    const searchFile = (items) => {
+      for (const item of items) {
+        if (item.name === fileName) return item.content;
+        if (item.children) {
+          const found = searchFile(item.children);
+          if (found !== undefined) return found;
+        }
+      }
+      return undefined;
+    };
+    return searchFile(allFiles) ?? undefined;
+  }, [allFiles]);
+
+  // ✅ Archivos con cambios no guardados
+  const dirtyFiles = useMemo(() => {
+    const dirty = new Set();
+    for (const [name, content] of Object.entries(fileContents)) {
+      const original = getOriginalContent(name);
+      if (original !== undefined && content !== original) {
+        dirty.add(name);
+      }
+    }
+    return dirty;
+  }, [fileContents, getOriginalContent]);
+
   // ✅ Valor memoizado para el editor - evitar re-renders
   const editorValue = useMemo(() => {
     if (!activeFile) return '';
@@ -96,31 +123,66 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
   const handleEditorChange = useCallback((value) => {
     if (!activeFile) return;
     
-    // Solo actualizar el contenido para el auto-guardado
-    // No causará re-render del componente completo
     setFileContents(prev => {
-      // Solo actualizar si el contenido es diferente
       if (prev[activeFile.name] === value) return prev;
       return { ...prev, [activeFile.name]: value };
     });
   }, [activeFile]);
 
-  // ✅ Guardado - usar XMLHttpRequest en lugar de fetch
-  const saveFile = (fileName, content) => {
-    const project = getCurrentProject();
+  // ✅ Actualizar contenido en el arbol de archivos original (marcar como "no sucio")
+  const markFileClean = useCallback((fileName, savedContent) => {
+    setAllFiles(prev => {
+      const updateTree = (items) =>
+        items.map(item => {
+          if (item.name === fileName && item.type === 'file') {
+            return { ...item, content: savedContent };
+          }
+          if (item.children) {
+            return { ...item, children: updateTree(item.children) };
+          }
+          return item;
+        });
+      return updateTree(prev);
+    });
+    // Mantener el contenido en fileContents para que el editor lo siga mostrando
+    setFileContents(prev => {
+      if (prev[fileName] === undefined) return prev;
+      return { ...prev, [fileName]: savedContent };
+    });
+  }, []);
+
+  // ✅ Guardado
+  const isSavingRef = useRef(false);
+  const saveFile = useCallback((fileName, content) => {
+    if (isSavingRef.current) return;
+    isSavingRef.current = true;
+
+    const project = currentProject;
     const filePath = activeFile?.path || fileName;
-    
+
+    setIsSaving(true);
+
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `http://localhost:3001/api/projects/${project}/files`, true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.onload = () => {
-      console.log('Saved:', xhr.status === 200);
+      isSavingRef.current = false;
+      if (xhr.status === 200) {
+        markFileClean(fileName, content);
+        setIsSaving(false);
+        setLastSaved(new Date().toLocaleTimeString());
+      } else {
+        console.warn('Error al guardar (servidor):', xhr.status, xhr.statusText);
+        setIsSaving(false);
+      }
     };
     xhr.onerror = () => {
-      console.error('Error:', xhr.statusText);
+      isSavingRef.current = false;
+      console.error('Error de red al guardar');
+      setIsSaving(false);
     };
     xhr.send(JSON.stringify({ filepath: filePath, content }));
-  };
+  }, [activeFile, currentProject, markFileClean]);
 
   // ✅ CREAR NUEVO ARCHIVO
   const createNewFile = async () => {
@@ -128,7 +190,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     if (!name) return;
     
     try {
-      await fetch(`http://localhost:3001/api/projects/${getCurrentProject()}/files`, {
+      await fetch(`/api/projects/${currentProject}/files`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -150,7 +212,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     if (!confirm(`Eliminar ${activeFile.name}?`)) return;
     
     try {
-      await fetch(`http://localhost:3001/api/projects/${getCurrentProject()}/files/${activeFile.name}`, {
+      await fetch(`/api/projects/${currentProject}/files/${activeFile.name}`, {
         method: 'DELETE'
       });
 
@@ -168,7 +230,7 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
   const reloadFiles = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`http://localhost:3001/api/projects/${getCurrentProject()}/files`);
+      const response = await fetch(`/api/projects/${currentProject}/files`);
       const files = await response.json();
       setAllFiles(files);
       
@@ -203,14 +265,14 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
       return;
     }
     
-    if (!getCurrentProject()) {
+    if (!currentProject) {
       alert('Error: Abre un proyecto desde el Finder primero');
       return;
     }
     
     try {
       // 1. Obtener todos los archivos del proyecto
-      const response = await fetch(`http://localhost:3001/api/projects/${getCurrentProject()}/files`);
+      const response = await fetch(`/api/projects/${currentProject}/files`);
       const allFiles = await response.json();
       
       // 2. Encontrar el archivo HTML actual
@@ -245,12 +307,12 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
         // Buscar el archivo CSS en toda la estructura
         const cssFile = findFileByName(allFiles, href);
         if (cssFile && cssFile.path) {
-          const newHref = `http://localhost:3001/api/projects/${getCurrentProject()}/files/${cssFile.path}`;
+          const newHref = `http://localhost:3001/api/projects/${currentProject}/files/${cssFile.path}`;
           return `href="${newHref}"`;
         }
         
         // Fallback: intentar ruta relativa
-        return `href="http://localhost:3001/api/projects/${getCurrentProject()}/files/${basePath}${href}"`;
+        return `href="http://localhost:3001/api/projects/${currentProject}/files/${basePath}${href}"`;
       });
       
       // 6. Corregir rutas de JS (src)
@@ -259,11 +321,11 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
         
         const jsFile = findFileByName(allFiles, src);
         if (jsFile && jsFile.path) {
-          const newSrc = `http://localhost:3001/api/projects/${getCurrentProject()}/files/${jsFile.path}`;
+          const newSrc = `http://localhost:3001/api/projects/${currentProject}/files/${jsFile.path}`;
           return `src="${newSrc}"`;
         }
         
-        return `src="http://localhost:3001/api/projects/${getCurrentProject()}/files/${basePath}${src}"`;
+        return `src="http://localhost:3001/api/projects/${currentProject}/files/${basePath}${src}"`;
       });
       
       const blob = new Blob([content], { type: 'text/html' });
@@ -293,24 +355,49 @@ const CodeEditor = ({ isMaximized, setIsMaximized }) => {
     editorRef.current.getAction('editor.action.formatDocument').run();
   };
 
-  // Guardar manualmente con Ctrl+S
+  // Guardar manualmente con Ctrl+S o Cmd+S
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.altKey && e.key.toLowerCase() === 's' && activeFile) {
+      if (!activeFile) return;
+      const isSave = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's';
+      const isAltSave = e.altKey && e.key.toLowerCase() === 's';
+      if (isSave || isAltSave) {
         e.preventDefault();
+        e.stopPropagation();
         const content = fileContents[activeFile.name] || getFileContent(activeFile);
         saveFile(activeFile.name, content);
       }
     };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown, { capture: true });
+    return () => window.removeEventListener('keydown', handleKeyDown, { capture: true });
   }, [activeFile, fileContents]);
+
+  // ✅ Advertencia al recargar página si hay cambios sin guardar
+  const hasDirtyFiles = useMemo(() => dirtyFiles.size > 0, [dirtyFiles]);
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (hasDirtyFiles) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasDirtyFiles]);
 
   const handleCloseTab = (file, e) => {
     e.stopPropagation();
+    if (dirtyFiles.has(file.name)) {
+      const confirmed = confirm(`¿Cerrar "${file.name}" sin guardar?`);
+      if (!confirmed) return;
+    }
     const newTabs = openTabs.filter(t => t.name !== file.name);
     setOpenTabs(newTabs);
+    setFileContents(prev => {
+      const next = { ...prev };
+      delete next[file.name];
+      return next;
+    });
     
     if (activeFile?.name === file.name && newTabs.length > 0) {
       setActiveFile(newTabs[newTabs.length - 1]);
@@ -380,30 +467,34 @@ const getFileIcon = (file) => {
       <div className="h-10 bg-[#3c3c3c] border-b border-gray-700 flex items-center px-3 gap-1">
         <div className="flex w-full items-center gap-2">
 
-        <button 
-          onClick={() => {
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
             const content = fileContents[activeFile.name] || activeFile.content || '';
             saveFile(activeFile.name, content);
           }}
           disabled={!activeFile}
           className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 rounded text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-          title="Guardar (ALT+S)"
+          title="Guardar (Ctrl+S)"
         >
           <Save size={12}/>Guardar
         </button>
 
 
 
-        <button 
-          onClick={createNewFile}
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); createNewFile(); }}
           className="px-2 py-1 text-xs border border-blue-800 bg-blue-900/20 hover:bg-gray-600 rounded text-white flex items-center gap-1"
           title="Nuevo Archivo"
         >
           <CirclePlus size={13} className="text-blue-400"/>
         </button>
 
-        <button 
-          onClick={reloadFiles}
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); reloadFiles(); }}
           disabled={isLoading}
           className="px-2 py-1 text-xs bg-blue-900/20 border border-blue-800 hover:bg-gray-600 rounded text-white disabled:opacity-50 flex items-center gap-1"
           title="Recargar archivos"
@@ -411,8 +502,10 @@ const getFileIcon = (file) => {
           < RefreshCcw size={12} className="text-blue-400"/>
         </button>
 
-        <button 
-          onClick={() => {
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
             // Extraer todas las carpetas del arbol
             const folders = [];
             
@@ -445,8 +538,9 @@ const getFileIcon = (file) => {
           <Folders size={13} />Carpeta
         </button>
 
-        <button 
-          onClick={downloadFile}
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); downloadFile(); }}
           disabled={!activeFile}
           className="px-2 py-1 text-xs bg-blue-900/20 border border-blue-800 hover:bg-gray-600 rounded text-white disabled:opacity-50 flex items-center gap-1"
           title="Descargar archivo"
@@ -457,10 +551,10 @@ const getFileIcon = (file) => {
 
 
 
-
         <div className="flex gap-2 ">
-        <button 
-          onClick={formatCode}
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); formatCode(); }}
           disabled={!activeFile}
           className="px-2 py-1 text-xs bbg-blue-900/20 border border-blue-800 hover:bg-gray-600 rounded text-white disabled:opacity-50 flex items-center gap-1"
           title="Formatear codigo (Shift+Alt+F)"
@@ -468,8 +562,9 @@ const getFileIcon = (file) => {
           ✨
         </button>
 
-        <button 
-          onClick={openPreview}
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); openPreview(); }}
           disabled={!activeFile}
           className="px-2 py-1 text-xs bg-green-700 hover:bg-green-800 rounded text-white disabled:opacity-50 flex items-center gap-1"
           title="Abrir Preview HTML"
@@ -477,13 +572,15 @@ const getFileIcon = (file) => {
           <Eye size={13} /> Preview
         </button>
 
-        <button 
-          onClick={async () => {
+        <button
+          type="button"
+          onClick={async (e) => {
+            e.preventDefault();
             const url = prompt('URL del repositorio Git:');
             if (!url) return;
             
             try {
-              await fetch(`http://localhost:3001/api/projects/${getCurrentProject()}/git/clone`, {
+              await fetch(`/api/projects/${currentProject}/git/clone`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url })
@@ -500,8 +597,9 @@ const getFileIcon = (file) => {
           <HardDriveDownload size={13}/> Clone
         </button>
 
-        <button 
-          onClick={deleteCurrentFile}
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); deleteCurrentFile(); }}
           disabled={!activeFile}
           className="px-2 py-1 text-xs bg-red-800 hover:bg-red-700 rounded text-white disabled:opacity-50 flex items-center gap-1 ml-auto"
           title="Eliminar archivo"
@@ -536,8 +634,10 @@ const getFileIcon = (file) => {
 
             {/* ✅ BOTON VOLVER ATRAS */}
             {currentPath !== selectedFolder?.path && (
-              <button 
-                onClick={() => {
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
                   if (currentPath === selectedFolder?.path) {
                     setSelectedFolder(null);
                     setCurrentPath('');
@@ -553,8 +653,10 @@ const getFileIcon = (file) => {
             )}
 
             {selectedFolder && (
-              <button 
-                onClick={() => {
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
                   setSelectedFolder(null);
                   setCurrentPath('');
                   setActiveFile(null);
@@ -663,6 +765,9 @@ const getFileIcon = (file) => {
                         onClick={() => handleFileClick(item)}
                       >
                         <span className="text-base">{getFileIcon(item)}</span>
+                        {dirtyFiles.has(item.name) && (
+                          <span className="w-2 h-2 rounded-full bg-orange-400 flex-shrink-0" title="Sin guardar" />
+                        )}
                         <span className="truncate flex-1 text-sm">{item.name}</span>
                       </div>
                     );
@@ -690,6 +795,9 @@ const getFileIcon = (file) => {
                 onClick={() => setActiveFile(file)}
               >
                 <span className="text-sm">{getFileIcon(file)}</span>
+                {dirtyFiles.has(file.name) && (
+                  <span className="w-2 h-2 rounded-full bg-orange-400 flex-shrink-0" title="Sin guardar" />
+                )}
                 <span className="text-sm truncate max-w-[150px]">{file.name}</span>
                 <button
                   onClick={(e) => handleCloseTab(file, e)}
@@ -792,12 +900,12 @@ const getFileIcon = (file) => {
                   }
                   
                   try {
-                    const res = await fetch('http://localhost:3001/api/terminal', {
+                    const res = await fetch('/api/terminal', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ 
                         command: cmd, 
-                        project: selectedFolder ? selectedFolder.path : getCurrentProject(),
+                        project: selectedFolder ? selectedFolder.path : currentProject,
                         cwd: terminalWorkingDir
                       })
                     });
@@ -818,7 +926,8 @@ const getFileIcon = (file) => {
       {/* ✅ BOTON TERMINAL FIJO */}
       {!showTerminal && (
         <button
-          onClick={() => setShowTerminal(true)}
+          type="button"
+          onClick={(e) => { e.preventDefault(); setShowTerminal(true); }}
           className="absolute flex items-center gap-2 bottom-3 right-3 bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-xs shadow-lg z-10"
         >
           <Terminal size={13} />  Abrir Terminal

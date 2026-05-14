@@ -89,7 +89,7 @@ const AdminTaskCard = ({
 
                     <div className="flex items-center gap-6 text-sm">
                         <span className="text-gray-400">
-                            💰 Pago: <span className="text-green-400 font-semibold">${task.reward}</span>
+                            💰 Pago: <span className="text-green-400 font-semibold">${task.rewards?.totalReward || task.rewards?.baseReward || task.baseReward || task.reward || 0}</span>
                         </span>
                         <span className="text-gray-400">
                             ⭐ XP: <span className="text-yellow-400 font-semibold">{task.xp}</span>

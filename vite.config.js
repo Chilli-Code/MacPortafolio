@@ -70,20 +70,15 @@ export default defineConfig({
     port: 5173,
     open: true,
 
-    // ⭐ PROXY PARA JSON-SERVER (IMPORTANTE PARA MÓVIL)
+    // ⭐ PROXY PARA BACKEND (PUERTO 3001)
     proxy: {
       '/api': {
         target: 'http://localhost:3001',
         changeOrigin: true,
         secure: false,
-        configure: (proxy, options) => {
-          // Logs para debug
-          proxy.on('error', (err, req, res) => {
-            console.log('[Proxy Error]', err);
-          });
-          proxy.on('proxyReq', (proxyReq, req, res) => {
-            console.log('[Proxy Request]', req.method, req.url);
-          });
+        configure: (proxy) => {
+          proxy.on('error', (err) => console.log('[Proxy Error]', err));
+          proxy.on('proxyReq', (proxyReq, req) => console.log('[Proxy Request]', req.method, req.url));
         }
       }
     },

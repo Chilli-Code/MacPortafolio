@@ -183,11 +183,22 @@ app.get('/tasks/:id', async (req, res) => {
 
 app.post('/tasks', async (req, res) => {
   try {
-    const task = await prisma.task.create({ data: req.body });
+    const taskData = {
+      ...req.body,
+      id: req.body.id || crypto.randomUUID(),
+      status: req.body.status || 'available',
+      tags: req.body.tags || [],
+      images: req.body.images || [],
+      rejectionReasons: req.body.rejectionReasons || [],
+      createdBy: req.body.createdBy || 'adm_001',
+      totalReward: req.body.totalReward || ((req.body.baseReward || 0) + (req.body.bonusReward || 0))
+    };
+    console.log('Creating task:', taskData);
+    const task = await prisma.task.create({ data: taskData });
     res.json(task);
   } catch (error) {
     console.error('Error creating task:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message, details: error.stack });
   }
 });
 
@@ -216,6 +227,43 @@ app.patch('/tasks/:id', async (req, res) => {
 app.delete('/tasks/:id', async (req, res) => {
   await prisma.task.delete({ where: { id: req.params.id } });
   res.json({});
+});
+
+// APPROVE TASK
+app.patch('/tasks/:id/approve', async (req, res) => {
+  try {
+    console.log('APPROVE task:', req.params.id);
+    const task = await prisma.task.update({
+      where: { id: req.params.id },
+      data: {
+        status: 'completed',
+        completedAt: new Date().toISOString(),
+        reviewNotes: req.body.reviewNotes || '✅ Aprobada'
+      }
+    });
+    res.json(task);
+  } catch (error) {
+    console.error('Error approving task:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// REJECT TASK
+app.patch('/tasks/:id/reject', async (req, res) => {
+  try {
+    console.log('REJECT task:', req.params.id);
+    const task = await prisma.task.update({
+      where: { id: req.params.id },
+      data: {
+        status: 'rejected',
+        reviewNotes: req.body.reviewNotes || '❌ Rechazada'
+      }
+    });
+    res.json(task);
+  } catch (error) {
+    console.error('Error rejecting task:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // ACHIEVEMENTS
