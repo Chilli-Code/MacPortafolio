@@ -182,8 +182,7 @@
 }
 
 .dark #safari,
-.dark .blog,
-.dark #terminal .techstack {
+.dark .blog {
   background-color: #1E1E1E;
 }
 
@@ -224,7 +223,6 @@
   color: #fff;
 }
 
-.dark #terminal .techstack,
 .dark #terminal .text-black
 {
   color: #ffffff;

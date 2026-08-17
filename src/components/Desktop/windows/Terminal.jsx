@@ -9,11 +9,40 @@ import { createCommands } from '../../../utils/terminalCommands';
 import useLocationStore from '#store/location';
 import useWindowStore from '#store/window';
 import { locations } from '#constants';
+import { useAppSettingsStore } from '#store/appSettingsStore';
+import { terminalThemes, terminalThemeList } from '#constants/terminalThemes';
+
+// ASCII art estilo "Big Text" (figlet, fuente ANSI Shadow) para el banner de la terminal.
+const BILLY_BANNER = `██████╗ ██╗██╗     ██╗  ██╗   ██╗
+██╔══██╗██║██║     ██║  ╚██╗ ██╔╝
+██████╔╝██║██║     ██║   ╚████╔╝
+██╔══██╗██║██║     ██╗    ╚██╔╝
+██████╔╝██║███████╗███████╗██║
+╚═════╝ ╚═╝╚══════╝╚══════╝╚═╝   `;
 
 const Terminal = ({ isMaximized, setIsMaximized }) => {
   const { setActiveLocation } = useLocationStore();
   const { openWindow } = useWindowStore();
+  const terminalThemeName = useAppSettingsStore((s) => s.terminalTheme);
+  const setTerminalTheme = useAppSettingsStore((s) => s.setTerminalTheme);
+  const t = terminalThemes[terminalThemeName] || terminalThemes.dracula;
+  const termVars = {
+    '--t-bg': t.bg,
+    '--t-fg': t.fg,
+    '--t-border': t.border,
+    '--t-focus': t.focus,
+    '--t-muted': t.muted,
+    '--t-mutedFg': t.mutedFg,
+    '--t-primary': t.primary,
+    '--t-accent': t.accent,
+    '--t-success': t.success,
+    '--t-error': t.error,
+    '--t-warning': t.warning,
+    '--t-info': t.info,
+    '--t-selection': t.selection,
+  };
   const [commandHistory, setCommandHistory] = useState([
+    { type: 'banner', text: 'Billy' },
     { type: 'system', text: 'Terminal de Tareas v1.0.0' },
     { type: 'system', text: 'Escribe "help" para ver comandos' }
   ]);
@@ -29,7 +58,7 @@ const [commandParts, setCommandParts] = useState({ cmd: '', args: '' });
     currentPath: '~',
   });
     const validCommands = useMemo(() => [
-    'help', 'ls', 'cd', 'pwd', 'open', 'clear',
+    'help', 'ls', 'cd', 'pwd', 'open', 'clear', 'theme',
     'tasks', 'type', 'tasks fetch', 'tasks list', 'tasks accept',
     'type list', 'type set'
   ], []);
@@ -65,6 +94,15 @@ const [commandParts, setCommandParts] = useState({ cmd: '', args: '' });
     setCommandHistory(prev => [...prev, { type, text }]);
   };
 
+  const replaceLastLine = (text, type = 'output') => {
+    setCommandHistory(prev => {
+      if (!prev.length) return prev;
+      const copy = [...prev];
+      copy[copy.length - 1] = { type, text };
+      return copy;
+    });
+  };
+
   // Helper para encontrar carpeta
   const findFolderByPath = (path, locations) => {
     if (path === '/' || path === '~') return { children: Object.values(locations) };
@@ -90,7 +128,9 @@ const [commandParts, setCommandParts] = useState({ cmd: '', args: '' });
     setActiveLocation,
     openWindow,
     terminalStateRef,
-    setLastLsInfo
+    setLastLsInfo,
+    replaceLastLine,
+    setTerminalTheme
   );
 
   const executeCommand = async (cmd) => {
@@ -280,15 +320,74 @@ const handleKeyDown = (e) => {
 };
 
   const lineColors = useMemo(() => ({
-    command: 'text-green-400',
-    success: 'text-green-300',
-    error: 'text-red-400',
-    warning: 'text-yellow-400',
-    info: 'text-blue-300',
-    system: 'text-gray-400',
-    folder: 'text-blue-400 font-bold text-base',
-    file: 'text-gray-300'
+    command: 'text-[var(--t-success)]',
+    success: 'text-[var(--t-success)]',
+    error: 'text-[var(--t-error)]',
+    warning: 'text-[var(--t-warning)]',
+    info: 'text-[var(--t-info)]',
+    system: 'text-[var(--t-mutedFg)]',
+    folder: 'text-[var(--t-info)] font-bold text-base',
+    file: 'text-[var(--t-fg)]',
+    table: 'text-[var(--t-fg)]',
+    heading: 'text-[var(--t-primary)] font-bold',
   }), []);
+
+  const buildAlert = (token, icon) => ({
+    icon,
+    box: {
+      borderColor: `color-mix(in srgb, var(--t-${token}) 40%, transparent)`,
+      backgroundColor: `color-mix(in srgb, var(--t-${token}) 10%, transparent)`,
+      color: `var(--t-${token})`,
+    },
+  });
+  const alertStyles = {
+    'alert-success': buildAlert('success', '✅'),
+    'alert-error':   buildAlert('error', '❌'),
+    'alert-warning': buildAlert('warning', '⚠️'),
+    'alert-info':    buildAlert('info', 'ℹ️'),
+  };
+
+  const renderHistoryLine = (line, i) => {
+    if (line.type === 'banner') {
+      return (
+        <pre key={i} className="font-mono text-[13px] leading-[1.1] py-1 whitespace-pre text-transparent bg-clip-text bg-gradient-to-r from-[var(--t-primary)] via-[var(--t-accent)] to-[var(--t-info)]">
+{BILLY_BANNER}
+        </pre>
+      );
+    }
+
+    if (line.type === 'table') {
+      return (
+        <div key={i} className="my-1 pl-2 border-l-2 border-[var(--t-primary)] leading-relaxed whitespace-pre font-mono text-[13px]" style={{ color: 'var(--t-fg)' }}>
+          {line.text}
+        </div>
+      );
+    }
+
+    if (line.type === 'spinner') {
+      return (
+        <div key={i} className="flex items-center gap-2 py-0.5" style={{ color: 'var(--t-info)' }}>
+          <span className="inline-block w-3 h-3 border-2 rounded-full animate-spin" style={{ borderColor: 'var(--t-info)', borderTopColor: 'transparent' }} />
+          <span>{line.text}</span>
+        </div>
+      );
+    }
+
+    if (typeof line.type === 'string' && line.type.startsWith('alert')) {
+      const s = alertStyles[line.type] || alertStyles['alert-info'];
+      return (
+        <div key={i} className="my-1 px-3 py-2 rounded-md border text-sm" style={s.box}>
+          <span className="mr-2">{s.icon}</span>{line.text}
+        </div>
+      );
+    }
+
+    return (
+      <div key={i} className={`${lineColors[line.type] || 'text-[var(--t-fg)]'} leading-relaxed whitespace-pre-wrap`}>
+        {line.text}
+      </div>
+    );
+  };
 
   useEffect(() => {
     terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -310,7 +409,7 @@ const handleKeyDown = (e) => {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" style={termVars}>
       <div id="window-header" className="flex-shrink-0">
         <WindowControls target="terminal" onMaximize={() => setIsMaximized(!isMaximized)} />
         <h2 className="flex items-center gap-2 justify-center">
@@ -320,22 +419,18 @@ const handleKeyDown = (e) => {
         </h2>
       </div>
 
-      <div className="flex-1 bg-gray-900 flex flex-col font-mono text-sm overflow-hidden">
+      <div className="flex-1 bg-[var(--t-bg)] text-[var(--t-fg)] flex flex-col font-mono text-sm overflow-hidden">
     <div className="flex-1 p-4 overflow-y-auto" onClick={() => inputRef.current?.focus()}>
           <div className="space-y-1">
-            {commandHistory.map((line, i) => (
-              <div key={i} className={`${lineColors[line.type] || 'text-gray-300'} leading-relaxed whitespace-pre-wrap`}>
-                {line.text}
-              </div>
-            ))}
+            {commandHistory.map((line, i) => renderHistoryLine(line, i))}
           </div>
           
           {/* Prompt con comando coloreado */}
           <div className="flex items-center gap-2 mt-2">
-            <span className="text-green-400 font-bold">user@tasks</span>
-            <span className="text-gray-500">:</span>
-            <span className="text-blue-400">{getPromptPath()}</span>
-            <span className="text-green-400">$</span>
+            <span className="text-[var(--t-success)] font-bold">user@tasks</span>
+            <span className="text-[var(--t-mutedFg)]">:</span>
+            <span className="text-[var(--t-info)]">{getPromptPath()}</span>
+            <span className="text-[var(--t-success)]">$</span>
             
             {/* Input invisible para capturar texto */}
             <input
@@ -352,29 +447,28 @@ const handleKeyDown = (e) => {
 {/* Display con colores separados */}
 <div className="flex-1 cursor-text" onClick={() => inputRef.current?.focus()}>
   {currentCommand ? (
-    <>
-      {/* Comando en verde/rojo */}
-      <span className={
-        isCommandValid(commandParts.cmd)
-          ? 'text-green-300'
-          : 'text-red-300'
-      }>
-        {commandParts.cmd}
-      </span>
-      {/* Argumentos en cyan */}
-      <span className="text-cyan-300">
-        {commandParts.args}
-      </span>
-      {/* Cursor - SOLO cuando hay texto */}
-      <span className="text-green-400 animate-pulse">▌</span>
-    </>
-  ) : (
-    <>
-      <span className="text-gray-500"></span>
-      {/* Cursor cuando NO hay texto - SIN parpadeo */}
-      <span className="text-green-400">▌</span>
-    </>
-  )}
+      <>
+        {/* Comando en verde/rojo */}
+        <span className={
+          isCommandValid(commandParts.cmd)
+            ? 'text-[var(--t-success)]'
+            : 'text-[var(--t-error)]'
+        }>
+          {commandParts.cmd}
+        </span>
+        {/* Argumentos en cyan */}
+        <span className="text-[var(--t-info)]">
+          {commandParts.args}
+        </span>
+        {/* Cursor - SOLO cuando hay texto */}
+        <span className="text-[var(--t-success)] animate-pulse">▌</span>
+      </>
+    ) : (
+      <>
+        {/* Cursor cuando NO hay texto - SIN parpadeo */}
+        <span className="text-[var(--t-success)]">▌</span>
+      </>
+    )}
 </div>
           </div>
           <div ref={terminalEndRef} />
@@ -382,7 +476,7 @@ const handleKeyDown = (e) => {
 
 
 
-        <div className="flex-shrink-0 bg-gray-800 px-4 py-2 text-xs text-gray-400 flex items-center justify-between border-t border-gray-700">
+        <div className="flex-shrink-0 bg-[var(--t-muted)] px-4 py-2 text-xs text-gray-400 flex items-center justify-between border-t" style={{ borderColor: 'var(--t-border)' }}>
           <div className="flex items-center gap-4">
             <span>Tipo: <span className="text-blue-400 font-semibold">{store.userType}</span></span>
             <span>Tareas: <span className="text-green-400">{store.tasks.length}</span></span>
@@ -397,7 +491,8 @@ const handleKeyDown = (e) => {
               </>
             )}
           </div>
-          <span>↑↓ Historial | Tab Autocompletar</span>
+            <span>↑↓ Historial | Tab Autocompletar</span>
+            <span className="ml-4">Tema: <span className="font-semibold" style={{ color: 'var(--t-primary)' }}>{t.label}</span></span>
         </div>
       </div>
     </div>

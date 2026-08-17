@@ -9,6 +9,30 @@ import {
   Palette,
   File
 } from 'lucide-react';
+import { terminalThemes, terminalThemeList } from '#constants/terminalThemes';
+import { useAppSettingsStore } from '#store/appSettingsStore';
+
+// Genera una tabla con bordes box-drawing (estilo termcn) a partir de columnas y filas.
+const buildTable = (columns, rows) => {
+  const cell = (r, i) => String(r[i] ?? '');
+  const widths = columns.map((col, i) =>
+    Math.max(col.header.length, ...rows.map(r => cell(r, i).length))
+  );
+
+  const pad = (s, w) => String(s).padEnd(w, ' ');
+  const border = (left, mid, right) =>
+    left + widths.map(w => '─'.repeat(w + 2)).join(mid) + right;
+  const rowStr = (cells) =>
+    '│' + cells.map((c, i) => ' ' + pad(c, widths[i]) + ' ').join('│') + '│';
+
+  const lines = [];
+  lines.push(border('╭', '┬', '╮'));
+  lines.push(rowStr(columns.map(c => c.header)));
+  lines.push(border('├', '┼', '┤'));
+  rows.forEach(r => lines.push(rowStr(columns.map((c, i) => cell(r, i)))));
+  lines.push(border('╰', '┴', '╯'));
+  return lines.join('\n');
+};
 
 
 
@@ -19,7 +43,9 @@ export const createCommands = (
   setActiveLocation,
   openWindow,
   terminalStateRef,
-  setLastLsInfo
+  setLastLsInfo,
+  replaceLastLine,
+  setTerminalTheme
 ) => {
   const { 
     tasks, 
@@ -67,93 +93,88 @@ const findFolderByPath = (path, locations) => {
 
   return {
     help: () => {
-      addToHistory('Comandos disponibles:', 'success');
+      addToHistory('Comandos disponibles:', 'heading');
       addToHistory('');
-      addToHistory('📂 NAVEGACIÓN:', 'info');
-      addToHistory('  ls                   - Listar archivos/carpetas');
-      addToHistory('  cd <carpeta>         - Cambiar directorio');
-      addToHistory('  pwd                  - Ver directorio actual');
-      addToHistory('  open <archivo>       - Abrir archivo');
+      addToHistory('📂 NAVEGACIÓN', 'heading');
+      addToHistory('  ls                   Listar archivos/carpetas');
+      addToHistory('  cd <carpeta>         Cambiar directorio');
+      addToHistory('  pwd                  Ver directorio actual');
+      addToHistory('  open <archivo>       Abrir archivo');
       addToHistory('');
-      addToHistory('📋 TAREAS:', 'info');
-      addToHistory('  tasks fetch          - Obtener tareas');
-      addToHistory('  tasks list           - Ver tareas');
-      addToHistory('  tasks accept <id>    - Aceptar tarea');
+      addToHistory('📋 TAREAS', 'heading');
+      addToHistory('  tasks fetch           Obtener tareas');
+      addToHistory('  tasks list            Ver tareas');
+      addToHistory('  tasks accept <id>     Aceptar tarea');
       addToHistory('');
-      addToHistory('👤 PERFIL:', 'info');
-      addToHistory('  type                 - Ver tipo actual');
-      addToHistory('  type set <tipo>      - Cambiar tipo');
-      addToHistory('  type list            - Ver tipos');
+      addToHistory('👤 PERFIL', 'heading');
+      addToHistory('  type                  Ver tipo actual');
+      addToHistory('  type set <tipo>       Cambiar tipo');
+      addToHistory('  type list             Ver tipos');
       addToHistory('');
-      addToHistory('  clear                - Limpiar terminal');
+      addToHistory('  clear                 Limpiar terminal');
+    },
+
+    // 🆕 CAMBIAR TEMA DE LA TERMINAL (paletas de termcn)
+    theme: (args) => {
+      const sub = (args[0] || '').toLowerCase();
+
+      if (sub === 'list' || sub === '') {
+        const current = useAppSettingsStore.getState().terminalTheme;
+        addToHistory('🎨 Temas disponibles:', 'heading');
+        terminalThemeList.forEach(({ value, label }) => {
+          const mark = value === current ? ' ⭐ (actual)' : '';
+          addToHistory(`  ${value.padEnd(20)} ${label}${mark}`);
+        });
+        addToHistory('');
+        addToHistory('Usa: theme <nombre>   (ej. theme nord)', 'info');
+        return;
+      }
+
+      if (terminalThemes[sub]) {
+        setTerminalTheme(sub);
+        addToHistory(`✅ Tema cambiado a: ${terminalThemes[sub].label}`, 'success');
+      } else {
+        addToHistory(`❌ Tema "${sub}" no encontrado`, 'error');
+        addToHistory('Usa "theme list" para ver los disponibles', 'info');
+      }
     },
 
     // 🆕 LISTAR ARCHIVOS
-ls: (args, locations) => {
-  const currentPath = getPath();
+    ls: (args, locations) => {
+      const currentPath = getPath();
 
-  const folder = currentPath === '~'
-    ? { children: Object.values(locations) }
-    : findFolderByPath(currentPath, locations);
+      const folder = currentPath === '~'
+        ? { children: Object.values(locations) }
+        : findFolderByPath(currentPath, locations);
 
-  if (!folder || !folder.children) {
-    addToHistory('Directorio vacío', 'warning');
-    setLastLsInfo(null);
-    return;
-  }
-
-  const folders = folder.children.filter(item => item.kind === 'folder');
-  const files = folder.children.filter(item => item.kind === 'file');
-
-  const formatItems = (items) => {
-    if (items.length === 0) return [];
-    
-    const maxLength = Math.max(...items.map(item => item.name.length));
-    const columnWidth = maxLength + 4;
-    const terminalWidth = 80;
-    const columns = Math.floor(terminalWidth / columnWidth);
-    
-    const rows = Math.ceil(items.length / columns);
-    const formatted = [];
-    
-    for (let row = 0; row < rows; row++) {
-      let line = '';
-      for (let col = 0; col < columns; col++) {
-        const index = row + col * rows;
-        if (index < items.length) {
-          const item = items[index];
-          const name = item.name.padEnd(columnWidth);
-          line += name; // ← SIN [DIR]
-        }
+      if (!folder || !folder.children || folder.children.length === 0) {
+        addToHistory('Directorio vacío', 'warning');
+        setLastLsInfo(null);
+        return;
       }
-      formatted.push(line.trimEnd());
-    }
-    
-    return formatted;
-  };
 
-  // Mostrar carpetas primero (en azul)
-  if (folders.length > 0) {
-    formatItems(folders).forEach(line => addToHistory(line, 'folder'));
-  }
+      const folders = folder.children.filter(item => item.kind === 'folder');
+      const files = folder.children.filter(item => item.kind === 'file');
 
-  // Luego archivos (en gris)
-  if (files.length > 0) {
-    if (folders.length > 0) addToHistory(''); // Espacio entre carpetas y archivos
-    formatItems(files).forEach(line => addToHistory(line, 'file'));
-  }
+      const rows = [
+        ...folders.map(f => ['📁', f.name]),
+        ...files.map(f => ['📄', f.name]),
+      ];
 
-  // ✅ GUARDAR INFO EN EL FOOTER (no mostrar en output)
-  setLastLsInfo({
-    total: folder.children.length,
-    folders: folders.length,
-    files: files.length
-  });
+      const table = buildTable(
+        [{ header: 'Tipo' }, { header: 'Nombre' }],
+        rows
+      );
 
-  // ❌ NO AGREGAR ESTO AL HISTORIAL:
-  // addToHistory('');
-  // addToHistory(`${total} items total...`, 'system');
-},
+      addToHistory(table, 'table');
+
+      // ✅ GUARDAR INFO EN EL FOOTER (no mostrar en output)
+      setLastLsInfo({
+        total: folder.children.length,
+        folders: folders.length,
+        files: files.length
+      });
+    },
 
 
 
@@ -279,19 +300,19 @@ open: (args, locations) => {
 
     // Comandos existentes...
     'tasks fetch': async () => {
-      addToHistory('🔄 Conectando al servidor...', 'info');
+      addToHistory('🔄 Conectando al servidor...', 'spinner');
       
       try {
         const fetchedTasks = await fetchTasks();
         
         if (fetchedTasks && fetchedTasks.length > 0) {
-          addToHistory(`✅ ${fetchedTasks.length} tareas encontradas para tipo: ${userType}`, 'success');
+          replaceLastLine(`✅ ${fetchedTasks.length} tareas encontradas para tipo: ${userType}`, 'alert-success');
           addToHistory('Abre Safari para ver las tareas o usa "tasks list"', 'info');
         } else {
-          addToHistory('⚠️  No hay tareas disponibles para tu tipo', 'warning');
+          replaceLastLine('⚠️  No hay tareas disponibles para tu tipo', 'alert-warning');
         }
       } catch (error) {
-        addToHistory('❌ Error al conectar con el servidor', 'error');
+        replaceLastLine('❌ Error al conectar con el servidor', 'alert-error');
       }
     },
 
@@ -301,24 +322,37 @@ open: (args, locations) => {
         return;
       }
 
-      addToHistory(`📋 Tareas disponibles (${tasks.length}):`, 'success');
-      addToHistory('─'.repeat(80));
-      
-      tasks.forEach(task => {
-        const statusEmoji = {
-          available: '🆕',
-          in_progress: '⏳',
-          pending_review: '👀',
-          completed: '✅',
-          rejected: '❌'
-        }[task.status] || '📋';
-        
-        addToHistory(`${statusEmoji} ID: ${task.id} | ${task.title}`);
-        addToHistory(`   💼 Tipo: ${task.type} | 🎯 ${task.difficulty} | ⭐ ${task.xp} XP | 💰 $${task.reward}`);
-        addToHistory(`   📝 ${task.description}`);
-        addToHistory(`   📅 Deadline: ${task.deadline}`);
-        addToHistory('─'.repeat(80));
-      });
+      addToHistory(`📋 Tareas disponibles (${tasks.length}):`, 'heading');
+
+      const statusEmoji = {
+        available: '🆕',
+        in_progress: '⏳',
+        pending_review: '👀',
+        completed: '✅',
+        rejected: '❌'
+      };
+
+      const rows = tasks.map(task => [
+        String(task.id),
+        statusEmoji[task.status] || '📋',
+        task.title,
+        task.type,
+        task.difficulty,
+        String(task.xp),
+        `$${task.reward}`,
+        task.deadline,
+      ]);
+
+      const table = buildTable(
+        [
+          { header: 'ID' }, { header: 'Estado' }, { header: 'Título' },
+          { header: 'Tipo' }, { header: 'Dificultad' }, { header: 'XP' },
+          { header: 'Recompensa' }, { header: 'Deadline' },
+        ],
+        rows
+      );
+
+      addToHistory(table, 'table');
     },
 
     'tasks accept': async (args) => {
@@ -391,9 +425,5 @@ open: (args, locations) => {
       addToHistory(`✅ Tipo cambiado a: ${newType}`, 'success');
       addToHistory('Ejecuta "tasks fetch" para obtener nuevas tareas', 'info');
     },
-
-    clear: (setCommandHistory) => {
-      setCommandHistory([{ type: 'system', text: 'Terminal limpiada' }]);
-    }
   };
 };

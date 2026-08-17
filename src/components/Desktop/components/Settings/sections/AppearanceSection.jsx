@@ -1,12 +1,15 @@
 // src/components/Settings/sections/AppearanceSection.jsx
 
 import { useState, useEffect } from 'react';
-import { Palette, Monitor, Moon, Sun, Check } from '#assets/icons';
+import { Palette, Monitor, Moon, Sun, Check, Sparkles, Zap, Keyboard, RotateCcw, TerminalIcon } from '#assets/icons';
 import clsx from 'clsx';
 import gsap from 'gsap';
 import { useAuthStore } from '#store/authStore';
+import { useAppSettingsStore } from '#store/appSettingsStore';
+import { EDGE_AURA_PRESETS, keyCodeToPosition } from 'edge-aura';
+import { replayAuraEntrance, pulseAura, playAuraKey } from '#lib/auraController';
 import FontSizeSection from '../FontSizeSection';
-
+import { terminalThemeList } from '#constants/terminalThemes';
 
 import PerformanceMonitorToggle from '#components/Desktop/components/Settings/PerformanceMonitorToggle';
 import PerformanceMonitor from '#components/Systemresourcessection';
@@ -15,6 +18,21 @@ const AppearanceSection = () => {
   const [selectedWallpaper, setSelectedWallpaper] = useState("/images/wallpapers/wallpaper.webp");
   const [theme, setTheme] = useState("light");
   const currentUser = useAuthStore(state => state.currentUser);
+  const { edgeAuraEnabled, setEdgeAuraEnabled, edgeAuraConfig, setEdgeAuraConfig, terminalTheme, setTerminalTheme } = useAppSettingsStore();
+
+  // Aplica un perfil de apariencia (subtle/vivid/calm/thin): copia los valores
+  // expuestos a los sliders y deja que el bundle del preset gobierne el resto.
+  const applyPreset = (name) => {
+    const patch = { preset: name };
+    if (name !== 'default') {
+      const p = EDGE_AURA_PRESETS[name];
+      if (p?.geometry?.band !== undefined) patch.band = p.geometry.band;
+      if (p?.palette?.ringAlpha !== undefined) patch.ringAlpha = p.palette.ringAlpha;
+      if (p?.palette?.pastel !== undefined) patch.pastel = p.palette.pastel;
+      if (p?.motion?.rotateIdleS !== undefined) patch.rotateIdleS = p.motion.rotateIdleS;
+    }
+    setEdgeAuraConfig(patch);
+  };
 
   // Cargar configuración desde localStorage
   useEffect(() => {
@@ -311,6 +329,222 @@ const AppearanceSection = () => {
           </div>
         </div>
       </div>
+
+      {/* Tema de la terminal (paletas de termcn) */}
+      <div>
+        <h3 className="text-black dark:text-white text-lg font-medium mb-4 flex items-center gap-2">
+          <TerminalIcon className="w-5 h-5" />
+          Tema de la terminal
+        </h3>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl">
+          <div className="flex-1 min-w-0">
+            <span className="text-sm font-medium text-black dark:text-white block">Paleta de la terminal</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              Temas de la librería termcn (Dracula, Nord, Catppuccin, etc.)
+            </span>
+          </div>
+          <select
+            value={terminalTheme}
+            onChange={(e) => setTerminalTheme(e.target.value)}
+            className="px-3 py-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            {terminalThemeList.map(({ value, label }) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Efectos visuales - Edge Aura */}
+      <div>
+        <h3 className="text-black dark:text-white text-lg font-medium mb-4 flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-purple-500" />
+          Efectos visuales
+        </h3>
+
+        <label className="dark:bg-gray-800 bg-gray-50 text-black dark:text-white flex items-center justify-between flex-wrap gap-2 p-4 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+          <div className="flex-1 min-w-0">
+            <span className="text-sm font-medium block">Resplandor animado en los bordes</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              Resalta los bordes de la pantalla con un glow orgánico animado
+            </span>
+          </div>
+          <div className="relative flex-shrink-0">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={edgeAuraEnabled}
+              onChange={(e) => setEdgeAuraEnabled(e.target.checked)}
+            />
+            <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-500"></div>
+          </div>
+        </label>
+
+        {/* Panel de personalización */}
+        {edgeAuraEnabled && (
+          <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl space-y-5">
+            {/* Paleta de color */}
+            <div>
+              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Color (paleta)</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {AURA_PALETTES.map((p) => (
+                  <button
+                    key={p.name}
+                    onClick={() => setEdgeAuraConfig({ palette: p.name })}
+                    className={clsx(
+                      "px-3 py-2 text-xs font-medium rounded-lg border transition-all",
+                      edgeAuraConfig.palette === p.name
+                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                        : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400"
+                    )}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Perfil de apariencia */}
+            <div>
+              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Perfil</p>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                {AURA_PRESETS.map((p) => (
+                  <button
+                    key={p.name}
+                    onClick={() => applyPreset(p.name)}
+                    className={clsx(
+                      "px-3 py-2 text-xs font-medium rounded-lg border transition-all",
+                      edgeAuraConfig.preset === p.name
+                        ? "border-purple-500 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+                        : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400"
+                    )}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Sliders */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+              <AuraSlider label="Grosor" value={edgeAuraConfig.band} min={8} max={200} step={2}
+                onChange={(v) => setEdgeAuraConfig({ band: v })} format={(v) => `${v}px`} />
+              <AuraSlider label="Opacidad" value={edgeAuraConfig.ringAlpha} min={0.1} max={1} step={0.05}
+                onChange={(v) => setEdgeAuraConfig({ ringAlpha: v })} format={(v) => `${Math.round(v * 100)}%`} />
+              <AuraSlider label="Radio de esquina" value={edgeAuraConfig.cornerRadius} min={0} max={60} step={1}
+                onChange={(v) => setEdgeAuraConfig({ cornerRadius: v })} format={(v) => `${v}px`} />
+              <AuraSlider label="Separación del borde" value={edgeAuraConfig.inset} min={0} max={40} step={1}
+                onChange={(v) => setEdgeAuraConfig({ inset: v })} format={(v) => `${v}px`} />
+              <AuraSlider label="Tinte pastel" value={edgeAuraConfig.pastel} min={0} max={1} step={0.05}
+                onChange={(v) => setEdgeAuraConfig({ pastel: v })} format={(v) => `${Math.round(v * 100)}%`} />
+              <AuraSlider label="Velocidad en reposo" value={edgeAuraConfig.rotateIdleS} min={1} max={40} step={1}
+                onChange={(v) => setEdgeAuraConfig({ rotateIdleS: v })} format={(v) => `${v}s`} />
+              <AuraSlider label="Deriva de tono" value={edgeAuraConfig.hueDriftDeg} min={0} max={45} step={1}
+                onChange={(v) => setEdgeAuraConfig({ hueDriftDeg: v })} format={(v) => `${v}°`} />
+            </div>
+
+            {/* Esquinas */}
+            <div>
+              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Esquinas</p>
+              <div className="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
+                <button
+                  onClick={() => setEdgeAuraConfig({ cornerFill: false })}
+                  className={clsx(
+                    "px-4 py-2 text-xs font-medium transition-all",
+                    !edgeAuraConfig.cornerFill
+                      ? "bg-blue-500 text-white"
+                      : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  )}
+                >
+                  Redondeadas
+                </button>
+                <button
+                  onClick={() => setEdgeAuraConfig({ cornerFill: true })}
+                  className={clsx(
+                    "px-4 py-2 text-xs font-medium transition-all border-l border-gray-300 dark:border-gray-600",
+                    edgeAuraConfig.cornerFill
+                      ? "bg-blue-500 text-white"
+                      : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  )}
+                >
+                  Rellenas
+                </button>
+              </div>
+            </div>
+
+            {/* Brillo destacado (highlight) */}
+            <div>
+              <label className="flex items-center justify-between gap-2 cursor-pointer">
+                <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">Brillo destacado (highlight)</span>
+                <div className="relative flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={edgeAuraConfig.highlightOn}
+                    onChange={(e) => setEdgeAuraConfig({ highlightOn: e.target.checked })}
+                  />
+                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-500"></div>
+                </div>
+              </label>
+              {edgeAuraConfig.highlightOn && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-4 mt-4">
+                  <AuraSlider label="Ancho de arco" value={edgeAuraConfig.highlightArc} min={20} max={160} step={2}
+                    onChange={(v) => setEdgeAuraConfig({ highlightArc: v })} format={(v) => `${v}°`} />
+                  <AuraSlider label="Velocidad de barrido" value={edgeAuraConfig.highlightPeriod} min={1} max={20} step={0.5}
+                    onChange={(v) => setEdgeAuraConfig({ highlightPeriod: v })} format={(v) => `${v}s`} />
+                  <AuraSlider label="Intensidad mínima" value={edgeAuraConfig.highlightMin} min={0} max={1} step={0.05}
+                    onChange={(v) => setEdgeAuraConfig({ highlightMin: v })} format={(v) => `${Math.round(v * 100)}%`} />
+                </div>
+              )}
+            </div>
+
+            {/* Vista previa / interacción */}
+            <div className="pt-1 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Vista previa</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={replayAuraEntrance}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 transition"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" /> Repetir entrada
+                </button>
+                <button
+                  onClick={pulseAura}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 transition"
+                >
+                  <Zap className="w-3.5 h-3.5" /> Pulso
+                </button>
+                <div className="relative flex-1 min-w-[180px]">
+                  <Keyboard className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Reproducir — escribe aquí"
+                    onKeyDown={(e) => {
+                      const pos = keyCodeToPosition(e.code);
+                      const x = pos ? pos.x : (e.key.length === 1 ? (e.key.charCodeAt(0) % 26) / 26 : 0.5);
+                      playAuraKey(x);
+                    }}
+                    className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={() => setEdgeAuraConfig({ ...EDGE_AURA_DEFAULT_CONFIG })}
+                className="text-xs px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 transition"
+              >
+                Restaurar valores
+              </button>
+            </div>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500">
+              💡 A mayor "Velocidad en reposo" más lento rota. Los cambios se aplican al instante.
+            </p>
+          </div>
+        )}
+      </div>
+
               <div className="mt-6">
          <PerformanceMonitorToggle />
         </div>
@@ -379,5 +613,64 @@ const AppearanceSection = () => {
     </div>
   );
 };
+
+// Paletas de color disponibles en edge-aura
+const AURA_PALETTES = [
+  { name: 'opal', label: 'Ópalo' },
+  { name: 'aurora', label: 'Aurora' },
+  { name: 'sunset', label: 'Atardecer' },
+  { name: 'ocean', label: 'Océano' },
+  { name: 'sakura', label: 'Sakura' },
+  { name: 'ember', label: 'Brasa' },
+  { name: 'ultraviolet', label: 'Ultravioleta' },
+];
+
+// Perfiles de apariencia disponibles en edge-aura
+const AURA_PRESETS = [
+  { name: 'default', label: 'Por defecto' },
+  { name: 'subtle', label: 'Sutil' },
+  { name: 'vivid', label: 'Vívido' },
+  { name: 'calm', label: 'Calma' },
+  { name: 'thin', label: 'Delgado' },
+];
+
+// Valores por defecto del efecto (coinciden con EDGE_AURA_DEFAULTS de la librería)
+const EDGE_AURA_DEFAULT_CONFIG = {
+  palette: 'opal',
+  preset: 'default',
+  band: 76,
+  ringAlpha: 0.9,
+  cornerRadius: 11,
+  inset: 3,
+  rotateIdleS: 8,
+  pastel: 0.35,
+  hueDriftDeg: 10,
+  cornerFill: false,
+  highlightOn: false,
+  highlightArc: 80,
+  highlightPeriod: 6,
+  highlightMin: 0.35,
+};
+
+// Slider reutilizable para los controles de personalización
+const AuraSlider = ({ label, value, min, max, step, onChange, format }) => (
+  <div>
+    <div className="flex items-center justify-between mb-1.5">
+      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{label}</span>
+      <span className="text-xs font-semibold text-gray-900 dark:text-white">
+        {format ? format(value) : value}
+      </span>
+    </div>
+    <input
+      type="range"
+      min={min}
+      max={max}
+      step={step}
+      value={value}
+      onChange={(e) => onChange(parseFloat(e.target.value))}
+      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500"
+    />
+  </div>
+);
 
 export default AppearanceSection;

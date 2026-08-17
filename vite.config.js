@@ -61,6 +61,10 @@ export default defineConfig({
         dirname(fileURLToPath(import.meta.url)),
         "src/hooks"
       ),
+      "#lib": resolve(
+        dirname(fileURLToPath(import.meta.url)),
+        "src/lib"
+      ),
     },
   },
 

@@ -33,6 +33,24 @@ export const useAppSettingsStore = create(
       fontSize: 1.0,
       dockPosition: 'bottom', // 👈 NUEVO: Posición del Dock ('bottom', 'left', 'right')
       dockHidden: false,
+      edgeAuraEnabled: false, // 👈 NUEVO: Efecto de glow en los bordes (edge-aura)
+      terminalTheme: 'dracula', // 👈 NUEVO: Tema de la terminal (paletas de termcn)
+      edgeAuraConfig: {
+        palette: 'opal',        // preset de color (opal, aurora, sunset, ocean, sakura, ember, ultraviolet)
+        preset: 'default',      // perfil de apariencia (default, subtle, vivid, calm, thin)
+        band: 76,               // grosor del glow (px)
+        ringAlpha: 0.9,         // intensidad / opacidad del glow
+        cornerRadius: 11,       // suavidad de las esquinas (forma)
+        inset: 3,               // separación desde el borde (px)
+        rotateIdleS: 8,         // velocidad de rotación en reposo (mayor = más lento)
+        pastel: 0.35,           // mezcla hacia blanco (tinte suave)
+        hueDriftDeg: 10,        // deriva de tono en el círculo cromático (°)
+        cornerFill: false,      // rellenar esquinas cuadradas (true) o redondear (false)
+        highlightOn: false,     // barrido de brillo destacado (highlight)
+        highlightArc: 80,       // ancho angular del barrido (°)
+        highlightPeriod: 6,     // segundos por vuelta del barrido
+        highlightMin: 0.35,     // intensidad mínima del bloom fuera del barrido
+      },
       // ==================== VOLÚMENES DE SONIDO ====================
       soundVolumes: {
         click: 0.3,
@@ -221,9 +239,52 @@ export const useAppSettingsStore = create(
   console.log(`✅ Dock ${newValue ? 'ocultado' : 'mostrado'}`);
   return { dockHidden: newValue };
 }),
-setDockHidden: (hidden) => set({ dockHidden: hidden }),
+      setDockHidden: (hidden) => set({ dockHidden: hidden }),
+
+      // 👇 NUEVO: Action para cambiar el tema de la terminal
+      setTerminalTheme: (theme) => {
+        set({ terminalTheme: theme });
+        console.log('✅ Terminal theme:', theme);
+      },
+
+      // 👇 NUEVO: Action para activar/desactivar el efecto Edge Aura
+      setEdgeAuraEnabled: (enabled) => {
+        set({ edgeAuraEnabled: enabled });
+        localStorage.setItem('edge-aura-enabled', enabled ? 'true' : 'false');
+        console.log('✅ Edge Aura:', enabled ? 'activado' : 'desactivado');
+      },
+
+      // 👇 NUEVO: Action para personalizar el efecto Edge Aura (merge parcial)
+      setEdgeAuraConfig: (partial) => {
+        set((state) => ({
+          edgeAuraConfig: { ...state.edgeAuraConfig, ...partial }
+        }));
+      },
+
       // ==================== INICIALIZACIÓN ====================
       initialize: () => {
+        // 👇 Migrar edgeAuraConfig: asegurar que todas las claves nuevas existan
+        {
+          const current = get().edgeAuraConfig || {};
+          const defaults = {
+            palette: 'opal',
+            preset: 'default',
+            band: 76,
+            ringAlpha: 0.9,
+            cornerRadius: 11,
+            inset: 3,
+            rotateIdleS: 8,
+            pastel: 0.35,
+            hueDriftDeg: 10,
+            cornerFill: false,
+            highlightOn: false,
+            highlightArc: 80,
+            highlightPeriod: 6,
+            highlightMin: 0.35,
+          };
+          set({ edgeAuraConfig: { ...defaults, ...current } });
+        }
+
         get().checkNotificationPermission();
         
         if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
@@ -270,6 +331,9 @@ setDockHidden: (hidden) => set({ dockHidden: hidden }),
         soundVolumes: state.soundVolumes,
         dockPosition: state.dockPosition, // 👈 NUEVO
         dockHidden: state.dockHidden,
+        edgeAuraEnabled: state.edgeAuraEnabled, // 👈 NUEVO
+        edgeAuraConfig: state.edgeAuraConfig, // 👈 NUEVO
+        terminalTheme: state.terminalTheme, // 👈 NUEVO
       })
     }
   )
