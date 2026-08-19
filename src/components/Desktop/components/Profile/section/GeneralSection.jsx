@@ -77,7 +77,7 @@ const GeneralSection = () => {
 
 
 
-  const stats = useGamificationStats();
+  const stats = useGamificationStats() || {};
   const skills = useSkills();
   const currentStreak = useStreak();
   // ⭐ DEBUG: Ver qué datos tenemos
@@ -98,11 +98,8 @@ const handleSaveProfile = async (newData) => {
     fullName: newData.fullName,
     role: newData.role,
 
-    profile: {
-      ...currentUser.profile,
-      bio: newData.bio,
-      location: newData.location,
-    },
+    bio: newData.bio,
+    location: newData.location,
 
     skills: newData.skills,
   });
@@ -185,7 +182,7 @@ const handleSaveProfile = async (newData) => {
               </div>
               <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
                 <MapPin className="w-4 h-4" />
-                <span>{currentUser.profile?.location || 'Ubicación no especificada'}</span>
+                <span>{currentUser.location || 'Ubicación no especificada'}</span>
               </div>
               <button type='button' className="flex cursor-pointer bg-green-200/30 p-2 rounded-xl items-center gap-1 text-green-600 dark:text-green-400 hover:bg-green-200/50 transition-colors">
                 <MessageCircle className="w-4 h-4" />
@@ -196,7 +193,7 @@ const handleSaveProfile = async (newData) => {
           {/* Bio */}
           <div className='overflow-hidden w-full'>
             <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-              {currentUser.profile?.bio || 'Desarrollador apasionado por crear experiencias únicas'}
+              {currentUser.bio || 'Desarrollador apasionado por crear experiencias únicas'}
             </p>
           </div>
         </div>
@@ -371,7 +368,7 @@ const handleSaveProfile = async (newData) => {
       <EditProfileModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        userData={currentUser.profile || {}}
+        userData={currentUser}
         onSave={handleSaveProfile}
       />
     </div>

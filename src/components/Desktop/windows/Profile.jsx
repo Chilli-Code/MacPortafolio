@@ -1,9 +1,10 @@
 import { WindowControls } from "#components/Desktop";
 import WindowWrapper from "#hoc/WindowWrapper";
 import { profileLinks } from "#constants";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search } from "#assets/icons";
 import { useAchievements } from '#hoc/useAchievements';
+import { useAuthStore } from "#store/authStore";
 // Importar componentes - CORREGIDO
 import ProfileSidebar from "#Desktop/components/Profile/ProfileSidebar";
 import GeneralSection from "#Desktop/components/Profile/section/GeneralSection";
@@ -47,10 +48,26 @@ const Profile = ({ isMaximized, setIsMaximized }) => {
         total: 50
       }
     );
-  };
+  }
 
+  const currentUser = useAuthStore((s) => s.currentUser);
+  const getGamificationStats = useAuthStore((s) => s.getGamificationStats);
+  const [stats, setStats] = useState(null);
 
+  useEffect(() => {
+    const id = currentUser?.id;
+    if (!id) return;
+    let cancelled = false;
+    fetch(`http://localhost:3001/api/stats/${id}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (!cancelled && data) setStats(data); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [currentUser?.id]);
 
+  const statsUserStats = stats?.userStats || getGamificationStats();
+  const statsMonthly = stats?.monthlyData || [];
+  const statsCategories = stats?.projectsByCategory || [];
 
   const [activeItem, setActiveItem] = useState(profileLinks[0]);
 
@@ -62,11 +79,11 @@ const Profile = ({ isMaximized, setIsMaximized }) => {
   const renderContent = () => {
     const sections = {
       1: <GeneralSection />,
-      2: <StatisticsSection userStats={userStats} monthlyData={monthlyData} projectsByCategory={projectsByCategory} />,
+      2: <StatisticsSection userStats={statsUserStats} monthlyData={statsMonthly} projectsByCategory={statsCategories} />,
       3: <AchievementsSection userStats={userStats} />,
       4: <ActivitySection userStats={userStats} />,
-      5: <FinancesSection userStats={userStats} monthlyData={monthlyData} />,
-      6: <ProjectsSection userStats={userStats} projectsByCategory={projectsByCategory} />
+      5: <FinancesSection userStats={statsUserStats} monthlyData={statsMonthly} />,
+      6: <ProjectsSection userStats={statsUserStats} projectsByCategory={statsCategories} completedProjects={stats?.completedProjects || []} />
       
     };
 

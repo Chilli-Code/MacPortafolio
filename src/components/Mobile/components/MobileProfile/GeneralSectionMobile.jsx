@@ -86,7 +86,7 @@ const GeneralSectionMobile = ({ onBack }) => {
         {/* Bio */}
         <div className="px-4 py-4 bg-white dark:bg-gray-800 mt-4 mx-4 rounded-2xl">
           <p className="text-sm text-gray-700 dark:text-gray-300">
-            {currentUser.profile?.bio || 'Sin biografía'}
+            {currentUser.bio || 'Sin biografía'}
           </p>
         </div>
 
@@ -127,7 +127,7 @@ const GeneralSectionMobile = ({ onBack }) => {
             Contacto
           </h3>
           <div className="bg-white dark:bg-gray-800 rounded-2xl divide-y">
-            <InfoRow icon={MapPin} label="Ubicación" value={currentUser.profile?.location} />
+            <InfoRow icon={MapPin} label="Ubicación" value={currentUser.location} />
             <InfoRow icon={Mail} label="Email" value={currentUser.email} />
             <InfoRow icon={Phone} label="Teléfono" value={currentUser.phone} />
             <InfoRow icon={Globe} label="Web" value={currentUser.website} />

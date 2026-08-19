@@ -50,9 +50,10 @@ app.post('/api/login', loginLimiter, async (req, res) => {
       return res.status(400).json({ success: false, error: 'Usuario y contraseña son requeridos' });
     }
 
-    // Buscar usuario
+    // Buscar usuario (incluye badges y logros que viven en tablas aparte)
     const user = await prisma.user.findFirst({
-      where: { username: username.trim() }
+      where: { username: username.trim() },
+      include: { badges: true, unlockedAchievements: true }
     });
 
     if (!user) {

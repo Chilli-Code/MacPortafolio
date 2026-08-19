@@ -1,18 +1,51 @@
 // components/Profile/sections/ActivitySection.jsx
-import {  CalendarIcon, Flame, Trophy, Activity } from "#assets/icons";
-import { userStats } from "../utils/profileData";
-import { generateActivityData, getActivityColor } from "../utils/profileHelpers";
+import { CalendarIcon, Flame, Trophy, Activity } from "#assets/icons";
+import { getActivityColor } from "../utils/profileHelpers";
 import clsx from "clsx";
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
+import { useAuthStore } from "#store/authStore";
+
+const MONTHS_SHORT = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
 const ActivitySection = () => {
-  const activityData = useMemo(generateActivityData, []);
+  const currentUser = useAuthStore((state) => state.currentUser);
+  const currentYear = new Date().getFullYear();
+  const [calendar, setCalendar] = useState([]);
+  const [stats, setStats] = useState({ currentStreak: 0, longestStreak: 0, totalActiveDays: 0 });
+  const [loading, setLoading] = useState(true);
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [availableYears, setAvailableYears] = useState([currentYear]);
+
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    const load = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`http://localhost:3001/api/activity/${currentUser.id}?year=${selectedYear}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        setCalendar(data.calendar || []);
+        setStats(data.stats || { currentStreak: 0, longestStreak: 0, totalActiveDays: 0 });
+        if (Array.isArray(data.availableYears) && data.availableYears.length) {
+          setAvailableYears(data.availableYears);
+          if (!data.availableYears.includes(selectedYear)) {
+            setSelectedYear(data.availableYears[0]);
+          }
+        }
+      } catch (err) {
+        console.error('Error cargando actividad:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [currentUser?.id, selectedYear]);
 
   const weeks = useMemo(() => {
     const result = [];
     let currentWeek = [];
 
-    activityData.forEach(day => {
+    calendar.forEach(day => {
       const d = new Date(day.date);
       if (d.getDay() === 0 && currentWeek.length) {
         result.push(currentWeek);
@@ -22,7 +55,15 @@ const ActivitySection = () => {
     });
     if (currentWeek.length) result.push(currentWeek);
     return result;
-  }, [activityData]);
+  }, [calendar]);
+
+  const monthLabels = useMemo(() => {
+    return weeks.map((week, i) => {
+      const month = new Date(week[0].date).getMonth();
+      const prevMonth = i > 0 ? new Date(weeks[i - 1][0].date).getMonth() : -1;
+      return i === 0 || month !== prevMonth ? MONTHS_SHORT[month] : '';
+    });
+  }, [weeks]);
 
   return (
     <div className="space-y-6">
@@ -34,77 +75,110 @@ const ActivitySection = () => {
       {/* Calendario */}
       <div className="bg-white overflow-hidden overflow-x-scroll dark:bg-gray-800 rounded-xl p-4 md:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 flex-wrap">
-          <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">
-            Últimos 12 meses
-          </h3>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">
+              Actividad {selectedYear}
+            </h3>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value, 10))}
+              className="text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              {availableYears.map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
           <div className="flex flex-wrap items-center gap-3 text-xs md:text-sm text-gray-500 dark:text-gray-400">
             <span className="whitespace-nowrap">
-              {userStats.totalDaysActive} días activo
+              {stats.totalActiveDays} días activo
             </span>
             <span className="whitespace-nowrap">
-              Racha actual: {userStats.currentStreak} días
+              Racha actual: {stats.currentStreak} días
             </span>
           </div>
         </div>
 
-        {/* Grid del calendario - scrollable horizontalmente si es necesario */}
-        <div className="overflow-x-auto pb-4">
-          <div className="inline-flex gap-1 min-w-full">
-            {weeks.map((week, i) => (
-              <div key={i} className="flex flex-col gap-1">
-                {week.map(day => (
+        {loading ? (
+          <p className="text-sm text-gray-500 dark:text-gray-400 py-10 text-center">
+            Cargando actividad…
+          </p>
+        ) : calendar.length === 0 ? (
+          <p className="text-sm text-gray-500 dark:text-gray-400 py-10 text-center">
+            Aún no tienes actividad registrada.
+          </p>
+        ) : (
+          <>
+            {/* Grid del calendario - tamaño fijo original, alineado a la izquierda */}
+            <div className="overflow-x-auto pb-4">
+              <div className="inline-flex flex-col gap-2">
+                {/* Etiquetas de meses */}
+                <div className="flex gap-1">
+                  {monthLabels.map((label, i) => (
+                    <div key={i} className="w-3 flex-shrink-0">
+                      <span className="text-[10px] text-gray-400 whitespace-nowrap">{label}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-1">
+                  {weeks.map((week, i) => (
+                    <div key={i} className="flex flex-col gap-1">
+                      {week.map(day => (
+                        <div
+                          key={day.date}
+                          className={clsx(
+                            "w-3 h-3 rounded-sm transition-all hover:ring-2 hover:ring-blue-400 cursor-pointer flex-shrink-0",
+                            getActivityColor(day.level)
+                          )}
+                          title={`${day.date}: ${day.count} actividades`}
+                        />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Leyenda */}
+            <div className="flex items-center justify-center sm:justify-start gap-2 text-xs text-gray-500 dark:text-gray-400 mt-4">
+              <span>Menos</span>
+              <div className="flex gap-1">
+                {[0, 1, 2, 3, 4].map(l => (
                   <div
-                    key={day.date}
-                    className={clsx(
-                      "w-3 h-3 rounded-sm transition-all hover:ring-2 hover:ring-blue-400 cursor-pointer flex-shrink-0",
-                      getActivityColor(day.level)
-                    )}
-                    title={`${day.date}: ${day.count} tareas`}
+                    key={l}
+                    className={clsx("w-3 h-3 rounded-sm flex-shrink-0", getActivityColor(l))}
                   />
                 ))}
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Leyenda */}
-        <div className="flex items-center justify-center sm:justify-start gap-2 text-xs text-gray-500 dark:text-gray-400 mt-4">
-          <span>Menos</span>
-          <div className="flex gap-1">
-            {[0, 1, 2, 3, 4].map(l => (
-              <div 
-                key={l} 
-                className={clsx("w-3 h-3 rounded-sm flex-shrink-0", getActivityColor(l))} 
-              />
-            ))}
-          </div>
-          <span>Más</span>
-        </div>
+              <span>Más</span>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Estadísticas */}
-      <div 
+      <div
         className="grid gap-4 mb-10"
         style={{
           gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))'
         }}
       >
-        <Stat 
-          icon={Flame} 
-          label="Racha actual" 
-          value={userStats.currentStreak}
+        <Stat
+          icon={Flame}
+          label="Racha actual"
+          value={stats.currentStreak}
           iconColor="text-orange-500"
         />
-        <Stat 
-          icon={Trophy} 
-          label="Racha máxima" 
-          value={userStats.longestStreak}
+        <Stat
+          icon={Trophy}
+          label="Racha máxima"
+          value={stats.longestStreak}
           iconColor="text-yellow-500"
         />
-        <Stat 
-          icon={Activity} 
-          label="Días activos" 
-          value={userStats.totalDaysActive}
+        <Stat
+          icon={Activity}
+          label="Días activos"
+          value={stats.totalActiveDays}
           iconColor="text-green-500"
         />
       </div>

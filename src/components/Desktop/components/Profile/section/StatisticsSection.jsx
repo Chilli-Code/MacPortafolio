@@ -3,7 +3,9 @@
 import { BarChart3, Clock, Target, TrendingUp } from "#assets/icons";
 
 const StatisticsSection = ({ userStats, monthlyData, projectsByCategory }) => {
-  const maxEarnings = Math.max(...monthlyData.map(d => d.earnings));
+  const maxEarnings = monthlyData.length ? Math.max(...monthlyData.map(d => d.earnings)) : 0;
+  const avgPerProject = userStats.projectsCompleted > 0 ? Math.round(userStats.totalHoursWorked / userStats.projectsCompleted) : 0;
+  const ratePerHour = userStats.totalHoursWorked > 0 ? Math.round(userStats.totalEarnings / userStats.totalHoursWorked) : 0;
 
   return (
     <div className="space-y-6">
@@ -17,27 +19,33 @@ const StatisticsSection = ({ userStats, monthlyData, projectsByCategory }) => {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
           Ganancias Mensuales (2024)
         </h3>
-        <div className="flex items-end justify-between h-64 gap-2">
-          {monthlyData.map((data, index) => {
-            const height = (data.earnings / maxEarnings) * 100;
-            
-            return (
-              <div key={index} className="flex-1 flex flex-col items-center gap-2">
-                <div className="w-full flex flex-col items-center">
+        {monthlyData.length === 0 ? (
+          <p className="text-sm text-gray-500 dark:text-gray-400 py-10 text-center">
+            Aún no tienes ganancias registradas.
+          </p>
+        ) : (
+          <div className="flex items-end justify-between h-64 gap-2">
+            {monthlyData.map((data, index) => {
+              const height = maxEarnings > 0 ? (data.earnings / maxEarnings) * 100 : 0;
+
+              return (
+                <div key={index} className="flex-1 flex flex-col items-center gap-2">
                   <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                     ${(data.earnings / 1000).toFixed(1)}k
                   </span>
-                  <div
-                    className="w-full bg-gradient-to-t from-blue-500 to-blue-300 rounded-t-lg hover:from-blue-600 hover:to-blue-400 transition-all cursor-pointer"
-                    style={{ height: `${height}%` }}
-                    title={`${data.month}: $${data.earnings}`}
-                  />
+                  <div className="w-full h-48 flex items-end">
+                    <div
+                      className="w-full bg-gradient-to-t from-blue-500 to-blue-300 rounded-t-lg hover:from-blue-600 hover:to-blue-400 transition-all cursor-pointer"
+                      style={{ height: `${height}%` }}
+                      title={`${data.month}: $${data.earnings}`}
+                    />
+                  </div>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">{data.month}</span>
                 </div>
-                <span className="text-xs text-gray-500 dark:text-gray-400">{data.month}</span>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Distribución por categorías */}
@@ -45,10 +53,15 @@ const StatisticsSection = ({ userStats, monthlyData, projectsByCategory }) => {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Proyectos por Categoría
         </h3>
-        <div className="space-y-4">
-          {projectsByCategory.map((project) => {
-            const totalProjects = projectsByCategory.reduce((sum, p) => sum + p.count, 0);
-            const percentage = (project.count / totalProjects) * 100;
+        {projectsByCategory.length === 0 ? (
+          <p className="text-sm text-gray-500 dark:text-gray-400 py-10 text-center">
+            Aún no tienes proyectos registrados.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {projectsByCategory.map((project) => {
+              const totalProjects = projectsByCategory.reduce((sum, p) => sum + p.count, 0);
+              const percentage = totalProjects > 0 ? (project.count / totalProjects) * 100 : 0;
             
             return (
               <div key={project.category}>
@@ -68,8 +81,9 @@ const StatisticsSection = ({ userStats, monthlyData, projectsByCategory }) => {
                 </div>
               </div>
             );
-          })}
-        </div>
+            })}
+          </div>
+        )}
       </div>
 
       {/* Resumen de horas */}
@@ -90,7 +104,7 @@ const StatisticsSection = ({ userStats, monthlyData, projectsByCategory }) => {
         <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl p-6">
           <Target className="w-8 h-8 text-green-600 dark:text-green-400 mb-3" />
           <p className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-            {Math.round(userStats.totalHoursWorked / userStats.projectsCompleted)}h
+            {avgPerProject}h
           </p>
           <p className="text-sm text-gray-600 dark:text-gray-400">Promedio por proyecto</p>
         </div>
@@ -98,7 +112,7 @@ const StatisticsSection = ({ userStats, monthlyData, projectsByCategory }) => {
         <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl p-6">
           <TrendingUp className="w-8 h-8 text-purple-600 dark:text-purple-400 mb-3" />
           <p className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-            ${Math.round(userStats.totalEarnings / userStats.totalHoursWorked)}
+            ${ratePerHour}
           </p>
           <p className="text-sm text-gray-600 dark:text-gray-400">Tarifa por hora</p>
         </div>

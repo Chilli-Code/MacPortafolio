@@ -13,15 +13,15 @@ const EditAccountModal = ({ isOpen, onClose, userData, onSave }) => {
   const [formData, setFormData] = useState({
     username: userData?.username || '',
     email: userData?.email || '',
-    phone: userData?.profile?.phone || '',
+    phone: userData?.phone || '',
     type: userData?.type || '',
-    location: userData?.profile?.location || '',
-    website: userData?.profile?.website || '',
-    timezone: userData?.profile?.timezone || 'America/Bogota',
+    location: userData?.location || '',
+    website: userData?.website || '',
+    timezone: userData?.timezone || 'America/Bogota',
     socialLinks: {
-      github: userData?.profile?.socialLinks?.github || '',
-      linkedin: userData?.profile?.socialLinks?.linkedin || '',
-      twitter: userData?.profile?.socialLinks?.twitter || '',
+      github: userData?.github || '',
+      linkedin: userData?.linkedin || '',
+      twitter: userData?.twitter || '',
     }
   });
 
@@ -121,14 +121,13 @@ const EditAccountModal = ({ isOpen, onClose, userData, onSave }) => {
           username: formData.username,
           email: formData.email,
           type: formData.type,
-          profile: {
-            ...userData.profile,
-            phone: formData.phone,
-            location: formData.location,
-            website: formData.website,
-            timezone: formData.timezone,
-            socialLinks: formData.socialLinks
-          }
+          phone: formData.phone,
+          location: formData.location,
+          website: formData.website,
+          timezone: formData.timezone,
+          github: formData.socialLinks.github,
+          linkedin: formData.socialLinks.linkedin,
+          twitter: formData.socialLinks.twitter
         })
       });
 

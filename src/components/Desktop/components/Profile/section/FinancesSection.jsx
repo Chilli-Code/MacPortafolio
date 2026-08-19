@@ -1,9 +1,30 @@
 // components/Profile/sections/FinancesSection.jsx
 import { DollarSign, TrendingUp } from "#assets/icons";
-import { userStats, monthlyData } from "../utils/profileData";
 
-const FinancesSection = () => {
-  const maxEarnings = Math.max(...monthlyData.map(d => d.earnings));
+const MONTHS_SHORT = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+const FinancesSection = ({ userStats = {}, monthlyData = [] }) => {
+  const totalEarnings = monthlyData.length
+    ? monthlyData.reduce((sum, d) => sum + (d.earnings || 0), 0)
+    : (userStats.totalEarnings || 0);
+
+  const sumEarnings = monthlyData.reduce((sum, d) => sum + (d.earnings || 0), 0);
+  const avgMonthly = monthlyData.length ? Math.round(sumEarnings / monthlyData.length) : 0;
+
+  const now = new Date();
+  const currentMonth = MONTHS_SHORT[now.getMonth()];
+  const currentYear = now.getFullYear();
+  const thisMonthEntry = monthlyData.find(d => d.month === currentMonth && d.year === currentYear);
+  const monthlyEarnings = thisMonthEntry ? thisMonthEntry.earnings : 0;
+
+  const maxEarnings = monthlyData.length ? Math.max(...monthlyData.map(d => d.earnings)) : 0;
+
+  const years = [...new Set(monthlyData.map(d => d.year))];
+  const breakdownTitle = years.length === 0
+    ? 'Ingresos'
+    : (years.length === 1 ? `Ingresos ${years[0]}` : 'Ingresos por mes');
+
+  const isEmpty = totalEarnings === 0 && monthlyData.length === 0;
 
   return (
     <div className="space-y-6">
@@ -27,8 +48,8 @@ const FinancesSection = () => {
           gradientFromDark="dark:from-green-900/20"
           gradientToDark="dark:to-emerald-900/20"
           label="Ganancias Totales"
-          value={`$${userStats.totalEarnings.toLocaleString()}`}
-          subtitle={`+$${userStats.monthlyEarnings.toLocaleString()} este mes`}
+          value={`$${totalEarnings.toLocaleString()}`}
+          subtitle={`+$${monthlyEarnings.toLocaleString()} este mes`}
           subtitleColor="text-green-600 dark:text-green-400"
         />
 
@@ -40,8 +61,8 @@ const FinancesSection = () => {
           gradientFromDark="dark:from-blue-900/20"
           gradientToDark="dark:to-cyan-900/20"
           label="Promedio Mensual"
-          value={`$${Math.round(userStats.totalEarnings / 12).toLocaleString()}`}
-          subtitle="Últimos 12 meses"
+          value={`$${avgMonthly.toLocaleString()}`}
+          subtitle="Meses con actividad"
           subtitleColor="text-blue-600 dark:text-blue-400"
         />
       </div>
@@ -49,20 +70,26 @@ const FinancesSection = () => {
       {/* Desglose mensual */}
       <div className="bg-white mb-20 dark:bg-gray-800 rounded-xl p-4 md:p-6 shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden overflow-x-scroll">
         <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Ingresos 2024
+          {breakdownTitle}
         </h3>
 
-        <div className="space-y-2">
-          {monthlyData.map((m) => (
-            <MonthRow
-              key={m.month}
-              month={m.month}
-              earnings={m.earnings}
-              hours={m.hours}
-              maxEarnings={maxEarnings}
-            />
-          ))}
-        </div>
+        {isEmpty ? (
+          <p className="text-sm text-gray-500 dark:text-gray-400 py-10 text-center">
+            Aún no tienes ingresos registrados.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {monthlyData.map((m) => (
+              <MonthRow
+                key={`${m.year}-${m.month}`}
+                month={m.month}
+                earnings={m.earnings}
+                hours={m.hours}
+                maxEarnings={maxEarnings}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

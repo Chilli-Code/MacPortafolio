@@ -7,12 +7,19 @@ const EditProfileModal = ({ isOpen, onClose, userData, onSave }) => {
   const modalRef = useRef();
   const overlayRef = useRef();
 
-  const [formData, setFormData] = useState({
-    fullName: userData.fullName || '',
-    role: userData.role || '',
-    bio: userData.profile?.bio || '',
-    location: userData.profile?.location || '',
-    skills: userData.skills || [],
+  const [formData, setFormData] = useState(() => {
+    const rawSkills = userData.skills;
+    let skills = Array.isArray(rawSkills)
+      ? rawSkills
+      : (() => { try { return JSON.parse(rawSkills); } catch { return []; } })();
+    if (!Array.isArray(skills)) skills = [];
+    return {
+      fullName: userData.fullName || '',
+      role: userData.role || '',
+      bio: userData.bio || '',
+      location: userData.location || '',
+      skills,
+    };
   });
 
   useEffect(() => {

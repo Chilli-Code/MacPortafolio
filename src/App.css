@@ -544,3 +544,46 @@
   --range-thumb: #f3f4f6;
   --range-accent: #60a5fa;
 }
+
+/* ============================= */
+/* AURA SLIDER - BARRAS CON RELLENO (estilo "Efectos del sistema") */
+/* ============================= */
+
+.aura-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1.5px solid #3b82f6;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.15s ease;
+}
+.aura-slider::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.15);
+  transform: scale(1.1);
+}
+.aura-slider::-webkit-slider-thumb:active {
+  box-shadow: 0 0 0 12px rgba(59, 130, 246, 0.2);
+}
+.dark .aura-slider::-webkit-slider-thumb {
+  background: #f3f4f6;
+  border-color: #60a5fa;
+}
+
+.aura-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1.5px solid #3b82f6;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.15s ease;
+}
+.dark .aura-slider::-moz-range-thumb {
+  background: #f3f4f6;
+  border-color: #60a5fa;
+}

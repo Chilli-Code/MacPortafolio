@@ -340,41 +340,78 @@ export const useAuthStore = create(
 
       // ==================== GETTERS DE GAMIFICACIÓN ====================
 
-      // 📊 Obtener stats de gamificación
+      // 📊 Obtener stats de gamificación (estructura aplanada de dev.db)
       getGamificationStats: () => {
         const user = get().currentUser;
-        if (!user?.gamification) return null;
+        if (!user) {
+          return {
+            level: 1,
+            currentXP: 0,
+            totalXP: 0,
+            xpToNextLevel: 1000,
+            rank: 'Novato',
+            rankIcon: '🌱',
+            rankProgress: 0,
+            tasksCompleted: 0,
+            totalEarnings: 0,
+            totalHoursWorked: 0,
+            projectsCompleted: 0,
+            averageRating: 0,
+            badges: []
+          };
+        }
 
+        const xpToNext = user.xpToNextLevel || 1000;
         return {
-          level: user.gamification.level,
-          currentXP: user.gamification.currentXP,
-          totalXP: user.gamification.totalXP,
-          xpToNextLevel: user.gamification.xpToNextLevel,
-          rank: user.gamification.rank,
-          rankIcon: user.gamification.rankIcon,
-          rankProgress: Math.floor((user.gamification.currentXP / user.gamification.xpToNextLevel) * 100)
+          level: user.level ?? 1,
+          currentXP: user.currentXP ?? 0,
+          totalXP: user.totalXP ?? 0,
+          xpToNextLevel: xpToNext,
+          rank: user.rank || 'Novato',
+          rankIcon: user.rankIcon || '🌱',
+          rankProgress: xpToNext ? Math.floor((user.currentXP / xpToNext) * 100) : 0,
+          tasksCompleted: user.tasksCompleted || 0,
+          totalEarnings: user.totalEarnings || 0,
+          totalHoursWorked: user.totalHoursWorked || 0,
+          projectsCompleted: user.projectsCompleted || 0,
+          averageRating: user.averageRating ?? 0,
+          badges: user.badges || []
         };
       },
 
-      // 🏆 Obtener logros
+      // 🏆 Obtener logros (vienen del backend como user.unlockedAchievements)
       getAchievements: () => {
         const user = get().currentUser;
-        if (!user?.gamification?.achievements) return { unlocked: [], inProgress: [] };
-        return user.gamification.achievements;
+        if (!user) return { unlocked: [], inProgress: [] };
+        if (Array.isArray(user.unlockedAchievements)) {
+          return { unlocked: user.unlockedAchievements, inProgress: [] };
+        }
+        return user.gamification?.achievements || { unlocked: [], inProgress: [] };
       },
 
-      // 📚 Obtener skills
+      // 📚 Obtener skills (siempre devuelve un arreglo de strings)
       getSkills: () => {
         const user = get().currentUser;
-        if (!user?.skills) return [];
-        return user.skills;
+        const s = user?.skills;
+        if (!s) return [];
+        if (Array.isArray(s)) return s;
+        if (typeof s === 'string') {
+          try {
+            const parsed = JSON.parse(s);
+            return Array.isArray(parsed) ? parsed : Object.keys(parsed || {});
+          } catch {
+            return [];
+          }
+        }
+        if (typeof s === 'object') return Object.keys(s);
+        return [];
       },
 
-      // 🔥 Obtener racha actual
+      // 🔥 Obtener racha actual (columna aplanada currentStreak)
       getCurrentStreak: () => {
         const user = get().currentUser;
-        if (!user?.gamification?.stats?.streaks) return 0;
-        return user.gamification.stats.streaks.current;
+        if (!user) return 0;
+        return user.currentStreak || 0;
       }
     }),
     {

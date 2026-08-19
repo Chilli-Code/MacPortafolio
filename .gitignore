@@ -22,3 +22,6 @@ nul
 *.njsproj
 *.sln
 *.sw?
+
+# Base de datos local (datos del usuario, no versionar)
+server/dev.db

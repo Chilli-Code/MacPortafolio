@@ -170,12 +170,12 @@ if (data.avatar && data.avatar !== null) {
           <InfoDisplay
             icon={Phone}
             label="Teléfono"
-            value={userData.profile?.phone || 'No especificado'}
+            value={userData.phone || 'No especificado'}
           />
           <InfoDisplay
             icon={MapPin}
             label="Ubicación"
-            value={userData.profile?.location || 'No especificada'}
+            value={userData.location || 'No especificada'}
           />
           <InfoDisplay
             icon={Briefcase}
@@ -185,7 +185,7 @@ if (data.avatar && data.avatar !== null) {
           <InfoDisplay
             icon={Globe}
             label="Zona Horaria"
-            value={userData.profile?.timezone || 'No especificada'}
+            value={userData.timezone || 'No especificada'}
           />
         </div>
       </div>
@@ -198,36 +198,36 @@ if (data.avatar && data.avatar !== null) {
           Redes Sociales y Enlaces
         </h3>
         <div className="space-y-3">
-          {userData.profile?.website && (
+          {userData.website && (
             <SocialLink
               icon={Globe}
               label="Sitio Web"
-              value={userData.profile.website}
-              href={userData.profile.website}
+              value={userData.website}
+              href={userData.website}
             />
           )}
-          {userData.profile?.socialLinks?.github && (
+          {userData.github && (
             <SocialLink
               icon={Github}
               label="GitHub"
-              value={`@${userData.profile.socialLinks.github}`}
-              href={`https://github.com/${userData.profile.socialLinks.github}`}
+              value={`@${userData.github}`}
+              href={`https://github.com/${userData.github}`}
             />
           )}
-          {userData.profile?.socialLinks?.linkedin && (
+          {userData.linkedin && (
             <SocialLink
               icon={Linkedin}
               label="LinkedIn"
-              value={userData.profile.socialLinks.linkedin}
-              href={`https://linkedin.com/in/${userData.profile.socialLinks.linkedin}`}
+              value={userData.linkedin}
+              href={`https://linkedin.com/in/${userData.linkedin}`}
             />
           )}
-          {userData.profile?.socialLinks?.twitter && (
+          {userData.twitter && (
             <SocialLink
               icon={Twitter}
               label="Twitter / X"
-              value={userData.profile.socialLinks.twitter}
-              href={`https://twitter.com/${userData.profile.socialLinks.twitter.replace('@', '')}`}
+              value={userData.twitter}
+              href={`https://twitter.com/${userData.twitter.replace('@', '')}`}
             />
           )}
         </div>

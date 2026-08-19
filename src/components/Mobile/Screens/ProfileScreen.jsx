@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronRight, User, DollarSign, Trophy, ChartColumnBig, Clock } from '#assets/icons';
+import { ChevronRight, User, DollarSign, Trophy, ChartColumnBig, Clock, Briefcase } from '#assets/icons';
 
 
 // Importar secciones
@@ -9,6 +9,7 @@ import MobileNav from '../MobileNav';
 import AchievementsSectionMobile from '#components/Mobile/components/MobileProfile/AchievementsSectionMobile';
 import ActivitySectionMobile from '#components/Mobile/components/MobileProfile/ActivitySectionMobile';
 import StatisticsSectionMobile from '#components/Mobile/components/MobileProfile/StatisticsSectionMobile';
+import ProjectsSectionMobile from '#components/Mobile/components/MobileProfile/ProjectsSectionMobile';
 
 
 const ProfileScreen = ({ onBack }) => {
@@ -54,6 +55,14 @@ const ProfileScreen = ({ onBack }) => {
       icon: ChartColumnBig,
       color: 'text-yellow-500',
       bg: 'bg-yellow-100'
+    },
+    {
+      id: 'projects',
+      title: 'Proyectos',
+      subtitle: 'Proyectos completados y ganancias',
+      icon: Briefcase,
+      color: 'text-blue-500',
+      bg: 'bg-blue-100'
     }
   ];
 
@@ -71,6 +80,8 @@ const ProfileScreen = ({ onBack }) => {
         return <ActivitySectionMobile onBack={handleClose} />;
       case 'estadistic':
         return <StatisticsSectionMobile onBack={handleClose} />;
+      case 'projects':
+        return <ProjectsSectionMobile onBack={handleClose} />;
         default:
         return null;
     }

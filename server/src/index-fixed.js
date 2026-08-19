@@ -38,6 +38,7 @@ import path from 'path';
 console.log('✅ path importado');
 
 import { exec, execSync } from 'child_process';
+import { randomUUID } from 'crypto';
 console.log('✅ child_process importado');
 
 console.log('\n✅ TODOS LOS MODULOS IMPORTADOS CORRECTAMENTE!');
@@ -87,6 +88,91 @@ app.get('/users', async (req, res) => {
   } catch (error) {
     console.error('❌ Error /users:', error);
     res.status(500).json([]);
+  }
+});
+
+// 👥 OBTENER USUARIO POR ID
+app.get('/api/users/:id', async (req, res) => {
+  try {
+    const db = await open({
+      filename: './dev.db',
+      driver: sqlite3.Database
+    });
+
+    const user = await db.get('SELECT * FROM User WHERE id = ?', req.params.id);
+    await db.close();
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const { password, ...userWithoutPassword } = user;
+    res.json(userWithoutPassword);
+  } catch (error) {
+    console.error('❌ Error /api/users/:id GET:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 👥 ACTUALIZAR USUARIO POR ID (PATCH / PUT)
+const updateUserHandler = async (req, res) => {
+  try {
+    const db = await open({
+      filename: './dev.db',
+      driver: sqlite3.Database
+    });
+
+    const existing = await db.get('SELECT * FROM User WHERE id = ?', req.params.id);
+    if (!existing) {
+      await db.close();
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const body = req.body || {};
+    const keys = Object.keys(body).filter(k => k !== 'id' && k !== 'password');
+
+    if (keys.length === 0) {
+      await db.close();
+      const { password, ...u } = existing;
+      return res.json(u);
+    }
+
+    const setClause = keys.map(k => `${k} = ?`).join(', ');
+    const values = keys.map(k => {
+      const v = body[k];
+      return (typeof v === 'object' && v !== null) ? JSON.stringify(v) : v;
+    });
+
+    await db.run(`UPDATE User SET ${setClause} WHERE id = ?`, [...values, req.params.id]);
+
+    const updated = await db.get('SELECT * FROM User WHERE id = ?', req.params.id);
+    await db.close();
+
+    const { password, ...userWithoutPassword } = updated;
+    console.log(`✅ ${req.method} /api/users/${req.params.id} - usuario actualizado`);
+    res.json(userWithoutPassword);
+  } catch (error) {
+    console.error('❌ Error actualizando usuario:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+app.patch('/api/users/:id', updateUserHandler);
+app.put('/api/users/:id', updateUserHandler);
+
+// 👥 ALIAS SIN /api PARA COMPATIBILIDAD
+app.patch('/users/:id', updateUserHandler);
+app.put('/users/:id', updateUserHandler);
+app.get('/users/:id', async (req, res) => {
+  try {
+    const db = await open({ filename: './dev.db', driver: sqlite3.Database });
+    const user = await db.get('SELECT * FROM User WHERE id = ?', req.params.id);
+    await db.close();
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const { password, ...u } = user;
+    res.json(u);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -267,6 +353,111 @@ app.delete('/tasks/:id', async (req, res) => {
   }
 });
 
+// 📊 ESTADÍSTICAS REALES DEL USUARIO (desde SQL: User + Task)
+app.get('/api/stats/:userId', async (req, res) => {
+  try {
+    const db = await open({
+      filename: './dev.db',
+      driver: sqlite3.Database
+    });
+
+    const user = await db.get('SELECT * FROM User WHERE id = ?', req.params.userId);
+    if (!user) {
+      await db.close();
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const tasks = await db.all(
+      'SELECT * FROM Task WHERE assignedTo = ? OR createdBy = ?',
+      req.params.userId, req.params.userId
+    );
+    await db.close();
+
+    const userStats = {
+      level: user.level ?? 1,
+      currentXP: user.currentXP ?? 0,
+      xpToNextLevel: user.xpToNextLevel ?? 1000,
+      totalXP: user.totalXP ?? 0,
+      rank: user.rank || 'Novato',
+      tasksCompleted: user.tasksCompleted ?? 0,
+      projectsCompleted: user.projectsCompleted ?? 0,
+      totalEarnings: user.totalEarnings ?? 0,
+      totalHoursWorked: user.totalHoursWorked ?? 0,
+      averageTaskTime: user.averageTaskTime ?? 0,
+      averageRating: user.averageRating ?? 0,
+      perfectRatings: user.perfectRatings ?? 0,
+      currentStreak: user.currentStreak ?? 0,
+      longestStreak: user.longestStreak ?? 0,
+      totalActiveDays: user.totalActiveDays ?? 0
+    };
+
+    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const categoryColors = {
+      'Web Development': 'bg-blue-500',
+      'UI/UX Design': 'bg-purple-500',
+      'Mobile Apps': 'bg-green-500',
+      'Consulting': 'bg-orange-500',
+      'Frontend': 'bg-cyan-500',
+      'Backend': 'bg-red-500'
+    };
+    const colorList = ['bg-blue-500', 'bg-purple-500', 'bg-green-500', 'bg-orange-500', 'bg-cyan-500', 'bg-red-500', 'bg-pink-500', 'bg-yellow-500'];
+
+    const monthlyMap = {};
+    const catMap = {};
+    let ci = 0;
+
+    const completedProjects = [];
+
+    for (const t of tasks) {
+      const isCompleted = t.status === 'completed' && t.completedAt;
+      if (isCompleted) {
+        const d = new Date(t.completedAt);
+        const key = `${d.getFullYear()}-${d.getMonth()}`;
+        if (!monthlyMap[key]) {
+          monthlyMap[key] = { month: monthNames[d.getMonth()], year: d.getFullYear(), earnings: 0, hours: 0 };
+        }
+        monthlyMap[key].earnings += (t.totalReward || 0);
+        monthlyMap[key].hours += (t.actualHours || 0);
+
+        const cat = t.category || 'Otros';
+        if (!catMap[cat]) {
+          catMap[cat] = {
+            category: cat,
+            count: 0,
+            earnings: 0,
+            color: categoryColors[cat] || colorList[ci++ % colorList.length]
+          };
+        }
+        catMap[cat].count += 1;
+        catMap[cat].earnings += (t.totalReward || 0);
+
+        completedProjects.push({
+          id: t.id,
+          title: t.title,
+          category: cat,
+          type: t.type,
+          difficulty: t.difficulty,
+          totalReward: t.totalReward || 0,
+          actualHours: t.actualHours || 0,
+          rating: t.rating || 0,
+          completedAt: t.completedAt
+        });
+      }
+    }
+
+    const monthlyData = Object.values(monthlyMap).sort(
+      (a, b) => (a.year - b.year) || (monthNames.indexOf(a.month) - monthNames.indexOf(b.month))
+    );
+    const projectsByCategory = Object.values(catMap);
+
+    console.log(`✅ /api/stats/${req.params.userId} - stats enviadas (${monthlyData.length} meses, ${projectsByCategory.length} categorías, ${completedProjects.length} proyectos)`);
+    res.json({ userStats, monthlyData, projectsByCategory, completedProjects });
+  } catch (error) {
+    console.error('❌ Error /api/stats/:id:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==============================================
 // 🔐 ENDPOINT DE LOGIN SEGURO
 // ==============================================
@@ -297,10 +488,31 @@ app.post('/api/login', async (req, res) => {
     // DESACTIVAMOS COMPLETAMENTE BCYRT PARA SOLUCIONAR INMEDIATAMENTE
     // passwordValid = (password === '123456' || password === 'admin123');
 
-    // ✅ No devolver la contraseña
-    const { password: _, ...userWithoutPassword } = user;
+    // ✅ Registrar inicio de sesión en ActivityLog y recalcular rachas
+    let finalUser = user;
+    try {
+      const dbA = await open({ filename: './dev.db', driver: sqlite3.Database });
+      await dbA.run(
+        `INSERT INTO ActivityLog (id, userId, action, data, createdAt) VALUES (?, ?, ?, ?, ?)`,
+        randomUUID(), user.id, 'login',
+        JSON.stringify({ username: user.username, loginTime: new Date().toISOString() }),
+        new Date().toISOString()
+      );
+      const s = await recomputeStreaks(dbA, user.id);
+      await dbA.run(
+        `UPDATE User SET totalActiveDays = ?, currentStreak = ?, longestStreak = ?, lastActiveDate = ? WHERE id = ?`,
+        s.totalActiveDays, s.currentStreak, s.longestStreak, new Date().toISOString(), user.id
+      );
+      finalUser = await dbA.get('SELECT * FROM User WHERE id = ?', user.id);
+      await dbA.close();
+    } catch (actErr) {
+      console.error('⚠️ No se pudo registrar actividad de login:', actErr.message);
+    }
 
-    console.log('✅ Login exitoso:', user.username);
+    // ✅ No devolver la contraseña
+    const { password: _, ...userWithoutPassword } = finalUser;
+
+    console.log('✅ Login exitoso:', finalUser.username);
     res.json({
       success: true,
       user: userWithoutPassword,
@@ -640,6 +852,135 @@ app.post('/api/terminal', async (req, res) => {
     res.status(500).json({ success: false, output: '', error: error.message });
   }
 });
+
+// ==============================================
+// 📊 ACTIVIDAD / CALENDARIO
+// ==============================================
+function formatDateUTC(d) {
+  return new Date(d).toISOString().split('T')[0];
+}
+
+async function recomputeStreaks(db, userId) {
+  const rows = await db.all(
+    `SELECT DISTINCT DATE(createdAt) as day FROM ActivityLog WHERE userId = ?`,
+    userId
+  );
+  const dates = rows.map(r => r.day).sort();
+  const totalActiveDays = dates.length;
+  if (totalActiveDays === 0) {
+    return { totalActiveDays: 0, currentStreak: 0, longestStreak: 0 };
+  }
+  let longest = 1, run = 1;
+  for (let i = 1; i < dates.length; i++) {
+    const diff = Math.round((new Date(dates[i]) - new Date(dates[i - 1])) / 86400000);
+    run = diff === 1 ? run + 1 : 1;
+    if (run > longest) longest = run;
+  }
+  const today = formatDateUTC(new Date());
+  const yesterday = formatDateUTC(new Date(Date.now() - 86400000));
+  let current = 0;
+  const anchor = dates.includes(today) ? today : (dates.includes(yesterday) ? yesterday : null);
+  if (anchor) {
+    current = 1;
+    let d = new Date(anchor + 'T00:00:00Z');
+    while (true) {
+      d = new Date(d.getTime() - 86400000);
+      if (dates.includes(formatDateUTC(d))) current++;
+      else break;
+    }
+  }
+  return { totalActiveDays, currentStreak: current, longestStreak: longest };
+}
+
+// Obtener calendario de actividad + stats de racha para un usuario
+app.get('/api/activity/:userId', async (req, res) => {
+  try {
+    const db = await open({ filename: './dev.db', driver: sqlite3.Database });
+    const { userId } = req.params;
+    const today = new Date();
+    const year = parseInt(req.query.year, 10) || today.getFullYear();
+
+    const start = new Date(year, 0, 1);
+    let end = new Date(year, 11, 31);
+    if (year === today.getFullYear()) end = new Date(today);
+
+    const rows = await db.all(
+      `SELECT DATE(createdAt) as day, COUNT(*) as count FROM ActivityLog WHERE userId = ? AND DATE(createdAt) >= ? AND DATE(createdAt) <= ? GROUP BY day`,
+      userId,
+      formatDateUTC(start),
+      formatDateUTC(end)
+    );
+    const countMap = {};
+    rows.forEach(r => { countMap[r.day] = r.count; });
+    const maxCount = rows.reduce((m, r) => Math.max(m, r.count), 0);
+
+    const calendar = [];
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const dateStr = formatDateUTC(d);
+      const count = countMap[dateStr] || 0;
+      let level;
+      if (count === 0) level = 0;
+      else if (maxCount <= 1) level = 1;
+      else level = 1 + Math.floor(((count - 1) * 3) / (maxCount - 1));
+      level = Math.max(0, Math.min(4, level));
+      calendar.push({ date: dateStr, count, level });
+    }
+
+    const user = await db.get(
+      'SELECT currentStreak, longestStreak, totalActiveDays FROM User WHERE id = ?',
+      userId
+    );
+
+    const yrRows = await db.all(
+      `SELECT DISTINCT strftime('%Y', createdAt) as y FROM ActivityLog WHERE userId = ?`,
+      userId
+    );
+    const years = yrRows.map(r => parseInt(r.y, 10)).filter(Boolean);
+    if (!years.includes(today.getFullYear())) years.push(today.getFullYear());
+    years.sort((a, b) => b - a);
+
+    await db.close();
+
+    res.json({
+      calendar,
+      stats: {
+        currentStreak: user?.currentStreak ?? 0,
+        longestStreak: user?.longestStreak ?? 0,
+        totalActiveDays: user?.totalActiveDays ?? 0
+      },
+      maxCount,
+      year,
+      availableYears: years
+    });
+  } catch (error) {
+    console.error('❌ Error /api/activity/:id:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Crear log de actividad (usado por el frontend: createActivityLog de apis.js)
+async function createActivityLogHandler(req, res) {
+  try {
+    const body = req.body || {};
+    const db = await open({ filename: './dev.db', driver: sqlite3.Database });
+    const id = randomUUID();
+    const action = body.action || body.type || 'unknown';
+    const payload = body.data || body.details || {};
+    const userId = body.userId || null;
+    const createdAt = new Date().toISOString();
+    await db.run(
+      `INSERT INTO ActivityLog (id, userId, action, data, createdAt) VALUES (?, ?, ?, ?, ?)`,
+      id, userId, action, JSON.stringify(payload), createdAt
+    );
+    await db.close();
+    res.json({ id, userId, action, data: payload, createdAt });
+  } catch (error) {
+    console.error('❌ Error /activityLog:', error);
+    res.status(500).json({ error: error.message });
+  }
+}
+app.post('/api/activityLog', createActivityLogHandler);
+app.post('/activityLog', createActivityLogHandler);
 
 // Start server
 const server = app.listen(PORT, () => {

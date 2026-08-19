@@ -653,24 +653,36 @@ const EDGE_AURA_DEFAULT_CONFIG = {
 };
 
 // Slider reutilizable para los controles de personalización
-const AuraSlider = ({ label, value, min, max, step, onChange, format }) => (
-  <div>
-    <div className="flex items-center justify-between mb-1.5">
-      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{label}</span>
-      <span className="text-xs font-semibold text-gray-900 dark:text-white">
-        {format ? format(value) : value}
-      </span>
+// (mismo estilo de barra con relleno que "Efectos del sistema")
+const AuraSlider = ({ label, value, min, max, step, onChange, format }) => {
+  const pct = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{label}</span>
+        <span className="text-xs font-semibold text-gray-900 dark:text-white">
+          {format ? format(value) : value}
+        </span>
+      </div>
+      <div className="relative flex-1 h-4">
+        <div className="absolute inset-0 bg-gray-200 dark:bg-white/20 rounded-full overflow-hidden pointer-events-none">
+          <div
+            className="h-full bg-blue-500 dark:bg-blue-400 transition-all duration-200"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => onChange(parseFloat(e.target.value))}
+          className="aura-slider absolute inset-0 w-full h-full bg-transparent appearance-none cursor-pointer"
+        />
+      </div>
     </div>
-    <input
-      type="range"
-      min={min}
-      max={max}
-      step={step}
-      value={value}
-      onChange={(e) => onChange(parseFloat(e.target.value))}
-      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500"
-    />
-  </div>
-);
+  );
+};
 
 export default AppearanceSection;
